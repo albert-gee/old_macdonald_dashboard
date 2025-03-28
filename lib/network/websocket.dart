@@ -145,3 +145,126 @@ class Websocket {
   //   return await sendMessage(messageJson);
   // }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import 'dart:convert';
+// import 'dart:ui';
+//
+// import 'package:web_socket_channel/io.dart';
+// import 'package:web_socket_channel/web_socket_channel.dart';
+//
+// class Websocket {
+//
+//   final Uri wsUrl;
+//   IOWebSocketChannel? channel;
+//   bool websocketConnecting = false;
+//
+//   Websocket(String wsUrl) : wsUrl = Uri.parse(wsUrl);
+//
+//   Stream<dynamic> get messageStream => channel?.stream ?? const Stream.empty();
+//
+//   /// Establish a connection to the WebSocket server.
+//   Future<void> connect() async {
+//     // Check if a connection attempt is already in progress. If so, exit the function
+//     // early to prevent another concurrent attempt.
+//     if (websocketConnecting) {
+//       return;
+//     }
+//
+//     // Set the flag to true, indicating that a connection attempt is now underway.
+//     websocketConnecting = true;
+//
+//     // Connect to the WebSocket server at the specified URL.
+//     // The pingInterval is set to send a "ping" message every 15 seconds to keep the
+//     // connection alive and check its health. The connectTimeout is set to 20 seconds,
+//     // meaning the connection attempt will time out if not established within this duration.
+//     channel = IOWebSocketChannel.connect(wsUrl,
+//         pingInterval: const Duration(seconds: 10),
+//         connectTimeout: const Duration(seconds: 15));
+//
+//     try {
+//       // Await the ready property of the channel, which is a Future that completes when
+//       // the WebSocket connection is successfully established. This ensures that the
+//       // following code only runs after a successful connection.
+//       await channel!.ready;
+//       // Once the connection is established, set up the stream listeners to handle
+//       // incoming messages, errors, and connection closures.
+//       websocketConnecting = false;
+//     } catch (e) {
+//       // If an error occurs during the connection attempt or while waiting for the
+//       // connection to become ready, log the error and perform cleanup.
+//       print('WebSocket connection failed or stream error occurred: $e');
+//       // Set the channel to null to clean up and indicate that there is no active
+//       // WebSocket connection.
+//       channel = null;
+//       // Reset the websocketConnecting flag to allow future connection attempts.
+//       websocketConnecting = false;
+//     }
+//   }
+//
+//   Future<void> disconnect() async {
+//     if (isConnected()) {
+//       await channel!.sink.close();
+//       channel = null;
+//     }
+//   }
+//
+//   Future<bool> sendMessage(String messageJson) async {
+//     bool isSent = false;
+//
+//     if (channel != null) {
+//       channel!.sink.add(messageJson);
+//       isSent = true;
+//     }
+//
+//     return isSent;
+//   }
+//
+//   void listen(
+//       {required void Function(String) onMessageReceived,
+//         required VoidCallback onDone,
+//         required void Function(String) onError}) {
+//     channel!.stream.listen(
+//           (message) {
+//         // stream sends a data event when a message is received
+//         print('Received message: $message');
+//         onMessageReceived(message);
+//       },
+//       onError: (error) {
+//         print('WebSocket error: $error');
+//         onError(
+//             error); // stream sends an error event if an error occurs while receiving data
+//       },
+//       onDone: () {
+//         // stream closes and sends a done event when the WebSocket connection is closed
+//         print('WebSocket connection closed');
+//         onDone();
+//       },
+//     );
+//   }
+//
+//   bool isConnected() {
+//     return channel != null && channel!.closeCode == null;
+//   }
+//
+//   Future<bool> sendJsonMessage(Map<String, dynamic> message) async {
+//     final messageJson = jsonEncode(message);
+//     return await sendMessage(messageJson);
+//   }
+//
+// }
+
