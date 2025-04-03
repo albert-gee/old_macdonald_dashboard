@@ -97,11 +97,43 @@ class CommandFormWidget extends StatelessWidget {
             ],
           ),
         ),
+        DropdownMenuItem(
+          value: 'ifconfig_up',
+          child: Row(
+            children: [
+              Icon(Icons.password, color: Colors.tealAccent),
+              SizedBox(width: 10.0),
+              Text(
+                'Start IfConfig',
+                style: TextStyle(color: Colors.tealAccent),
+              ),
+            ],
+          ),
+        ),
+        DropdownMenuItem(
+          value: 'thread_start',
+          child: Row(
+            children: [
+              Icon(Icons.password, color: Colors.tealAccent),
+              SizedBox(width: 10.0),
+              Text(
+                'Start Thread',
+                style: TextStyle(color: Colors.tealAccent),
+              ),
+            ],
+          ),
+        ),
       ],
       onChanged: (value) {
         if (value == 'auth') {
           commandController.text = value!;
           payloadController.text = 'secret_token_123';
+        } else if (value == 'ifconfig_up') {
+          commandController.text = value!;
+          payloadController.text = 'test';
+        } else if (value == 'thread_start') {
+          commandController.text = value!;
+          payloadController.text = 'test';
         } else {
           commandController.clear();
           payloadController.clear();

@@ -6,37 +6,42 @@ import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.d
 import 'package:dashboard/blocs/message_log/message_log_bloc.dart';
 import 'package:dashboard/models/websocket_message.dart';
 
+import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';
+import 'blocs/thread/thread_status/thread_status_bloc.dart';
+import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
+import 'blocs/wifi_sta_status/wifi_sta_status_bloc.dart';
 
 final getIt = GetIt.instance;
 
-String token = "";
+Future<void> setupServiceLocator(final String title, final String subTitle,
+    final String wsUri, final String token) async {
+  // Register title and subtitle
+  getIt.registerSingleton<String>(instanceName: 'title', title);
+  getIt.registerSingleton<String>(instanceName: 'subTitle', subTitle);
 
-Future<void> setupServiceLocator(
-    final String wsUri, final String newToken) async {
-  token = newToken;
+  // Register token
+  getIt.registerSingleton<String>(token);
 
   // Register WebSocket client
-  _registerWebSocket(wsUri);
+  getIt.registerLazySingleton<Websocket>(() => Websocket(wsUri));
 
   // Register message parser
-  _registerMessageParser();
+  getIt.registerSingleton<WebSocketMessageParser>(WebSocketMessageParser());
 
   // Register BLoCs
   _registerBlocs();
 }
 
-void _registerWebSocket(final String wsUri) {
-  getIt.registerLazySingleton<Websocket>(() => Websocket(wsUri));
-}
-
-void _registerMessageParser() {
-  getIt.registerSingleton<WebSocketMessageParser>(
-    WebSocketMessageParser(),
-  );
-}
-
 void _registerBlocs() {
+  // WiFi STA Connect BLoC
+  getIt.registerLazySingleton<WifiStaConnectBloc>(
+    () => WifiStaConnectBloc(
+      websocket: getIt<Websocket>(),
+    ),
+    dispose: (bloc) => bloc.close(),
+  );
+
   // Websocket Connection Bloc
   getIt.registerLazySingleton<WebsocketConnectionBloc>(
     () => WebsocketConnectionBloc(
@@ -49,6 +54,24 @@ void _registerBlocs() {
       onMessageReceived: _receiveWebsocketMessage,
       onWebsocketDone: () {},
     ),
+    dispose: (bloc) => bloc.close(),
+  );
+
+  // Ifconfig Status Bloc
+  getIt.registerLazySingleton<IfconfigStatusBloc>(
+        () => IfconfigStatusBloc(),
+    dispose: (bloc) => bloc.close(),
+  );
+
+  // Wifi Sta Status Bloc
+  getIt.registerLazySingleton<WifiStaStatusBloc>(
+        () => WifiStaStatusBloc(),
+    dispose: (bloc) => bloc.close(),
+  );
+
+  // Thread Status Bloc
+  getIt.registerLazySingleton<ThreadStatusBloc>(
+        () => ThreadStatusBloc(),
     dispose: (bloc) => bloc.close(),
   );
 
@@ -75,14 +98,12 @@ void _registerBlocs() {
     () => MessageLogBloc(
       onMessageReceived: (message) {},
       onMessageSent: (command, payload) => _sendWebSocketMessage({
-        'token': token,
         'command': command,
         'payload': payload,
       }),
     ),
     dispose: (bloc) => bloc.close(),
   );
-
 }
 
 Future<bool> _sendWebSocketMessage(Map<String, dynamic> message) async {
@@ -132,6 +153,24 @@ void _receiveWebsocketMessage(WebSocketMessage message) {
       getIt<ThreadRoleBloc>().add(ThreadRoleChanged(msg.role));
       break;
 
+    // Ifconfig Status Message
+    case IfconfigStatusMessage:
+      final msg = message as IfconfigStatusMessage;
+      getIt<IfconfigStatusBloc>().add(IfconfigStatusChanged(msg.status));
+      break;
+
+    // Thread Status Message
+    case ThreadStatusMessage:
+      final msg = message as ThreadStatusMessage;
+      getIt<ThreadStatusBloc>().add(ThreadStatusChanged(msg.status));
+      break;
+
+    // Thread Status Message
+    case WifiStaStatusMessage:
+      final msg = message as WifiStaStatusMessage;
+      getIt<WifiStaStatusBloc>().add(WifiStaStatusChanged(msg.status));
+      break;
+
     default:
       getIt<MessageLogBloc>().add(
         MessageLogReceivedMessageEvent(
@@ -140,11 +179,9 @@ void _receiveWebsocketMessage(WebSocketMessage message) {
   }
 }
 
-
-
 // import 'package:dashboard/blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
-// import 'package:dashboard/blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
-// import 'package:dashboard/blocs/thread_dataset/thread_dataset_init/thread_dataset_init_bloc.dart';
+// import 'package:dashboard/blocs/init_thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
+// import 'package:dashboard/blocs/init_thread_dataset/thread_dataset_init/thread_dataset_init_bloc.dart';
 // import 'package:get_it/get_it.dart';
 // import 'package:dashboard/network/websocket.dart';
 // import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';

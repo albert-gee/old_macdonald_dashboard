@@ -24,6 +24,12 @@ abstract class WebSocketMessage {
         return ThreadDatasetActiveMessage.fromJson(json);
       case 'thread_role_set':
         return ThreadRoleMessage.fromJson(json);
+      case 'ifconfig_status':
+        return IfconfigStatusMessage.fromJson(json);
+      case 'thread_status':
+        return ThreadStatusMessage.fromJson(json);
+      case 'wifi_sta_status':
+        return WifiStaStatusMessage.fromJson(json);
 
       default:
         return GenericMessage.fromJson(json);
@@ -129,6 +135,74 @@ class ThreadRoleMessage extends WebSocketMessage {
   };
 }
 
+class IfconfigStatusMessage extends WebSocketMessage {
+  final String status;
+
+  const IfconfigStatusMessage({
+    required this.status,
+    super.token,
+  }) : super(command: 'ifconfig_status');
+
+  factory IfconfigStatusMessage.fromJson(Map<String, dynamic> json) {
+    return IfconfigStatusMessage(
+      status: json['payload'] as String,
+      token: json['token'] as String?,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'command': command,
+    'payload': status,
+    if (token != null) 'token': token,
+  };
+}
+
+class ThreadStatusMessage extends WebSocketMessage {
+  final String status;
+
+  const ThreadStatusMessage({
+    required this.status,
+    super.token,
+  }) : super(command: 'thread_status');
+
+  factory ThreadStatusMessage.fromJson(Map<String, dynamic> json) {
+    return ThreadStatusMessage(
+      status: json['payload'] as String,
+      token: json['token'] as String?,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'command': command,
+    'payload': status,
+    if (token != null) 'token': token,
+  };
+}
+
+class WifiStaStatusMessage extends WebSocketMessage {
+  final String status;
+
+  const WifiStaStatusMessage({
+    required this.status,
+    super.token,
+  }) : super(command: 'wifi_sta_status');
+
+  factory WifiStaStatusMessage.fromJson(Map<String, dynamic> json) {
+    return WifiStaStatusMessage(
+      status: json['payload'] as String,
+      token: json['token'] as String?,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'command': command,
+    'payload': status,
+    if (token != null) 'token': token,
+  };
+}
 
 
 /// Message for result responses

@@ -11,16 +11,16 @@ class ThreadDatasetInitFormWidget extends StatelessWidget {
   final TextEditingController masterKeyController = TextEditingController();
   final TextEditingController pskcController = TextEditingController();
 
-  ThreadDatasetInitFormWidget({Key? key}) : super(key: key);
+  ThreadDatasetInitFormWidget({super.key});
 
   void _setDefaultValues() {
     channelController.text = "15";
-    panIdController.text = "0x1234";
-    networkNameController.text = "OpenThread-ESP";
-    extendedPanIdController.text = "dead00beef00cafe";
+    panIdController.text = "1234";
+    networkNameController.text = "old_macdonald_t";
+    extendedPanIdController.text = "abcd00beef00cafe";
     meshLocalPrefixController.text = "fd00:db8:a0:0::/64";
     masterKeyController.text = "00112233445566778899aabbccddeeff";
-    pskcController.text = "104810e2315100afd6bc9215a6bfac53";
+    pskcController.text = "000102030405060708090a0b0c0d0e0f";
   }
 
   @override
@@ -32,7 +32,7 @@ class ThreadDatasetInitFormWidget extends StatelessWidget {
       children: [
         // Added title here
         const Text(
-          "Thread Dataset",
+          "Init Thread Dataset",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -75,15 +75,16 @@ class ThreadDatasetInitFormWidget extends StatelessWidget {
         Row(
           children: [
             Expanded(child: _buildTextField(pskcController, "PSKC")),
+          ],
+        ),
+
+        const SizedBox(height: 16.0),
+        // Buttons row
+        Row(
+          children: [
+            _sendButton(context, threadDatasetInitBloc),
             const SizedBox(width: 16.0),
-            // Buttons row
-            Row(
-              children: [
-                _sendButton(context, threadDatasetInitBloc),
-                const SizedBox(width: 16.0),
-                _setDefaultButton(),
-              ],
-            ),
+            _setDefaultButton(),
           ],
         ),
       ],

@@ -1,26 +1,26 @@
-import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
+import 'package:dashboard/blocs/wifi_sta_status/wifi_sta_status_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ThreadRoleWidget extends StatelessWidget {
-  const ThreadRoleWidget({super.key});
+class WifiStaStatusWidget extends StatelessWidget {
+  const WifiStaStatusWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThreadRoleBloc, ThreadRoleState>(
+    return BlocBuilder<WifiStaStatusBloc, WifiStaStatusState>(
       builder: (context, state) {
-        if (state is !ThreadRoleUpdated) {
+        if (state is !WifiStaStatusUpdated) {
           return Container();
         } else {
-          // Extract the role from the state
-          final role = state.role;
-          return _buildRoleCard(role);
+          // Extract the status from the state
+          final status = state.status;
+          return _buildStatusCard(status);
         }
       },
     );
   }
 
-  Widget _buildRoleCard(String role) {
+  Widget _buildStatusCard(String status) {
 
     return Container(
       margin: const EdgeInsets.all(10.0),
@@ -49,19 +49,19 @@ class ThreadRoleWidget extends StatelessWidget {
         children: [
           // Title
           const Text(
-            'Thread Role',
+            'Wifi STA',
             style: TextStyle(
               color: Colors.white70,
               fontSize: 13.0,
             ),
           ),
           const SizedBox(height: 5.0),
-          // Role Value
+          // status Value
           Text(
-            _formatRole(role),
+            _formatStatus(status),
             style: TextStyle(
-              color: _getRoleColor(role),
-              fontSize: 14.0,
+              color: _getStatusColor(status),
+              fontSize: 12.0,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -70,19 +70,15 @@ class ThreadRoleWidget extends StatelessWidget {
     );
   }
 
-  String _formatRole(String role) {
-    return role.toUpperCase();
+  String _formatStatus(String status) {
+    return status.toUpperCase();
   }
 
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'leader':
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'connected':
         return Colors.greenAccent;
-      case 'router':
-        return Colors.blueAccent;
-      case 'child':
-        return Colors.orangeAccent;
-      case 'disabled':
+      case 'disconnect':
         return Colors.redAccent;
       default:
         return Colors.white;
