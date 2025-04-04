@@ -9,17 +9,17 @@ abstract class PairBleThreadEvent extends Equatable {
 
 class PairBleThreadRequested extends PairBleThreadEvent {
   final String nodeId;
-  final String pin;
+  final String setupCode; // Changed from 'pin' to 'setup_code'
   final String discriminator;
 
   const PairBleThreadRequested({
     required this.nodeId,
-    required this.pin,
+    required this.setupCode,
     required this.discriminator,
   });
 
   @override
-  List<Object> get props => [nodeId, pin, discriminator];
+  List<Object> get props => [nodeId, setupCode, discriminator];
 }
 
 class PairBleThreadMessageReceived extends PairBleThreadEvent {

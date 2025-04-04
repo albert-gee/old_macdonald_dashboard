@@ -30,13 +30,21 @@ class ThreadDatasetInitFormWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Added title here
         const Text(
-          "Init Thread Dataset",
+          "Initialize Thread Dataset",
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16.0),
+
+        const Text(
+          "Configure the settings to initialize a Thread network, including network name, PAN ID, and security settings.",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
           ),
         ),
         const SizedBox(height: 16.0),
@@ -71,16 +79,13 @@ class ThreadDatasetInitFormWidget extends StatelessWidget {
         ),
         const SizedBox(height: 16.0),
 
-        // PSKC field and the buttons
-        Row(
-          children: [
-            Expanded(child: _buildTextField(pskcController, "PSKC")),
-          ],
-        ),
+        // PSKC field
+        _buildTextField(pskcController, "PSKC"),
+        const SizedBox(height: 20.0),
 
-        const SizedBox(height: 16.0),
         // Buttons row
         Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             _sendButton(context, threadDatasetInitBloc),
             const SizedBox(width: 16.0),

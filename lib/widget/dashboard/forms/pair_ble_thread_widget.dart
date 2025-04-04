@@ -4,14 +4,14 @@ import 'package:dashboard/blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
 
 class PairBleThreadWidget extends StatelessWidget {
   final TextEditingController nodeIdController = TextEditingController();
-  final TextEditingController pinController = TextEditingController();
+  final TextEditingController setupCodeController = TextEditingController();
   final TextEditingController discriminatorController = TextEditingController();
 
-  PairBleThreadWidget({Key? key}) : super(key: key);
+  PairBleThreadWidget({super.key});
 
   void _setDefaultValues() {
-    nodeIdController.text = "4386";
-    pinController.text = "20202021";
+    nodeIdController.text = "0x1122";
+    setupCodeController.text = "20202021";
     discriminatorController.text = "3840";
   }
 
@@ -31,20 +31,34 @@ class PairBleThreadWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16.0),
-
+        const Text(
+          "Enter the necessary information to pair a Matter device on a Thread network using BLE. This includes Node ID, Discriminator, and Setup Code.",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
+          ),
+        ),
+        const SizedBox(height: 16.0),
         Row(
           children: [
             Expanded(child: _buildTextField(nodeIdController, "Node ID")),
             const SizedBox(width: 16.0),
-            Expanded(child: _buildTextField(pinController, "PIN (6-11 digits)", true)),
+            Expanded(
+                child: _buildTextField(
+                    discriminatorController, "Discriminator (0-4095)", true)),
           ],
         ),
         const SizedBox(height: 16.0),
-
         Row(
           children: [
-            Expanded(child: _buildTextField(discriminatorController, "Discriminator (0-4095)", true)),
-            const SizedBox(width: 16.0),
+            Expanded(
+                child: _buildTextField(
+                    setupCodeController, "Setup Code (6-11 digits)", true)),
+          ],
+        ),
+        const SizedBox(height: 16.0),
+        Row(
+          children: [
             _pairButton(context, pairBleThreadBloc),
             const SizedBox(width: 16.0),
             _setDefaultButton(),
@@ -54,7 +68,8 @@ class PairBleThreadWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, [bool isNumeric = false]) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      [bool isNumeric = false]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -80,10 +95,6 @@ class PairBleThreadWidget extends StatelessWidget {
   Widget _pairButton(BuildContext context, PairBleThreadBloc bloc) {
     return BlocBuilder<PairBleThreadBloc, PairBleThreadState>(
       builder: (context, state) {
-        if (state is PairBleThreadLoading || state is PairBleThreadInProgress) {
-          return const CircularProgressIndicator();
-        }
-
         return ElevatedButton(
           onPressed: () => _sendPairingRequest(bloc),
           child: const Text("Start Pairing"),
@@ -100,10 +111,9 @@ class PairBleThreadWidget extends StatelessWidget {
   }
 
   void _sendPairingRequest(PairBleThreadBloc bloc) {
-
     final pairingRequest = {
       "node_id": nodeIdController.text,
-      "pin": pinController.text,
+      "setup_code": setupCodeController.text, // Updated key
       "discriminator": discriminatorController.text,
     };
 
@@ -111,13 +121,13 @@ class PairBleThreadWidget extends StatelessWidget {
 
     bloc.add(PairBleThreadRequested(
       nodeId: pairingRequest["node_id"]!,
-      pin: pairingRequest["pin"]!,
+      setupCode: pairingRequest["setup_code"]!, // Updated key
       discriminator: pairingRequest["discriminator"]!,
     ));
 
     // Clear the form fields
     nodeIdController.clear();
-    pinController.clear();
+    setupCodeController.clear();
     discriminatorController.clear();
   }
 }

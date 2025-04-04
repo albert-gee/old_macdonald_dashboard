@@ -18,19 +18,30 @@ class WifiStaConnectFormWidget extends StatelessWidget {
         const Text(
           "Connect to Wi-Fi",
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 12.0),
+
+        const Text(
+          "To connect the Wi-Fi STA to an existing Wi-Fi network, enter the SSID and password below.",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: Colors.white70,
+          ),
+        ),
+        const SizedBox(height: 20.0),
 
         _buildTextField(ssidController, "SSID"),
         const SizedBox(height: 16.0),
         _buildTextField(passwordController, "Password", true),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 24.0),
 
         Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             _connectButton(context, wifiStaConnectBloc),
             const SizedBox(width: 16.0),

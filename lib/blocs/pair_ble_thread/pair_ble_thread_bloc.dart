@@ -27,14 +27,12 @@ class PairBleThreadBloc extends Bloc<PairBleThreadEvent, PairBleThreadState> {
       ) async {
     print('PairBleThreadRequested event: $event');
 
-    emit(PairBleThreadLoading());
-
     try {
       final message = {
-        'command': 'pairing_ble_thread',
+        'command': 'pair_ble_thread',
         'payload': {
           'node_id': event.nodeId,
-          'pin': event.pin,
+          'setup_code': event.setupCode,  // Updated key
           'discriminator': event.discriminator,
         },
       };
@@ -56,22 +54,16 @@ class PairBleThreadBloc extends Bloc<PairBleThreadEvent, PairBleThreadState> {
     try {
       final json = jsonDecode(event.message) as Map<String, dynamic>;
       final command = json['command'] as String;
-      final payload = json['payload'];
+      final payload = json['payload'] as Map<String, dynamic>? ?? {};
 
       print('Received json message: $json');
 
       switch (command) {
-        case 'pairing_progress':
-          emit(PairBleThreadInProgress(
-            (payload['progress'] as num).toDouble(),
-            payload['message'] as String,
-          ));
-          break;
         case 'pairing_complete':
           emit(PairBleThreadSuccess());
           break;
         case 'pairing_error':
-          emit(PairBleThreadFailure(payload['error'] as String));
+          emit(PairBleThreadFailure(payload['error'] as String? ?? "Unknown error"));
           break;
       }
     } catch (e) {

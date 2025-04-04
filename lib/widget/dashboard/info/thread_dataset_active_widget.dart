@@ -1,7 +1,7 @@
+import 'package:dashboard/blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
 
 class ThreadDatasetActiveWidget extends StatelessWidget {
   const ThreadDatasetActiveWidget({Key? key}) : super(key: key);

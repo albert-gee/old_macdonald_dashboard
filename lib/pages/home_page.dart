@@ -1,11 +1,8 @@
+import 'package:dashboard/widget/dashboard/dashboard_widget.dart';
 import 'package:dashboard/widget/header/header_widget.dart';
-import 'package:dashboard/widget/command_form/command_form_widget.dart';
+import 'package:dashboard/widget/message_log/messsage_log_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
-import 'package:dashboard/widget/init_thread_dataset/thread_dataset_active_widget.dart';
-import 'package:dashboard/widget/init_thread_dataset/thread_dataset_init_form_widget.dart';
 import 'package:flutter/material.dart';
-import '../widget/message_log/messsage_log_widget.dart';
-import '../widget/wifi_sta_connect/wifi_sta_connect_form_widget.dart';
 
 
 class HomePage extends StatelessWidget {
@@ -71,45 +68,8 @@ class HomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20.0),
 
-                // Message Form
-                CommandFormWidget(),
 
-                const SizedBox(height: 50.0),
-
-                // Two-column layout for Thread widgets
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: ThreadDatasetInitFormWidget(),
-                    ),
-                    const SizedBox(width: 20.0),
-                    const Expanded(
-                      flex: 1,
-                      child: ThreadDatasetActiveWidget(),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 50.0),
-
-                // Two-column layout for Thread widgets
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: WifiStaConnectFormWidget(),
-                    ),
-                    const SizedBox(width: 20.0),
-                    Expanded(
-                      flex: 1,
-                      child: Container(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20.0),
+                DashboardWidget()
               ]),
             ),
           ),

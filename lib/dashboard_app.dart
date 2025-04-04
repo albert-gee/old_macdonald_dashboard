@@ -5,7 +5,9 @@ import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'blocs/cluster_command/cluster_command_bloc.dart';
 import 'blocs/message_log/message_log_bloc.dart';
+import 'blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
 import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_status/thread_status_bloc.dart';
 import 'blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
@@ -36,6 +38,8 @@ class DashboardApp extends StatelessWidget {
           BlocProvider.value(value: getIt<WifiStaConnectBloc>()),
           BlocProvider.value(value: getIt<ThreadDatasetInitBloc>()),
           BlocProvider.value(value: getIt<ThreadDatasetActiveBloc>()),
+          BlocProvider.value(value: getIt<PairBleThreadBloc>()),
+          BlocProvider.value(value: getIt<ClusterCommandBloc>()),
           BlocProvider.value(value: getIt<MessageLogBloc>()),
         ],
         child: HomePage(

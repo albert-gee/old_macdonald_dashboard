@@ -123,6 +123,19 @@ class CommandFormWidget extends StatelessWidget {
             ],
           ),
         ),
+        DropdownMenuItem(
+          value: 'pair_ble_thread',
+          child: Row(
+            children: [
+              Icon(Icons.password, color: Colors.tealAccent),
+              SizedBox(width: 10.0),
+              Text(
+                'pair_ble_thread',
+                style: TextStyle(color: Colors.tealAccent),
+              ),
+            ],
+          ),
+        ),
       ],
       onChanged: (value) {
         if (value == 'auth') {
@@ -132,6 +145,9 @@ class CommandFormWidget extends StatelessWidget {
           commandController.text = value!;
           payloadController.text = 'test';
         } else if (value == 'thread_start') {
+          commandController.text = value!;
+          payloadController.text = 'test';
+        }  else if (value == 'pair_ble_thread') {
           commandController.text = value!;
           payloadController.text = 'test';
         } else {
