@@ -8,6 +8,8 @@ import 'package:dashboard/models/websocket_message.dart';
 
 import 'blocs/cluster_command/cluster_command_bloc.dart';
 import 'blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
+import 'blocs/read_attribute_command/read_attribute_command_bloc.dart';
+import 'blocs/subscribe_attribute/subscribe_attribute_command_bloc.dart';
 import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';
 import 'blocs/thread/thread_status/thread_status_bloc.dart';
@@ -105,6 +107,20 @@ void _registerBlocs() {
   // Cluster Command Bloc
   getIt.registerLazySingleton<ClusterCommandBloc>(
     () => ClusterCommandBloc(
+      websocket: getIt<Websocket>(),
+    ),
+    dispose: (bloc) => bloc.close(),
+  );
+  // Read Attribute Command Bloc
+  getIt.registerLazySingleton<ReadAttributeCommandBloc>(
+    () => ReadAttributeCommandBloc(
+      websocket: getIt<Websocket>(),
+    ),
+    dispose: (bloc) => bloc.close(),
+  );
+  // Subscribe Attribute Command Bloc
+  getIt.registerLazySingleton<SubscribeAttributeCommandBloc>(
+    () => SubscribeAttributeCommandBloc(
       websocket: getIt<Websocket>(),
     ),
     dispose: (bloc) => bloc.close(),

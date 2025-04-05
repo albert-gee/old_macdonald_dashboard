@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'forms/cluster_command_widget.dart';
 import 'forms/command_form_widget.dart';
 import 'forms/pair_ble_thread_widget.dart';
+import 'forms/read_attribute_command_widget.dart';
+import 'forms/subscribe_attribute_command_widget.dart';
 import 'forms/thread_dataset_init_form_widget.dart';
 import 'forms/wifi_sta_connect_form_widget.dart';
 import 'info/thread_dataset_active_widget.dart';
@@ -94,6 +96,24 @@ class DashboardWidget extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20.0),
+
+        // ReadAttributeCommandWidget
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 1,
+              child: ReadAttributeCommandWidget(),
+            ),
+            const SizedBox(width: 20.0),
+            Expanded(
+              flex: 1,
+              child: SubscribeAttributeCommandWidget(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20.0),
+
       ],
     );
   }

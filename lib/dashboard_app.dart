@@ -8,6 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/cluster_command/cluster_command_bloc.dart';
 import 'blocs/message_log/message_log_bloc.dart';
 import 'blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
+import 'blocs/read_attribute_command/read_attribute_command_bloc.dart';
+import 'blocs/subscribe_attribute/subscribe_attribute_command_bloc.dart';
 import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_status/thread_status_bloc.dart';
 import 'blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
@@ -40,6 +42,8 @@ class DashboardApp extends StatelessWidget {
           BlocProvider.value(value: getIt<ThreadDatasetActiveBloc>()),
           BlocProvider.value(value: getIt<PairBleThreadBloc>()),
           BlocProvider.value(value: getIt<ClusterCommandBloc>()),
+          BlocProvider.value(value: getIt<ReadAttributeCommandBloc>()),
+          BlocProvider.value(value: getIt<SubscribeAttributeCommandBloc>()),
           BlocProvider.value(value: getIt<MessageLogBloc>()),
         ],
         child: HomePage(
