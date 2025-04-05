@@ -10,6 +10,7 @@ import 'blocs/message_log/message_log_bloc.dart';
 import 'blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
 import 'blocs/read_attribute_command/read_attribute_command_bloc.dart';
 import 'blocs/subscribe_attribute/subscribe_attribute_command_bloc.dart';
+import 'blocs/temperature_set/temperature_set_bloc.dart';
 import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_status/thread_status_bloc.dart';
 import 'blocs/thread_dataset/thread_dataset_active/thread_dataset_active_bloc.dart';
@@ -45,6 +46,7 @@ class DashboardApp extends StatelessWidget {
           BlocProvider.value(value: getIt<ReadAttributeCommandBloc>()),
           BlocProvider.value(value: getIt<SubscribeAttributeCommandBloc>()),
           BlocProvider.value(value: getIt<MessageLogBloc>()),
+          BlocProvider.value(value: getIt<TemperatureSetBloc>()),
         ],
         child: HomePage(
             title: getIt<String>(instanceName: 'title'),

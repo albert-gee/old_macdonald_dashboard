@@ -10,6 +10,7 @@ import 'blocs/cluster_command/cluster_command_bloc.dart';
 import 'blocs/pair_ble_thread/pair_ble_thread_bloc.dart';
 import 'blocs/read_attribute_command/read_attribute_command_bloc.dart';
 import 'blocs/subscribe_attribute/subscribe_attribute_command_bloc.dart';
+import 'blocs/temperature_set/temperature_set_bloc.dart';
 import 'blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';
 import 'blocs/thread/thread_status/thread_status_bloc.dart';
@@ -126,6 +127,13 @@ void _registerBlocs() {
     dispose: (bloc) => bloc.close(),
   );
 
+  getIt.registerLazySingleton<TemperatureSetBloc>(
+        () => TemperatureSetBloc(clusterCommandBloc: getIt<ClusterCommandBloc>()),
+    dispose: (bloc) => bloc.close(),
+  );
+
+
+
   // Message Log BLoC
   getIt.registerLazySingleton<MessageLogBloc>(
     () => MessageLogBloc(
@@ -202,6 +210,11 @@ void _receiveWebsocketMessage(WebSocketMessage message) {
     case WifiStaStatusMessage:
       final msg = message as WifiStaStatusMessage;
       getIt<WifiStaStatusBloc>().add(WifiStaStatusChanged(msg.status));
+      break;
+
+    case TemperatureSetMessage:
+      final msg = message as TemperatureSetMessage;
+      getIt<TemperatureSetBloc>().add(TemperatureSetReceived(msg.temperature));
       break;
 
     default:

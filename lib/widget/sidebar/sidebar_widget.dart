@@ -1,4 +1,5 @@
 import 'package:dashboard/widget/sidebar/ifconfig_status_widget.dart';
+import 'package:dashboard/widget/sidebar/temperature_set_widget.dart';
 import 'package:dashboard/widget/sidebar/thread_role_widget.dart';
 import 'package:dashboard/widget/sidebar/thread_status_widget.dart';
 import 'package:dashboard/widget/sidebar/websocket_connect_button_widget.dart';
@@ -46,6 +47,9 @@ class SideBarWidget extends StatelessWidget {
 
                     SizedBox(height: 10.0),
                     WifiStaStatusWidget(),
+
+                    SizedBox(height: 10.0),
+                    TemperatureSetWidget(),
 
                     // Add more widgets here as needed
                   ],

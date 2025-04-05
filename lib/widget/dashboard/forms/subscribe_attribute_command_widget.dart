@@ -15,10 +15,10 @@ class SubscribeAttributeCommandWidget extends StatelessWidget {
   void _setDefaultValues() {
     nodeIdController.text = "0x1122";
     endpointIdController.text = "1";
-    clusterIdController.text = "1029"; // TemperatureMeasurement
+    clusterIdController.text = "0x402"; // TemperatureMeasurement
     attributeIdController.text = "0"; // MeasuredValue
-    minIntervalController.text = "5";
-    maxIntervalController.text = "30";
+    minIntervalController.text = "1";
+    maxIntervalController.text = "10";
   }
 
   @override
