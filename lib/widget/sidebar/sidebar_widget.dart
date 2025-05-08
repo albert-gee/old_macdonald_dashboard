@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:dashboard/blocs/thread/ifconfig_status/ifconfig_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_status/thread_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
-import 'package:dashboard/blocs/wifi_sta_status/wifi_sta_status_bloc.dart';
-import 'package:dashboard/blocs/temperature_set/temperature_set_bloc.dart';
 import 'package:dashboard/widget/sidebar/websocket_connect_button_widget.dart';
+import 'package:dashboard/widget/status_card_widget.dart';
+import 'package:dashboard/blocs/status_card/status_card_bloc.dart';
+import 'package:dashboard/blocs/status_card/status_card_state.dart';
+import 'package:get_it/get_it.dart';
 
-import '../status_card_widget.dart';
+final getIt = GetIt.instance;
 
 class SideBarWidget extends StatelessWidget {
   final Color backgroundColor;
@@ -39,16 +36,19 @@ class SideBarWidget extends StatelessWidget {
                     const WebsocketConnectButtonWidget(),
                     const SizedBox(height: 10.0),
 
-                    StatusCardWidget<IfconfigStatusState>(
-                      bloc: context.read<IfconfigStatusBloc>(),
-                      isUpdated: (state) => state is IfconfigStatusUpdated,
-                      extractStatus: (state) => (state as IfconfigStatusUpdated).status,
+                    StatusCardWidget<String>(
+                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'ifconfig'),
+                      isUpdated: (state) => state is StatusCardUpdated<String>,
+                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
                       title: 'Ifconfig',
                       colorResolver: (status) {
                         switch (status.toLowerCase()) {
-                          case 'enabled': return Colors.greenAccent;
-                          case 'disabled': return Colors.redAccent;
-                          default: return Colors.white;
+                          case 'enabled':
+                            return Colors.greenAccent;
+                          case 'disabled':
+                            return Colors.redAccent;
+                          default:
+                            return Colors.white;
                         }
                       },
                       formatter: (s) => s.toUpperCase(),
@@ -56,18 +56,23 @@ class SideBarWidget extends StatelessWidget {
 
                     const SizedBox(height: 10.0),
 
-                    StatusCardWidget<ThreadRoleState>(
-                      bloc: context.read<ThreadRoleBloc>(),
-                      isUpdated: (state) => state is ThreadRoleUpdated,
-                      extractStatus: (state) => (state as ThreadRoleUpdated).role,
+                    StatusCardWidget<String>(
+                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'thread_role'),
+                      isUpdated: (state) => state is StatusCardUpdated<String>,
+                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
                       title: 'Thread Role',
                       colorResolver: (role) {
                         switch (role.toLowerCase()) {
-                          case 'leader': return Colors.greenAccent;
-                          case 'router': return Colors.blueAccent;
-                          case 'child': return Colors.orangeAccent;
-                          case 'disabled': return Colors.redAccent;
-                          default: return Colors.white;
+                          case 'leader':
+                            return Colors.greenAccent;
+                          case 'router':
+                            return Colors.blueAccent;
+                          case 'child':
+                            return Colors.orangeAccent;
+                          case 'disabled':
+                            return Colors.redAccent;
+                          default:
+                            return Colors.white;
                         }
                       },
                       formatter: (s) => s.toUpperCase(),
@@ -75,16 +80,19 @@ class SideBarWidget extends StatelessWidget {
 
                     const SizedBox(height: 10.0),
 
-                    StatusCardWidget<ThreadStatusState>(
-                      bloc: context.read<ThreadStatusBloc>(),
-                      isUpdated: (state) => state is ThreadStatusUpdated,
-                      extractStatus: (state) => (state as ThreadStatusUpdated).status,
+                    StatusCardWidget<String>(
+                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'thread_status'),
+                      isUpdated: (state) => state is StatusCardUpdated<String>,
+                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
                       title: 'Thread',
                       colorResolver: (status) {
                         switch (status.toLowerCase()) {
-                          case 'attached': return Colors.greenAccent;
-                          case 'detached': return Colors.redAccent;
-                          default: return Colors.white;
+                          case 'attached':
+                            return Colors.greenAccent;
+                          case 'detached':
+                            return Colors.redAccent;
+                          default:
+                            return Colors.white;
                         }
                       },
                       formatter: (s) => s.toUpperCase(),
@@ -92,16 +100,19 @@ class SideBarWidget extends StatelessWidget {
 
                     const SizedBox(height: 10.0),
 
-                    StatusCardWidget<WifiStaStatusState>(
-                      bloc: context.read<WifiStaStatusBloc>(),
-                      isUpdated: (state) => state is WifiStaStatusUpdated,
-                      extractStatus: (state) => (state as WifiStaStatusUpdated).status,
+                    StatusCardWidget<String>(
+                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'wifi_sta'),
+                      isUpdated: (state) => state is StatusCardUpdated<String>,
+                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
                       title: 'Wifi STA',
                       colorResolver: (status) {
                         switch (status.toLowerCase()) {
-                          case 'connected': return Colors.greenAccent;
-                          case 'disconnect': return Colors.redAccent;
-                          default: return Colors.white;
+                          case 'connected':
+                            return Colors.greenAccent;
+                          case 'disconnect':
+                            return Colors.redAccent;
+                          default:
+                            return Colors.white;
                         }
                       },
                       formatter: (s) => s.toUpperCase(),
@@ -109,11 +120,11 @@ class SideBarWidget extends StatelessWidget {
 
                     const SizedBox(height: 10.0),
 
-                    StatusCardWidget<TemperatureSetState>(
-                      bloc: context.read<TemperatureSetBloc>(),
-                      isUpdated: (state) => state is TemperatureSetUpdated,
+                    StatusCardWidget<String>(
+                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'temperature'),
+                      isUpdated: (state) => state is StatusCardUpdated<String>,
                       extractStatus: (state) {
-                        final raw = (state as TemperatureSetUpdated).temperature;
+                        final raw = (state as StatusCardUpdated<String>).value;
                         return '${raw.substring(0, raw.length - 2)}.${raw.substring(raw.length - 2)} °C';
                       },
                       title: 'Temperature',
