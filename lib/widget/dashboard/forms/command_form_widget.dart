@@ -85,19 +85,6 @@ class CommandFormWidget extends StatelessWidget {
       ),
       items: const [
         DropdownMenuItem(
-          value: 'auth',
-          child: Row(
-            children: [
-              Icon(Icons.password, color: Colors.tealAccent),
-              SizedBox(width: 10.0),
-              Text(
-                'auth',
-                style: TextStyle(color: Colors.tealAccent),
-              ),
-            ],
-          ),
-        ),
-        DropdownMenuItem(
           value: 'ifconfig_up',
           child: Row(
             children: [
@@ -138,10 +125,7 @@ class CommandFormWidget extends StatelessWidget {
         ),
       ],
       onChanged: (value) {
-        if (value == 'auth') {
-          commandController.text = value!;
-          payloadController.text = 'secret_token_123';
-        } else if (value == 'ifconfig_up') {
+        if (value == 'ifconfig_up') {
           commandController.text = value!;
           payloadController.text = 'test';
         } else if (value == 'thread_start') {
