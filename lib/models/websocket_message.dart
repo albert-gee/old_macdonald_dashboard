@@ -3,11 +3,9 @@ import 'dart:convert';
 /// Base class for all WebSocket messages
 abstract class WebSocketMessage {
   final String command;
-  final String? token;
 
   const WebSocketMessage({
     required this.command,
-    this.token,
   });
 
   factory WebSocketMessage.fromJson(Map<String, dynamic> json) {
@@ -47,13 +45,11 @@ class ErrorMessage extends WebSocketMessage {
 
   const ErrorMessage({
     required this.error,
-    String? token,
-  }) : super(command: 'error', token: token);
+  }) : super(command: 'error');
 
   factory ErrorMessage.fromJson(Map<String, dynamic> json) {
     return ErrorMessage(
       error: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -61,7 +57,6 @@ class ErrorMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': error,
-    if (token != null) 'token': token,
   };
 }
 
@@ -71,13 +66,11 @@ class InfoMessage extends WebSocketMessage {
 
   const InfoMessage({
     required this.info,
-    String? token,
-  }) : super(command: 'info', token: token);
+  }) : super(command: 'info');
 
   factory InfoMessage.fromJson(Map<String, dynamic> json) {
     return InfoMessage(
       info: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -85,7 +78,6 @@ class InfoMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': info,
-    if (token != null) 'token': token,
   };
 }
 
@@ -95,13 +87,11 @@ class ThreadDatasetActiveMessage extends WebSocketMessage {
 
   const ThreadDatasetActiveMessage({
     required this.dataset,
-    String? token,
-  }) : super(command: 'thread_dataset_active', token: token);
+  }) : super(command: 'thread_dataset_active');
 
   factory ThreadDatasetActiveMessage.fromJson(Map<String, dynamic> json) {
     return ThreadDatasetActiveMessage(
       dataset: json['payload'] as Map<String, dynamic>,
-      token: json['token'] as String?,
     );
   }
 
@@ -109,7 +99,6 @@ class ThreadDatasetActiveMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': dataset,
-    if (token != null) 'token': token,
   };
 }
 
@@ -119,13 +108,11 @@ class ThreadRoleMessage extends WebSocketMessage {
 
   const ThreadRoleMessage({
     required this.role,
-    String? token,
-  }) : super(command: 'thread_role_set', token: token);
+  }) : super(command: 'thread_role_set');
 
   factory ThreadRoleMessage.fromJson(Map<String, dynamic> json) {
     return ThreadRoleMessage(
       role: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -133,7 +120,6 @@ class ThreadRoleMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': role,
-    if (token != null) 'token': token,
   };
 }
 
@@ -142,13 +128,11 @@ class IfconfigStatusMessage extends WebSocketMessage {
 
   const IfconfigStatusMessage({
     required this.status,
-    super.token,
   }) : super(command: 'ifconfig_status');
 
   factory IfconfigStatusMessage.fromJson(Map<String, dynamic> json) {
     return IfconfigStatusMessage(
       status: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -156,7 +140,6 @@ class IfconfigStatusMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': status,
-    if (token != null) 'token': token,
   };
 }
 
@@ -165,13 +148,11 @@ class ThreadStatusMessage extends WebSocketMessage {
 
   const ThreadStatusMessage({
     required this.status,
-    super.token,
   }) : super(command: 'thread_status');
 
   factory ThreadStatusMessage.fromJson(Map<String, dynamic> json) {
     return ThreadStatusMessage(
       status: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -179,7 +160,6 @@ class ThreadStatusMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': status,
-    if (token != null) 'token': token,
   };
 }
 
@@ -188,13 +168,11 @@ class WifiStaStatusMessage extends WebSocketMessage {
 
   const WifiStaStatusMessage({
     required this.status,
-    super.token,
   }) : super(command: 'wifi_sta_status');
 
   factory WifiStaStatusMessage.fromJson(Map<String, dynamic> json) {
     return WifiStaStatusMessage(
       status: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -202,7 +180,6 @@ class WifiStaStatusMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': status,
-    if (token != null) 'token': token,
   };
 }
 
@@ -211,13 +188,11 @@ class TemperatureSetMessage extends WebSocketMessage {
 
   const TemperatureSetMessage({
     required this.temperature,
-    super.token,
   }) : super(command: 'temperature_set');
 
   factory TemperatureSetMessage.fromJson(Map<String, dynamic> json) {
     return TemperatureSetMessage(
       temperature: json['payload'] as String,
-      token: json['token'] as String?,
     );
   }
 
@@ -225,7 +200,6 @@ class TemperatureSetMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': temperature,
-    if (token != null) 'token': token,
   };
 }
 
@@ -239,14 +213,12 @@ class ResultMessage extends WebSocketMessage {
   const ResultMessage({
     required this.result,
     required this.timestamp,
-    String? token,
-  }) : super(command: 'result', token: token);
+  }) : super(command: 'result');
 
   factory ResultMessage.fromJson(Map<String, dynamic> json) {
     return ResultMessage(
       result: json['payload']['result'] as String,
       timestamp: DateTime.parse(json['payload']['timestamp'] as String),
-      token: json['token'] as String?,
     );
   }
 
@@ -257,7 +229,6 @@ class ResultMessage extends WebSocketMessage {
       'result': result,
       'timestamp': timestamp.toIso8601String(),
     },
-    if (token != null) 'token': token,
   };
 }
 
@@ -270,14 +241,12 @@ class GenericMessage extends WebSocketMessage {
   const GenericMessage({
     required String command,
     required this.payload,
-    String? token,
-  }) : super(command: command, token: token);
+  }) : super(command: command);
 
   factory GenericMessage.fromJson(Map<String, dynamic> json) {
     return GenericMessage(
       command: json['command'] as String,
       payload: json['payload'],
-      token: json['token'] as String?,
     );
   }
 
@@ -285,7 +254,6 @@ class GenericMessage extends WebSocketMessage {
   Map<String, dynamic> toJson() => {
     'command': command,
     'payload': payload,
-    if (token != null) 'token': token,
   };
 }
 

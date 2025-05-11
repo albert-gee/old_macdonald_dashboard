@@ -34,7 +34,7 @@ class ClusterCommandBloc extends Bloc<ClusterCommandEvent, ClusterCommandState> 
           'endpoint_id': event.endpointId,
           'cluster_id': event.clusterId,
           'command_id': event.commandId,
-          'command_data_field': event.commandDataField,
+          'command_data': event.commandData,
         },
       };
 

@@ -26,7 +26,7 @@ class TemperatureSetBloc extends Bloc<TemperatureSetEvent, TemperatureSetState> 
           endpointId: 1,
           clusterId: 6,
           commandId: 2,
-          commandDataField: '{}',
+          commandData: '{}',
         ),
       );
     }

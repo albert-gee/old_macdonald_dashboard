@@ -138,7 +138,7 @@ class ClusterCommandWidget extends StatelessWidget {
       endpointId: endpointId,
       clusterId: clusterId,
       commandId: commandId,
-      commandDataField: commandData,
+      commandData: commandData,
     ));
   }
 

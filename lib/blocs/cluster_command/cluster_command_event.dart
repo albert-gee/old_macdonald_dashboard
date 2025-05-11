@@ -12,18 +12,18 @@ class ClusterCommandRequested extends ClusterCommandEvent {
   final int endpointId;
   final int clusterId;
   final int commandId;
-  final String commandDataField;
+  final String commandData;
 
   const ClusterCommandRequested({
     required this.destinationId,
     required this.endpointId,
     required this.clusterId,
     required this.commandId,
-    required this.commandDataField,
+    required this.commandData,
   });
 
   @override
-  List<Object> get props => [destinationId, endpointId, clusterId, commandId, commandDataField];
+  List<Object> get props => [destinationId, endpointId, clusterId, commandId, commandData];
 }
 
 class ClusterCommandMessageReceived extends ClusterCommandEvent {
