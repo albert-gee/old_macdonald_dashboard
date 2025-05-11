@@ -17,10 +17,9 @@ import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator(final String title, final String subTitle,
-    final String wsUri, final String token) async {
+    final String wsUri) async {
   getIt.registerSingleton<String>(instanceName: 'title', title);
   getIt.registerSingleton<String>(instanceName: 'subTitle', subTitle);
-  getIt.registerSingleton<String>(token);
   getIt.registerLazySingleton<Websocket>(() => Websocket(wsUri));
   getIt.registerSingleton<WebSocketMessageParser>(WebSocketMessageParser());
 
