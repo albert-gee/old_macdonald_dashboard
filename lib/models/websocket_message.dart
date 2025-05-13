@@ -18,7 +18,7 @@ abstract class WebSocketMessage {
         return InfoMessage.fromJson(json);
       case 'error':
         return ErrorMessage.fromJson(json);
-      case 'thread_dataset_active':
+      case 'thread_active_dataset':
         return ThreadDatasetActiveMessage.fromJson(json);
       case 'thread_role_set':
         return ThreadRoleMessage.fromJson(json);
@@ -87,7 +87,7 @@ class ThreadDatasetActiveMessage extends WebSocketMessage {
 
   const ThreadDatasetActiveMessage({
     required this.dataset,
-  }) : super(command: 'thread_dataset_active');
+  }) : super(command: 'thread_active_dataset');
 
   factory ThreadDatasetActiveMessage.fromJson(Map<String, dynamic> json) {
     return ThreadDatasetActiveMessage(
