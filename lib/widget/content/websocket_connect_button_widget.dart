@@ -13,12 +13,13 @@ class WebsocketConnectButtonWidget extends StatelessWidget {
     return BlocBuilder<WebsocketConnectionBloc, WebsocketConnectionState>(
         bloc: websocketConnectionBloc,
         builder: (context, state) {
-          String statusText = 'WebSocket';
+          String statusText;
           Color statusColor = Colors.grey;
           IconData statusIcon = Icons.sync_disabled;
           bool isConnected = false;
 
           if (state is WebsocketConnectionConnectedState) {
+            statusText = 'WebSocket';
             statusColor = Colors.green;
             statusIcon = Icons.sync;
             isConnected = true;
@@ -27,6 +28,7 @@ class WebsocketConnectButtonWidget extends StatelessWidget {
             statusColor = Colors.yellow;
             statusIcon = Icons.sync;
           } else {
+            statusText = 'WebSocket';
             statusColor = Colors.grey;
             statusIcon = Icons.sync_disabled;
           }
@@ -74,7 +76,7 @@ class WebsocketConnectButtonWidget extends StatelessWidget {
         Text(
           statusText,
           style: TextStyle(
-            fontSize: 14.0,
+            fontSize: 12.0,
             fontWeight: FontWeight.bold,
             color: statusColor,
           ),
