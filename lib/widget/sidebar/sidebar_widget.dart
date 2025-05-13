@@ -1,141 +1,124 @@
 import 'package:flutter/material.dart';
-import 'package:dashboard/widget/sidebar/websocket_connect_button_widget.dart';
-import 'package:dashboard/widget/status_card_widget.dart';
-import 'package:dashboard/blocs/status_card/status_card_bloc.dart';
-import 'package:dashboard/blocs/status_card/status_card_state.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_toggle_button_widget.dart';
+import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
+import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_widget.dart';
 
-final getIt = GetIt.instance;
+/// A widget that represents a sidebar. It includes a header with a title and
+/// subtitle, a toggle button for collapsing/expanding the sidebar, and a menu.
+class SidebarWidget extends StatelessWidget {
+  /// Title displayed at the top of the sidebar.
+  final String title;
 
-class SideBarWidget extends StatelessWidget {
+  /// Subtitle displayed below the title in the sidebar.
+  final String subTitle;
+
+  /// Background color of the sidebar.
   final Color backgroundColor;
+
+  /// Width of the sidebar, dynamically adjusted based on collapse state.
   final double width;
 
-  const SideBarWidget({
+  /// Indicates whether the sidebar is in a collapsed state.
+  final bool isCollapsed;
+
+  /// List of menu items displayed in the sidebar.
+  final List<SideMenuItem> menuItems;
+
+  /// Index of the currently selected menu item.
+  final int selectedIndex;
+
+  /// Callback triggered when a menu item is selected.
+  final ValueChanged<int> onItemSelected;
+
+  /// Callback triggered when the collapse/expand button is toggled.
+  final VoidCallback onToggleCollapse;
+
+  /// Constructor for SidebarWidget.
+  const SidebarWidget({
     super.key,
+    required this.title,
+    required this.subTitle,
     required this.backgroundColor,
     required this.width,
+    required this.isCollapsed,
+    required this.menuItems,
+    required this.selectedIndex,
+    required this.onItemSelected,
+    required this.onToggleCollapse,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Access the current theme for consistent styling.
+    final theme = Theme.of(context);
+
     return Container(
       width: width,
       color: backgroundColor,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20.0),
-                    const WebsocketConnectButtonWidget(),
-                    const SizedBox(height: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
 
-                    StatusCardWidget<String>(
-                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'ifconfig'),
-                      isUpdated: (state) => state is StatusCardUpdated<String>,
-                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
-                      title: 'Ifconfig',
-                      colorResolver: (status) {
-                        switch (status.toLowerCase()) {
-                          case 'enabled':
-                            return Colors.greenAccent;
-                          case 'disabled':
-                            return Colors.redAccent;
-                          default:
-                            return Colors.white;
-                        }
-                      },
-                      formatter: (s) => s.toUpperCase(),
+          // Display toggle button when the sidebar is collapsed.
+          if (isCollapsed)
+            Center(
+              child: SidebarToggleButtonWidget(
+                isCollapsed: isCollapsed,
+                onToggle: onToggleCollapse,
+              ),
+            )
+          else
+            // Display title and toggle button when the sidebar is expanded.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        height: 1.1,
+                      ),
                     ),
+                  ),
+                  SidebarToggleButtonWidget(
+                    isCollapsed: isCollapsed,
+                    onToggle: onToggleCollapse,
+                  ),
+                ],
+              ),
+            ),
 
-                    const SizedBox(height: 10.0),
-
-                    StatusCardWidget<String>(
-                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'thread_role'),
-                      isUpdated: (state) => state is StatusCardUpdated<String>,
-                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
-                      title: 'Thread Role',
-                      colorResolver: (role) {
-                        switch (role.toLowerCase()) {
-                          case 'leader':
-                            return Colors.greenAccent;
-                          case 'router':
-                            return Colors.blueAccent;
-                          case 'child':
-                            return Colors.orangeAccent;
-                          case 'disabled':
-                            return Colors.redAccent;
-                          default:
-                            return Colors.white;
-                        }
-                      },
-                      formatter: (s) => s.toUpperCase(),
-                    ),
-
-                    const SizedBox(height: 10.0),
-
-                    StatusCardWidget<String>(
-                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'thread_status'),
-                      isUpdated: (state) => state is StatusCardUpdated<String>,
-                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
-                      title: 'Thread',
-                      colorResolver: (status) {
-                        switch (status.toLowerCase()) {
-                          case 'attached':
-                            return Colors.greenAccent;
-                          case 'detached':
-                            return Colors.redAccent;
-                          default:
-                            return Colors.white;
-                        }
-                      },
-                      formatter: (s) => s.toUpperCase(),
-                    ),
-
-                    const SizedBox(height: 10.0),
-
-                    StatusCardWidget<String>(
-                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'wifi_sta'),
-                      isUpdated: (state) => state is StatusCardUpdated<String>,
-                      extractStatus: (state) => (state as StatusCardUpdated<String>).value,
-                      title: 'Wifi STA',
-                      colorResolver: (status) {
-                        switch (status.toLowerCase()) {
-                          case 'connected':
-                            return Colors.greenAccent;
-                          case 'disconnect':
-                            return Colors.redAccent;
-                          default:
-                            return Colors.white;
-                        }
-                      },
-                      formatter: (s) => s.toUpperCase(),
-                    ),
-
-                    const SizedBox(height: 10.0),
-
-                    StatusCardWidget<String>(
-                      bloc: getIt<StatusCardBloc<String>>(instanceName: 'temperature'),
-                      isUpdated: (state) => state is StatusCardUpdated<String>,
-                      extractStatus: (state) {
-                        final raw = (state as StatusCardUpdated<String>).value;
-                        return '${raw.substring(0, raw.length - 2)}.${raw.substring(raw.length - 2)} °C';
-                      },
-                      title: 'Temperature',
-                      colorResolver: (_) => Colors.blueAccent,
-                    ),
-                  ],
+          // Display subtitle when the sidebar is expanded.
+          if (!isCollapsed)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Text(
+                subTitle,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[400],
                 ),
               ),
             ),
-          );
-        },
+
+          const SizedBox(height: 12),
+
+          // Menu
+          Expanded(
+            child: SidebarMenuWidget(
+              items: menuItems,
+              selectedIndex: selectedIndex,
+              isCollapsed: isCollapsed,
+              onItemSelected: onItemSelected,
+            ),
+          ),
+        ],
       ),
     );
   }
