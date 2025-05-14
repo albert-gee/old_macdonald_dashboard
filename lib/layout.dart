@@ -1,4 +1,4 @@
-import 'package:dashboard/pages/main_page.dart';
+import 'package:dashboard/pages/websocket_page.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
 import 'package:flutter/material.dart';
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
@@ -49,16 +49,21 @@ class _LayoutState extends State<Layout> {
 
   /// The list of pages corresponding to each menu item.
   final List<Widget> pages = [
-    MainPage(
+    WebsocketPage(
       title: "Main Dashboard",
     ),
 
-    Container(
-      child: const Center(
-        child: Text(
-          'Wi-Fi',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
+    const Center(
+      child: Text(
+        'Wi-Fi STA',
+        style: TextStyle(color: Colors.white, fontSize: 24),
+      ),
+    ),
+
+    const Center(
+      child: Text(
+        'Wi-Fi AP',
+        style: TextStyle(color: Colors.white, fontSize: 24),
       ),
     ),
 
@@ -70,7 +75,7 @@ class _LayoutState extends State<Layout> {
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
       ),
-    )
+    ),
   ];
 
   /// Handles the selection of a menu item.

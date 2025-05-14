@@ -109,6 +109,15 @@ class SidebarWidget extends StatelessWidget {
 
           const SizedBox(height: 12),
 
+          // Horizontal Divider
+          const Divider(
+            color: Colors.white10,
+            thickness: 1,
+            height: 0,
+          ),
+
+          const SizedBox(height: 12),
+
           // Menu
           Expanded(
             child: SidebarMenuWidget(

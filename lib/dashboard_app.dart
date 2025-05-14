@@ -15,7 +15,6 @@ import 'blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
 import 'blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';
 import 'blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'blocs/message_log/message_log_bloc.dart';
 import 'blocs/websocket_connection/websocket_connection_bloc.dart';
 import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
 
@@ -43,6 +42,19 @@ class DashboardApp extends StatelessWidget {
       ),
       home: MultiBlocProvider(
         providers: [
+
+          // Side menu
+          BlocProvider(create: (_) => SideMenuCubit()),
+
+          // WebSocket connection
+          BlocProvider(create: (_) =>
+              WebsocketConnectionBloc(
+                messageParser: GetIt.instance<WebSocketMessageParser>(),
+                websocket: GetIt.instance<Websocket>(),
+                onMessageReceived: _receiveWebsocketMessage,
+                onWebsocketDone: () {},
+              )),
+
           // Thread-related
           BlocProvider(create: (_) => ThreadActiveDatasetBloc()),
           BlocProvider(create: (_) => ThreadAddressBloc()),
@@ -59,25 +71,8 @@ class DashboardApp extends StatelessWidget {
                 websocket: GetIt.instance<Websocket>(),
               )),
 
-          // Message log
-          BlocProvider(create: (_) =>
-              MessageLogBloc(
-                onMessageReceived: (message) {},
-                onMessageSent: (command, payload) {},
-              )),
 
-          // WebSocket
-          BlocProvider(create: (_) =>
-              WebsocketConnectionBloc(
-                messageParser: GetIt.instance<WebSocketMessageParser>(),
-                websocket: GetIt.instance<Websocket>(),
-                onPrintMessageToLog: (cmd, msg) {},
-                onMessageReceived: _receiveWebsocketMessage,
-                onWebsocketDone: () {},
-              )),
 
-          // Side menu logic
-          BlocProvider(create: (_) => SideMenuCubit()),
         ],
         child: Layout(
           title: title,

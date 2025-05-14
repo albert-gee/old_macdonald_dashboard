@@ -1,27 +1,23 @@
 import 'dart:async';
-
 import 'package:dashboard/network/websocket.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dashboard/models/websocket_message.dart';
 
 part 'websocket_connection_event.dart';
-
 part 'websocket_connection_state.dart';
 
-class WebsocketConnectionBloc
-    extends Bloc<WebsocketConnectionEvent, WebsocketConnectionState> {
+class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketConnectionState> {
   final WebSocketMessageParser messageParser;
   final Websocket websocket;
-  final void Function(String, String) onPrintMessageToLog;
   final void Function(WebSocketMessage) onMessageReceived;
   final void Function() onWebsocketDone;
-  StreamSubscription? _messageSubscription;
+
+  StreamSubscription? _streamSub;
 
   WebsocketConnectionBloc({
     required this.messageParser,
     required this.websocket,
-    required this.onPrintMessageToLog,
     required this.onMessageReceived,
     required this.onWebsocketDone,
   }) : super(WebsocketConnectionDisconnectedState()) {
@@ -31,105 +27,94 @@ class WebsocketConnectionBloc
   }
 
   Future<void> _onConnecting(
-    WebsocketConnectionConnectingEvent event,
-    Emitter<WebsocketConnectionState> emit,
-  ) async {
+      WebsocketConnectionConnectingEvent event,
+      Emitter<WebsocketConnectionState> emit,
+      ) async {
     emit(WebsocketConnectionConnectingState());
-    onPrintMessageToLog('info', 'Connecting to WebSocket...');
 
     try {
-      final isConnected = await connect();
-      if (isConnected) {
+      final ws = await _connect();
+      if (ws != null) {
         emit(WebsocketConnectionConnectedState());
-        onPrintMessageToLog('info', 'WebSocket connected successfully');
       } else {
-        emit(const WebsocketConnectionErrorState(
-            'Failed to establish connection'));
-        onPrintMessageToLog('error', 'WebSocket connection failed');
+        emit(const WebsocketConnectionErrorState('Failed to connect'));
       }
     } catch (e) {
-      emit(WebsocketConnectionErrorState('Connection error: $e'));
-      onPrintMessageToLog('error', 'Connection error: $e');
+      emit(WebsocketConnectionErrorState('Error: $e'));
     }
   }
 
   Future<void> _onDisconnecting(
-    WebsocketConnectionDisconnectingEvent event,
-    Emitter<WebsocketConnectionState> emit,
-  ) async {
-    onPrintMessageToLog('info', 'Disconnecting from WebSocket...');
+      WebsocketConnectionDisconnectingEvent event,
+      Emitter<WebsocketConnectionState> emit,
+      ) async {
     await _disconnect();
     emit(WebsocketConnectionDisconnectedState());
   }
 
   void _onDisconnected(
-    WebsocketConnectionDisconnectedEvent event,
-    Emitter<WebsocketConnectionState> emit,
-  ) {
-    onPrintMessageToLog('info', 'WebSocket disconnected');
+      WebsocketConnectionDisconnectedEvent event,
+      Emitter<WebsocketConnectionState> emit,
+      ) {
     emit(WebsocketConnectionDisconnectedState());
   }
 
-  Future<bool> connect() async {
-    if (websocket.isConnected()) return true;
+  Future<Websocket?> _connect() async {
+    if (websocket.isConnected()) return websocket;
 
-    int reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
+    const maxAttempts = 5;
 
-    while (reconnectAttempts < maxReconnectAttempts) {
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        await websocket.connect();
-        if (websocket.isConnected()) {
-          print('WebSocket connected');
+        final success = await websocket.connect(timeout: const Duration(seconds: 5));
+        if (success && websocket.isConnected()) {
+          await _streamSub?.cancel();
 
-          // Cancel previous subscription if it exists
-          await _messageSubscription?.cancel();
-
-          // Set up a new listener
           websocket.listen(
-            onMessageReceived: (message) => _handleRawMessage(message),
+            onMessageReceived: _handleRawMessage,
             onDone: () {
               onWebsocketDone();
               add(const WebsocketConnectionDisconnectedEvent());
             },
-            onError: (error) {
-              onPrintMessageToLog('error', 'WebSocket error: $error');
+            onError: (_) {
               add(const WebsocketConnectionDisconnectedEvent());
             },
           );
-          return true;
+
+          return websocket;
         }
+      } on TimeoutException {
+        print('WebSocket connection timed out (attempt ${attempt + 1})');
       } catch (e) {
-        onPrintMessageToLog('warning', 'Connection attempt ${reconnectAttempts + 1} failed: $e');
+        print('WebSocket connection error (attempt ${attempt + 1}): $e');
       }
-      reconnectAttempts++;
+
+      await Future.delayed(const Duration(seconds: 2));
     }
-    return false;
+
+    return null;
   }
 
   Future<void> _disconnect() async {
-    await _messageSubscription?.cancel();
-    _messageSubscription = null;
+    await _streamSub?.cancel();
+    _streamSub = null;
     await websocket.disconnect();
   }
 
   void _handleRawMessage(String message) {
-    print('_handleRawMessage: $message');
-
     try {
-      final WebSocketMessage parsedMessage = messageParser.parse(message);
-
-      onMessageReceived(parsedMessage);
+      final parsed = messageParser.parse(message);
+      onMessageReceived(parsed);
     } on MessageParseException catch (e) {
-      onPrintMessageToLog('error', 'Message parse error: ${e.message}');
+      print('Error parsing message: ${e.message}');
     } catch (e) {
-      onPrintMessageToLog('error', 'Unexpected message handling error: $e');
+      print('Unexpected error parsing message: $e');
     }
   }
 
   @override
-  Future<void> close() {
-    _messageSubscription?.cancel();
+  Future<void> close() async {
+    await _streamSub?.cancel();
     return super.close();
   }
 }
