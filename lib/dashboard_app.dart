@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import 'blocs/side_menu/side_menu_cubit.dart';
+import 'styles/app_theme.dart';
 import 'layout.dart';
 import 'websocket/websocket_client.dart';
 import 'websocket/websocket_message_parser.dart';
+
+// BLoCs
+import 'blocs/side_menu/side_menu_cubit.dart';
+import 'blocs/websocket_connection/websocket_connection_bloc.dart';
+import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
 
 import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
 import 'blocs/thread/thread_address/thread_address_bloc.dart';
@@ -15,8 +20,6 @@ import 'blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
 import 'blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';
 import 'blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'blocs/websocket_connection/websocket_connection_bloc.dart';
-import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
 
 class DashboardApp extends StatelessWidget {
   final String title;
@@ -30,29 +33,26 @@ class DashboardApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final getIt = GetIt.instance;
+
     return MaterialApp(
       title: title,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xff121212),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
-        ),
-      ),
+      theme: AppTheme.darkTheme,
       home: MultiBlocProvider(
         providers: [
-          // Side menu
+          // UI State
           BlocProvider(create: (_) => SideMenuCubit()),
 
-          // WebSocket connection
+          // WebSocket
           BlocProvider(
-              create: (_) => WebsocketConnectionBloc(
-                    messageParser: GetIt.instance<WebSocketMessageParser>(),
-                    websocket: GetIt.instance<WebSocketClient>(),
-                  )),
+            create: (_) => WebsocketConnectionBloc(
+              websocket: getIt<WebSocketClient>(),
+              messageParser: getIt<WebSocketMessageParser>(),
+            ),
+          ),
 
-          // Thread-related
+          // Thread indicators
           BlocProvider(create: (_) => ThreadActiveDatasetBloc()),
           BlocProvider(create: (_) => ThreadAddressBloc()),
           BlocProvider(create: (_) => ThreadAttachmentStatusBloc()),
@@ -62,11 +62,12 @@ class DashboardApp extends StatelessWidget {
           BlocProvider(create: (_) => ThreadRoleBloc()),
           BlocProvider(create: (_) => ThreadStackStatusBloc()),
 
-          // Wifi-related
+          // Wi-Fi actions
           BlocProvider(
-              create: (_) => WifiStaConnectBloc(
-                    websocket: GetIt.instance<WebSocketClient>(),
-                  )),
+            create: (_) => WifiStaConnectBloc(
+              websocket: getIt<WebSocketClient>(),
+            ),
+          ),
         ],
         child: Layout(
           title: title,
