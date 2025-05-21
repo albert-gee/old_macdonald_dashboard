@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/network/websocket_client.dart';
 
 part 'read_attribute_command_event.dart';
 part 'read_attribute_command_state.dart';
 
 class ReadAttributeCommandBloc extends Bloc<ReadAttributeCommandEvent, ReadAttributeCommandState> {
-  final Websocket websocket;
+  final WebSocketClient websocket;
   StreamSubscription<dynamic>? _messageSubscription;
 
   ReadAttributeCommandBloc({required this.websocket}) : super(ReadAttributeCommandInitial()) {

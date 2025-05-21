@@ -1,25 +1,22 @@
 import 'dart:async';
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/websocket/websocket_message_parser.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dashboard/models/websocket_message.dart';
 
 part 'websocket_connection_event.dart';
 part 'websocket_connection_state.dart';
 
 class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketConnectionState> {
   final WebSocketMessageParser messageParser;
-  final Websocket websocket;
-  final void Function(WebSocketMessage) onMessageReceived;
-  final void Function() onWebsocketDone;
+  final WebSocketClient websocket;
 
   StreamSubscription? _streamSub;
+  String? _currentUrl;
 
   WebsocketConnectionBloc({
     required this.messageParser,
     required this.websocket,
-    required this.onMessageReceived,
-    required this.onWebsocketDone,
   }) : super(WebsocketConnectionDisconnectedState()) {
     on<WebsocketConnectionConnectingEvent>(_onConnecting);
     on<WebsocketConnectionDisconnectingEvent>(_onDisconnecting);
@@ -33,7 +30,9 @@ class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketCo
     emit(WebsocketConnectionConnectingState());
 
     try {
-      final ws = await _connect();
+      _currentUrl = event.wsUri;
+
+      final ws = await _connect(_currentUrl!);
       if (ws != null) {
         emit(WebsocketConnectionConnectedState());
       } else {
@@ -59,28 +58,25 @@ class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketCo
     emit(WebsocketConnectionDisconnectedState());
   }
 
-  Future<Websocket?> _connect() async {
+  Future<WebSocketClient?> _connect(String url) async {
     if (websocket.isConnected()) return websocket;
 
     const maxAttempts = 5;
 
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        final success = await websocket.connect(timeout: const Duration(seconds: 5));
+        final success = await websocket.connect(urlStr: url, timeout: const Duration(seconds: 5));
         if (success && websocket.isConnected()) {
           await _streamSub?.cancel();
-
           websocket.listen(
             onMessageReceived: _handleRawMessage,
             onDone: () {
-              onWebsocketDone();
               add(const WebsocketConnectionDisconnectedEvent());
             },
             onError: (_) {
               add(const WebsocketConnectionDisconnectedEvent());
             },
           );
-
           return websocket;
         }
       } on TimeoutException {
@@ -101,10 +97,11 @@ class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketCo
     await websocket.disconnect();
   }
 
-  void _handleRawMessage(String message) {
+  void _handleRawMessage(dynamic rawMessage) {
+    print('Received raw message: $rawMessage');
+
     try {
-      final parsed = messageParser.parse(message);
-      onMessageReceived(parsed);
+      messageParser.parse(rawMessage.toString());
     } on MessageParseException catch (e) {
       print('Error parsing message: ${e.message}');
     } catch (e) {

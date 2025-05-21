@@ -41,7 +41,7 @@
 //         const SizedBox(height: 16.0),
 //
 //         const Text(
-//           "Configure the settings to initialize a Thread network, including network name, PAN ID, and security settings.",
+//           "Configure the settings to initialize a Thread websocket, including websocket name, PAN ID, and security settings.",
 //           style: TextStyle(
 //             fontSize: 14,
 //             color: Colors.white70,

@@ -2,8 +2,8 @@ import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class WebsocketConnectButtonWidget extends StatelessWidget {
-  const WebsocketConnectButtonWidget({super.key});
+class WebsocketConnectionIndicatorWidget extends StatelessWidget {
+  const WebsocketConnectionIndicatorWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +16,11 @@ class WebsocketConnectButtonWidget extends StatelessWidget {
           String statusText;
           Color statusColor = Colors.grey;
           IconData statusIcon = Icons.sync_disabled;
-          bool isConnected = false;
 
           if (state is WebsocketConnectionConnectedState) {
             statusText = 'WebSocket';
             statusColor = Colors.green;
             statusIcon = Icons.sync;
-            isConnected = true;
           } else if (state is WebsocketConnectionConnectingState) {
             statusText = 'Connecting...';
             statusColor = Colors.yellow;
@@ -35,23 +33,10 @@ class WebsocketConnectButtonWidget extends StatelessWidget {
 
           return MouseRegion(
             cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () {
-                if (isConnected) {
-                  print('Disconnecting from WebSocket...');
-                  websocketConnectionBloc
-                      .add(const WebsocketConnectionDisconnectingEvent());
-                } else {
-                  print('Connecting to WebSocket...');
-                  websocketConnectionBloc
-                      .add(const WebsocketConnectionConnectingEvent());
-                }
-              },
-              child: _buildUi(
-                statusColor: statusColor,
-                statusIcon: statusIcon,
-                statusText: statusText,
-              ),
+            child: _buildUi(
+              statusColor: statusColor,
+              statusIcon: statusIcon,
+              statusText: statusText,
             ),
           );
         });

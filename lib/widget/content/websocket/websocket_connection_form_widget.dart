@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';
 
 class WebsocketConnectFormWidget extends StatelessWidget {
-  final TextEditingController urlController = TextEditingController(text: "ws://192.168.4.1:80/ws");
+  final TextEditingController urlController =
+      TextEditingController(text: "wss://192.168.4.1:443/ws");
 
   WebsocketConnectFormWidget({super.key});
 
@@ -35,61 +36,72 @@ class WebsocketConnectFormWidget extends StatelessWidget {
               Text(
                 "WebSocket Connection",
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 16),
-
               _buildTextField(urlController, "WebSocket URL"),
               const SizedBox(height: 20),
-
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: isConnecting
-                        ? null
-                        : () {
-                      websocketBloc
-                          .add(const WebsocketConnectionConnectingEvent());
-                    },
-                    icon: isConnecting
-                        ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                        : const Icon(Icons.wifi),
-                    label: Text(isConnected
+          Row(
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: ElevatedButton.icon(
+                  onPressed: isConnecting
+                      ? null
+                      : () {
+                    websocketBloc.add(
+                      WebsocketConnectionConnectingEvent(urlController.text),
+                    );
+                  },
+                  icon: isConnecting
+                      ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : const Icon(Icons.wifi),
+                  label: Text(
+                    isConnected
                         ? "Reconnect"
                         : isConnecting
                         ? "Connecting..."
-                        : "Connect"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isConnected
-                          ? Colors.green
-                          : isConnecting
-                          ? Colors.grey
-                          : Colors.blueAccent,
-                    ),
+                        : "Connect",
                   ),
-                  const SizedBox(width: 12),
-                  OutlinedButton(
-                    onPressed: () => urlController.clear(),
-                    child: const Text("Clear"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isConnected
+                        ? Colors.green
+                        : isConnecting
+                        ? Colors.grey
+                        : Colors.blueAccent,
                   ),
-                  const SizedBox(width: 12),
-                  if (isConnected)
-                    OutlinedButton(
-                      onPressed: () => websocketBloc
-                          .add(const WebsocketConnectionDisconnectingEvent()),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.redAccent,
-                      ),
-                      child: const Text("Disconnect"),
-                    ),
-                ],
+                ),
               ),
+              const SizedBox(width: 12),
+              Flexible(
+                fit: FlexFit.loose,
+                child: OutlinedButton(
+                  onPressed: () => urlController.clear(),
+                  child: const Text("Clear"),
+                ),
+              ),
+              if (isConnected) ...[
+                const SizedBox(width: 12),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: OutlinedButton(
+                    onPressed: () => websocketBloc.add(
+                        const WebsocketConnectionDisconnectingEvent()),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                    ),
+                    child: const Text("Disconnect"),
+                  ),
+                ),
+              ],
+            ],
+          ),
             ],
           ),
         );
@@ -103,7 +115,7 @@ class WebsocketConnectFormWidget extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
-        hintText: "ws://192.168.4.1:80/ws",
+        hintText: "wss://192.168.4.1:443/ws",
         hintStyle: const TextStyle(color: Colors.white38),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
@@ -116,5 +128,4 @@ class WebsocketConnectFormWidget extends StatelessWidget {
       style: const TextStyle(color: Colors.white),
     );
   }
-
 }

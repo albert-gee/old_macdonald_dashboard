@@ -32,7 +32,7 @@
 //         ),
 //         const SizedBox(height: 16.0),
 //         const Text(
-//           "Enter the necessary information to pair a Matter device on a Thread network using BLE. This includes Node ID, Discriminator, and Setup Code.",
+//           "Enter the necessary information to pair a Matter device on a Thread websocket using BLE. This includes Node ID, Discriminator, and Setup Code.",
 //           style: TextStyle(
 //             fontSize: 14,
 //             color: Colors.white70,

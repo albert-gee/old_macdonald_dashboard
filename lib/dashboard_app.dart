@@ -4,8 +4,8 @@ import 'package:get_it/get_it.dart';
 
 import 'blocs/side_menu/side_menu_cubit.dart';
 import 'layout.dart';
-import 'network/websocket.dart';
-import 'models/websocket_message.dart';
+import 'websocket/websocket_client.dart';
+import 'websocket/websocket_message_parser.dart';
 
 import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
 import 'blocs/thread/thread_address/thread_address_bloc.dart';
@@ -42,18 +42,15 @@ class DashboardApp extends StatelessWidget {
       ),
       home: MultiBlocProvider(
         providers: [
-
           // Side menu
           BlocProvider(create: (_) => SideMenuCubit()),
 
           // WebSocket connection
-          BlocProvider(create: (_) =>
-              WebsocketConnectionBloc(
-                messageParser: GetIt.instance<WebSocketMessageParser>(),
-                websocket: GetIt.instance<Websocket>(),
-                onMessageReceived: _receiveWebsocketMessage,
-                onWebsocketDone: () {},
-              )),
+          BlocProvider(
+              create: (_) => WebsocketConnectionBloc(
+                    messageParser: GetIt.instance<WebSocketMessageParser>(),
+                    websocket: GetIt.instance<WebSocketClient>(),
+                  )),
 
           // Thread-related
           BlocProvider(create: (_) => ThreadActiveDatasetBloc()),
@@ -66,13 +63,10 @@ class DashboardApp extends StatelessWidget {
           BlocProvider(create: (_) => ThreadStackStatusBloc()),
 
           // Wifi-related
-          BlocProvider(create: (_) =>
-              WifiStaConnectBloc(
-                websocket: GetIt.instance<Websocket>(),
-              )),
-
-
-
+          BlocProvider(
+              create: (_) => WifiStaConnectBloc(
+                    websocket: GetIt.instance<WebSocketClient>(),
+                  )),
         ],
         child: Layout(
           title: title,
@@ -81,70 +75,4 @@ class DashboardApp extends StatelessWidget {
       ),
     );
   }
-
-  void _receiveWebsocketMessage(WebSocketMessage message) {
-    print('_receiveWebsocketMessage: $message');
-  }
-
 }
-
-
-// switch (message.runtimeType) {
-    //   case ErrorMessage:
-    //     final msg = message as ErrorMessage;
-    //     getIt<MessageLogBloc>().add(
-    //       MessageLogReceivedMessageEvent('error', msg.error),
-    //     );
-    //     break;
-    //
-    //   case InfoMessage:
-    //     final msg = message as InfoMessage;
-    //     getIt<MessageLogBloc>().add(
-    //       MessageLogReceivedMessageEvent('info', msg.info),
-    //     );
-    //     break;
-    //
-    //   case ThreadDatasetActiveMessage:
-    //     final msg = message as ThreadDatasetActiveMessage;
-    //     getIt<ThreadDatasetActiveBloc>().add(
-    //       LoadThreadDataset(msg.dataset),
-    //     );
-    //     break;
-    //
-    //   case ThreadRoleMessage:
-    //     final msg = message as ThreadRoleMessage;
-    //     getIt<StatusCardBloc<String>>(instanceName: 'thread_role')
-    //         .add(StatusCardChanged(msg.role));
-    //     break;
-    //
-    //   case IfconfigStatusMessage:
-    //     final msg = message as IfconfigStatusMessage;
-    //     getIt<StatusCardBloc<String>>(instanceName: 'ifconfig')
-    //         .add(StatusCardChanged(msg.status));
-    //     break;
-    //
-    //   case ThreadStatusMessage:
-    //     final msg = message as ThreadStatusMessage;
-    //     getIt<StatusCardBloc<String>>(instanceName: 'thread_status')
-    //         .add(StatusCardChanged(msg.status));
-    //     break;
-    //
-    //   case WifiStaStatusMessage:
-    //     final msg = message as WifiStaStatusMessage;
-    //     getIt<StatusCardBloc<String>>(instanceName: 'wifi_sta')
-    //         .add(StatusCardChanged(msg.status));
-    //     break;
-    //
-    //   case TemperatureSetMessage:
-    //     final msg = message as TemperatureSetMessage;
-    //     getIt<StatusCardBloc<String>>(instanceName: 'temperature')
-    //         .add(StatusCardChanged(msg.temperature));
-    //     break;
-    //
-    //   default:
-    //     getIt<MessageLogBloc>().add(
-    //       MessageLogReceivedMessageEvent('info', 'Unknown message type: $message'),
-    //     );
-    // }
-//   }
-// }

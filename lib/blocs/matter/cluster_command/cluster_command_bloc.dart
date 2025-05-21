@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/network/websocket_client.dart';
 
 part 'cluster_command_event.dart';
 part 'cluster_command_state.dart';
 
 class ClusterCommandBloc extends Bloc<ClusterCommandEvent, ClusterCommandState> {
-  final Websocket websocket;
+  final WebSocketClient websocket;
   StreamSubscription<dynamic>? _messageSubscription;
 
   ClusterCommandBloc({required this.websocket}) : super(ClusterCommandInitial()) {

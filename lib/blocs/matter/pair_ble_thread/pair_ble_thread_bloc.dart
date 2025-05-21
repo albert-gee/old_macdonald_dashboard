@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/network/websocket_client.dart';
 
 part 'pair_ble_thread_event.dart';
 part 'pair_ble_thread_state.dart';
 
 class PairBleThreadBloc extends Bloc<PairBleThreadEvent, PairBleThreadState> {
-  final Websocket websocket;
+  final WebSocketClient websocket;
   StreamSubscription<dynamic>? _messageSubscription;
 
   PairBleThreadBloc({required this.websocket}) : super(PairBleThreadInitial()) {

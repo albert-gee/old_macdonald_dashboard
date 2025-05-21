@@ -5,10 +5,12 @@ sealed class WebsocketConnectionEvent extends Equatable {
 }
 
 final class WebsocketConnectionConnectingEvent extends WebsocketConnectionEvent {
-  const WebsocketConnectionConnectingEvent();
+  final String wsUri;
+
+  const WebsocketConnectionConnectingEvent(this.wsUri);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [wsUri];
 }
 
 final class WebsocketConnectionDisconnectingEvent extends WebsocketConnectionEvent {

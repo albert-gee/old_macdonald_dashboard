@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/network/websocket_client.dart';
 
 part 'subscribe_attribute_command_event.dart';
 part 'subscribe_attribute_command_state.dart';
 
 class SubscribeAttributeCommandBloc extends Bloc<SubscribeAttributeCommandEvent, SubscribeAttributeCommandState> {
-  final Websocket websocket;
+  final WebSocketClient websocket;
   StreamSubscription<dynamic>? _messageSubscription;
 
   SubscribeAttributeCommandBloc({required this.websocket}) : super(SubscribeAttributeCommandInitial()) {

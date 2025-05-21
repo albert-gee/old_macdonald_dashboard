@@ -1,8 +1,8 @@
-import 'package:dashboard/network/websocket.dart';
+import 'package:dashboard/websocket/websocket_client.dart';
 import 'i_thread_command_service.dart';
 
 class ThreadCommandService implements IThreadCommandService {
-  final Websocket websocket;
+  final WebSocketClient websocket;
 
   ThreadCommandService({required this.websocket});
 
