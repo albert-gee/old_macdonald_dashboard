@@ -5,16 +5,16 @@ import 'package:dashboard/websocket/websocket_message_parser.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
 
-final getIt = GetIt.instance;
+final GetIt getIt = GetIt.instance;
 
+/// Configures and registers all app-wide dependencies
 Future<void> setupServiceLocator() async {
-  getIt.registerLazySingleton<WebSocketClient>(
-          () => WebSocketClient());
+  // Core WebSocket services
+  getIt.registerLazySingleton<WebSocketClient>(() => WebSocketClient());
+  getIt.registerLazySingleton<WebSocketMessageParser>(() => WebSocketMessageParser());
 
-  getIt.registerLazySingleton<WebSocketMessageParser>(
-      () => WebSocketMessageParser());
-
+  // Domain services
   getIt.registerLazySingleton<IThreadCommandService>(
-    () => ThreadCommandService(websocket: getIt<WebSocketClient>()),
+        () => ThreadCommandService(websocket: getIt<WebSocketClient>()),
   );
 }

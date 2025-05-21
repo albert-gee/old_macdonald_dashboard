@@ -1,21 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'dashboard_app.dart';
 import 'service_locator.dart';
 
-const String title = 'Old MacDonald';
-const String subTitle = 'Controlled Environment';
+const String _appTitle = 'Old MacDonald';
+const String _appSubTitle = 'Controlled Environment';
 
 Future<void> main() async {
-  // Setup dependency injection for services
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize service locator before app starts
   await setupServiceLocator();
 
-  // Run the app
-  runZonedGuarded(() {
-    runApp(DashboardApp(title: title, subTitle: subTitle));
-  }, (error, stackTrace) {
-    // Log to analytics or file
-    print('Error: $error');
-  });
+  // Start the app within a guarded zone to catch unhandled errors
+  runZonedGuarded(
+    () => runApp(
+      DashboardApp(
+        title: _appTitle,
+        subTitle: _appSubTitle,
+      ),
+    ),
+    (error, stackTrace) {
+      // TODO: Replace with proper error reporting
+      debugPrint('Unhandled error: $error');
+    },
+  );
 }
