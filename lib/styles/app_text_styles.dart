@@ -36,4 +36,11 @@ class AppTextStyles {
     fontSize: 14,
     color: AppColors.textSecondary,
   );
+
+  // Card
+  static const TextStyle cardTitle = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: AppColors.textPrimary,
+  );
 }

@@ -1,15 +1,19 @@
-import 'package:dashboard/pages/matter_page.dart';
-import 'package:dashboard/pages/thread_page.dart';
-import 'package:dashboard/pages/wifi_ap_page.dart';
-import 'package:dashboard/pages/wifi_sta_page.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
-import 'package:dashboard/widget/content/page_header.dart';
 import 'package:flutter/material.dart';
+import 'package:dashboard/styles/app_dimensions.dart';
+
 import 'package:dashboard/pages/main_page.dart';
+import 'package:dashboard/pages/wifi_sta_page.dart';
+import 'package:dashboard/pages/wifi_ap_page.dart';
+import 'package:dashboard/pages/thread_page.dart';
+import 'package:dashboard/pages/matter_page.dart';
+
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
+import 'package:dashboard/widget/content/page_header.dart';
 
-/// Main application layout with sidebar navigation.
+/// Main application layout with persistent sidebar navigation.
+///
+/// Displays the selected page alongside a collapsible sidebar.
 class Layout extends StatefulWidget {
   final String title;
   final String subTitle;
@@ -28,35 +32,41 @@ class _LayoutState extends State<Layout> {
   int selectedIndex = 0;
   bool isCollapsed = false;
 
-  List<String> get titles => [
-        'Main Page',
-        'Wi-Fi STA',
-        'Wi-Fi AP',
-        'Thread Network',
-        'Matter Network'
-      ];
+  /// Page titles used for the sidebar and header.
+  final List<String> titles = [
+    'Main Page',
+    'Wi-Fi STA',
+    'Wi-Fi AP',
+    'Thread Network',
+    'Matter Network',
+  ];
 
-  List<SideMenuItem> get menuItems => [
-        SideMenuItem(icon: Icons.dashboard, title: titles[0]),
-        SideMenuItem(icon: Icons.network_wifi, title: titles[1]),
-        SideMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
-        SideMenuItem(icon: Icons.lan, title: titles[3]),
-        SideMenuItem(icon: Icons.device_hub, title: titles[4]),
-      ];
+  /// Sidebar menu items.
+  late final List<SideMenuItem> menuItems = [
+    SideMenuItem(icon: Icons.dashboard, title: titles[0]),
+    SideMenuItem(icon: Icons.network_wifi, title: titles[1]),
+    SideMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
+    SideMenuItem(icon: Icons.lan, title: titles[3]),
+    SideMenuItem(icon: Icons.device_hub, title: titles[4]),
+  ];
 
-  List<Widget> get pages =>
-      [MainPage(), WifiStaPage(), WifiApPage(), ThreadPage(), MatterPage()];
+  /// Corresponding pages for each menu item.
+  late final List<Widget> pages = [
+    MainPage(),
+    WifiStaPage(),
+    WifiApPage(),
+    ThreadPage(),
+    MatterPage(),
+  ];
 
+  /// Handles menu item selection.
   void _onItemSelected(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
+    setState(() => selectedIndex = index);
   }
 
+  /// Toggles sidebar collapsed state.
   void _onToggleCollapse() {
-    setState(() {
-      isCollapsed = !isCollapsed;
-    });
+    setState(() => isCollapsed = !isCollapsed);
   }
 
   @override
@@ -79,9 +89,8 @@ class _LayoutState extends State<Layout> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: AppDimensions.spacingM),
                   PageHeaderWidget(title: titles[selectedIndex]),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.spacingL),
                   Expanded(
                     child: IndexedStack(
                       index: selectedIndex,

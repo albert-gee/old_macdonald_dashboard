@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:dashboard/styles/app_dimensions.dart';
 
+/// A standard top-level header widget with vertical spacing.
+///
+/// Displays a page title using the theme's [headlineLarge] style,
+/// and includes top and bottom spacing for layout separation.
 class PageHeaderWidget extends StatelessWidget {
+  /// The text to display as the page title.
   final String title;
 
   const PageHeaderWidget({
@@ -10,28 +16,16 @@ class PageHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.headlineLarge?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-            height: 1.2,
-            shadows: [
-              Shadow(
-                color: Colors.black.withOpacity(0.3),
-                offset: const Offset(1, 2),
-                blurRadius: 6,
-              ),
-            ],
-          ),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingL,
+      ),
+      child: Text(
+        title,
+        style: textTheme.headlineLarge,
+      ),
     );
   }
 }

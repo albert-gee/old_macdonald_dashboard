@@ -1,4 +1,5 @@
-import 'package:dashboard/widget/content/dashboard/forms/wifi_sta_connect_form_widget.dart';
+import 'package:dashboard/widget/content/card_widget.dart';
+import 'package:dashboard/widget/content/forms/wifi_sta_connect_form_widget.dart';
 import 'package:flutter/material.dart';
 
 class WifiStaPage extends StatelessWidget {
@@ -9,21 +10,10 @@ class WifiStaPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 1,
-              child: WifiStaConnectFormWidget(),
-            ),
-            const SizedBox(width: 20.0),
-            Expanded(
-              flex: 1,
-              child: Container(),
-            ),
-          ],
+        CardWidget(
+          title: "Wi-Fi STA Connection",
+          child: WifiStaConnectFormWidget(),
         ),
-        const SizedBox(height: 50.0),
       ],
     );
   }
