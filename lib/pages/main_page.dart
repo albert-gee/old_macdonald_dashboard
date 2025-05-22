@@ -1,12 +1,11 @@
 import 'package:dashboard/widget/content/websocket/websocket_connection_form_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:dashboard/widget/content/dashboard/dashboard_widget.dart';
 import 'package:dashboard/widget/content/page_header.dart';
 
-class WebsocketPage extends StatelessWidget {
+class MainPage extends StatelessWidget {
   final String title;
 
-  const WebsocketPage({
+  const MainPage({
     required this.title,
     super.key,
   });
@@ -23,9 +22,6 @@ class WebsocketPage extends StatelessWidget {
           const SizedBox(height: 20.0),
 
           WebsocketConnectFormWidget(),
-
-          // Dashboard widget
-          const DashboardWidget(),
         ],
       ),
     );

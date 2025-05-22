@@ -1,5 +1,6 @@
+import 'package:dashboard/pages/matter_page.dart';
 import 'package:flutter/material.dart';
-import 'package:dashboard/pages/websocket_page.dart';
+import 'package:dashboard/pages/main_page.dart';
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
 
@@ -23,17 +24,19 @@ class _LayoutState extends State<Layout> {
   bool isCollapsed = false;
 
   List<SideMenuItem> get menuItems => const [
-    SideMenuItem(icon: Icons.dashboard, title: 'Main Dashboard'),
+    SideMenuItem(icon: Icons.dashboard, title: 'Main Page'),
     SideMenuItem(icon: Icons.network_wifi, title: 'Wi-Fi STA'),
     SideMenuItem(icon: Icons.wifi_tethering, title: 'Wi-Fi AP'),
     SideMenuItem(icon: Icons.lan, title: 'Thread Network'),
+    SideMenuItem(icon: Icons.device_hub, title: 'Matter'),
   ];
 
   List<Widget> get pages => [
-    WebsocketPage(title: 'Main Dashboard'),
+    MainPage(title: 'Main Page'),
     _buildPlaceholder('Wi-Fi STA'),
     _buildPlaceholder('Wi-Fi AP'),
     _buildPlaceholder('Thread'),
+    MatterPage(title: 'Matter')
   ];
 
   Widget _buildPlaceholder(String label) => Center(
