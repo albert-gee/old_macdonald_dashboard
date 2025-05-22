@@ -1,6 +1,6 @@
-import 'package:dashboard/styles/app_dimensions.dart';
 import 'package:flutter/material.dart';
-import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_toggle_button_widget.dart';
+import 'package:dashboard/styles/app_dimensions.dart';
+import 'package:dashboard/widget/sidebar/sidebar_toggle_button_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_widget.dart';
 
@@ -37,12 +37,12 @@ class SidebarWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildHeader(theme),
           if (!isCollapsed) _buildSubtitle(theme),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingM),
           const Divider(),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingM),
           _buildMenu(),
         ],
       ),
@@ -60,7 +60,7 @@ class SidebarWidget extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -82,7 +82,10 @@ class SidebarWidget extends StatelessWidget {
 
   Widget _buildSubtitle(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingM,
+        vertical: AppDimensions.spacingXS,
+      ),
       child: Text(
         subTitle,
         overflow: TextOverflow.ellipsis,
