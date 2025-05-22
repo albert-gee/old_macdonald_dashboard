@@ -1,4 +1,9 @@
 import 'package:dashboard/pages/matter_page.dart';
+import 'package:dashboard/pages/thread_page.dart';
+import 'package:dashboard/pages/wifi_ap_page.dart';
+import 'package:dashboard/pages/wifi_sta_page.dart';
+import 'package:dashboard/styles/app_dimensions.dart';
+import 'package:dashboard/widget/content/page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:dashboard/pages/main_page.dart';
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
@@ -23,28 +28,24 @@ class _LayoutState extends State<Layout> {
   int selectedIndex = 0;
   bool isCollapsed = false;
 
-  List<SideMenuItem> get menuItems => const [
-    SideMenuItem(icon: Icons.dashboard, title: 'Main Page'),
-    SideMenuItem(icon: Icons.network_wifi, title: 'Wi-Fi STA'),
-    SideMenuItem(icon: Icons.wifi_tethering, title: 'Wi-Fi AP'),
-    SideMenuItem(icon: Icons.lan, title: 'Thread Network'),
-    SideMenuItem(icon: Icons.device_hub, title: 'Matter'),
-  ];
+  List<String> get titles => [
+        'Main Page',
+        'Wi-Fi STA',
+        'Wi-Fi AP',
+        'Thread Network',
+        'Matter Network'
+      ];
 
-  List<Widget> get pages => [
-    MainPage(title: 'Main Page'),
-    _buildPlaceholder('Wi-Fi STA'),
-    _buildPlaceholder('Wi-Fi AP'),
-    _buildPlaceholder('Thread'),
-    MatterPage(title: 'Matter')
-  ];
+  List<SideMenuItem> get menuItems => [
+        SideMenuItem(icon: Icons.dashboard, title: titles[0]),
+        SideMenuItem(icon: Icons.network_wifi, title: titles[1]),
+        SideMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
+        SideMenuItem(icon: Icons.lan, title: titles[3]),
+        SideMenuItem(icon: Icons.device_hub, title: titles[4]),
+      ];
 
-  Widget _buildPlaceholder(String label) => Center(
-    child: Text(
-      label,
-      style: Theme.of(context).textTheme.bodyLarge,
-    ),
-  );
+  List<Widget> get pages =>
+      [MainPage(), WifiStaPage(), WifiApPage(), ThreadPage(), MatterPage()];
 
   void _onItemSelected(int index) {
     setState(() {
@@ -73,9 +74,22 @@ class _LayoutState extends State<Layout> {
             onToggleCollapse: _onToggleCollapse,
           ),
           Expanded(
-            child: IndexedStack(
-              index: selectedIndex,
-              children: pages,
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.paddingPage),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppDimensions.spacingM),
+                  PageHeaderWidget(title: titles[selectedIndex]),
+                  const SizedBox(height: AppDimensions.spacingM),
+                  Expanded(
+                    child: IndexedStack(
+                      index: selectedIndex,
+                      children: pages,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

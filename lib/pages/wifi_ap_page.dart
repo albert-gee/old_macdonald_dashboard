@@ -1,15 +1,14 @@
-import 'package:dashboard/widget/content/websocket/websocket_connection_form_widget.dart';
 import 'package:flutter/material.dart';
 
-class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+class WifiApPage extends StatelessWidget {
+
+  const WifiApPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        WebsocketConnectFormWidget(),
       ],
     );
   }

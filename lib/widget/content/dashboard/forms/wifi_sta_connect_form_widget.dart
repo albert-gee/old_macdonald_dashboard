@@ -26,7 +26,7 @@ class WifiStaConnectFormWidget extends StatelessWidget {
         const SizedBox(height: 12.0),
 
         const Text(
-          "To connect the Wi-Fi STA to an existing Wi-Fi websocket, enter the SSID and password below.",
+          "To connect the Wi-Fi STA to an existing AP, enter the SSID and password below.",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,

@@ -14,6 +14,9 @@ class AppDimensions {
   static const double spacingM = 12;
   static const double spacingL = 16;
 
+  // General content padding (e.g. screen/page padding)
+  static const double paddingPage = 20;
+
   // Button-specific padding
   static const double paddingButtonHorizontal = 20;
   static const double paddingButtonVertical = 12;
