@@ -39,56 +39,52 @@ class SidebarMenuWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      // Sets the background color of the sidebar.
-      color: Colors.grey.shade900,
-      child: ListView.builder(
-        // Removes padding around the list.
-        padding: EdgeInsets.zero,
-        // The number of items in the list.
-        itemCount: items.length,
-        // Builds each menu item in the list.
-        itemBuilder: (_, index) {
-          final item = items[index];
-          final selected = index == selectedIndex;
+    return ListView.builder(
+      // Removes padding around the list.
+      padding: EdgeInsets.zero,
+      // The number of items in the list.
+      itemCount: items.length,
+      // Builds each menu item in the list.
+      itemBuilder: (_, index) {
+        final item = items[index];
+        final selected = index == selectedIndex;
 
-          return Tooltip(
-            // Displays a tooltip with the item's title when hovered.
-            message: item.title,
-            waitDuration: const Duration(milliseconds: 400),
-            child: ListTile(
-              // Reduces the vertical padding of the tile.
-              dense: true,
-              // Sets the horizontal padding of the tile.
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-              // Displays the item's icon.
-              leading: SizedBox(
-                width: 24,
-                child: Icon(
-                  item.icon,
-                  // Changes the icon color based on selection state.
-                  color: selected ? Colors.white : Colors.grey[400],
-                ),
+        return Tooltip(
+          // Displays a tooltip with the item's title when hovered.
+          message: item.title,
+          waitDuration: const Duration(milliseconds: 400),
+          child: ListTile(
+            // Reduces the vertical padding of the tile.
+            dense: true,
+            // Sets the horizontal padding of the tile.
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+            // Displays the item's icon.
+            leading: SizedBox(
+              width: 24,
+              child: Icon(
+                item.icon,
+                // Changes the icon color based on selection state.
+                color: selected ? Colors.white : Colors.grey[400],
               ),
-              // Displays the item's title if the sidebar is not collapsed.
-              title: isCollapsed
-                  ? null
-                  : Text(
-                      item.title,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        // Changes the text color based on selection state.
-                        color: selected ? Colors.white : Colors.grey[300],
-                      ),
-                    ),
-              // Highlights the tile if it is selected.
-              selected: selected,
-              selectedTileColor: Colors.blue.shade700,
-              // Triggers the callback when the tile is tapped.
-              onTap: () => onItemSelected(index),
             ),
-          );
-        },
-      ),
+            // Displays the item's title if the sidebar is not collapsed.
+            title: isCollapsed
+                ? null
+                : Text(
+                    item.title,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      // Changes the text color based on selection state.
+                      color: selected ? Colors.white : Colors.grey[300],
+                    ),
+                  ),
+            // Highlights the tile if it is selected.
+            selected: selected,
+            selectedTileColor: Colors.blue.shade700,
+            // Triggers the callback when the tile is tapped.
+            onTap: () => onItemSelected(index),
+          ),
+        );
+      },
     );
   }
 }
