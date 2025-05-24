@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 import 'dashboard_app.dart';
 import 'service_locator.dart';
@@ -8,19 +8,23 @@ import 'service_locator.dart';
 const String _appTitle = 'Old MacDonald';
 const String _appSubTitle = 'Controlled Environment';
 
+final Logger _logger = Logger();
+
+/// Application entry point.
 void main() {
-  // Start the app within a guarded zone to catch unhandled errors
+  // Guarded zone catches unhandled async errors globally
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Initialize service locator before app starts
+    // Set up dependency injection
     await setupServiceLocator();
+
+    // Launch the main application
     runApp(DashboardApp(
       title: _appTitle,
       subTitle: _appSubTitle,
     ));
   }, (error, stackTrace) {
-    // TODO: Replace with proper error reporting
-    debugPrint('Unhandled error: $error');
+    _logger.e('Unhandled error in main()', error: error, stackTrace: stackTrace);
   });
 }

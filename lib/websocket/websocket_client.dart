@@ -3,44 +3,63 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
 
+/// A secure WebSocket client with optional TLS root CA and stream handling.
 class WebSocketClient {
   WebSocket? _socket;
-  StreamController<String>? _controller;
   bool _connecting = false;
 
+  /// Whether the client is currently attempting to connect.
   bool get isConnecting => _connecting;
 
-  bool isConnected() {
-    return _socket != null && _socket!.readyState == WebSocket.open;
+  /// Whether the WebSocket is connected and open.
+  bool get isConnected =>
+      _socket != null && _socket!.readyState == WebSocket.open;
+
+  /// Stream of incoming string messages.
+  ///
+  /// Throws [StateError] if called before the connection is established.
+  Stream<String> get messages {
+    final socket = _socket;
+    if (socket == null) {
+      throw StateError('WebSocket connection not established.');
+    }
+    return socket.cast<String>();
   }
 
+  /// Connects to the WebSocket server.
+  ///
+  /// [url] must be a `ws://` or `wss://` URI.
+  /// Optionally provide [rootCAAsset] for secure TLS (wss).
   Future<bool> connect({
-    required String urlStr,
-    Duration timeout = const Duration(seconds: 5),
+    required String url,
+    String? rootCAAsset,
+    bool enableCompression = true,
+    Duration pingInterval = const Duration(seconds: 10),
   }) async {
-    if (_connecting || isConnected()) return isConnected();
+    if (_connecting) return false;
+    if (isConnected) return true;
+
     _connecting = true;
-
     try {
-      final context = SecurityContext();
-      final rootCA = await rootBundle.loadString('assets/rootCA.pem');
-      context.setTrustedCertificatesBytes(utf8.encode(rootCA));
+      // Set up a security context
+      SecurityContext? context;
+      if (url.startsWith('wss://') && rootCAAsset != null) {
+        final certData = await rootBundle.loadString(rootCAAsset);
+        context = SecurityContext();
+        context.setTrustedCertificatesBytes(utf8.encode(certData));
+      }
 
-      final socket = await WebSocket.connect(
-        urlStr,
-        customClient: HttpClient(context: context),
+      // Connect to the WebSocket server
+      _socket = await WebSocket.connect(
+        url,
+        compression: enableCompression
+            ? CompressionOptions.compressionDefault
+            : CompressionOptions.compressionOff,
+        customClient: context != null ? HttpClient(context: context) : null,
       );
 
-      socket.pingInterval = const Duration(seconds: 10);
-      _socket = socket;
-
-      _controller = StreamController<String>();
-      _socket!.listen(
-            (event) => _controller!.add(event.toString()),
-        onDone: () => _controller?.close(),
-        onError: (error) => _controller?.addError(error),
-        cancelOnError: true,
-      );
+      // Client ping disabled — relying on server-side ping for keep-alive.
+      _socket!.pingInterval = null;
 
       return true;
     } catch (e) {
@@ -51,40 +70,50 @@ class WebSocketClient {
     }
   }
 
-  Stream<String> get stream {
-    if (_controller == null) throw StateError('Stream is not initialized');
-    return _controller!.stream;
-  }
-
-  Future<void> disconnect() async {
-    await _socket?.close();
-    _socket = null;
-    await _controller?.close();
-    _controller = null;
-  }
-
+  /// Sends a string message over the WebSocket.
+  ///
+  /// Returns `true` if the message was sent.
   Future<bool> sendMessage(String message) async {
-    if (isConnected()) {
-      _socket!.add(message);
-      return true;
-    }
-    return false;
+    if (!isConnected) return false;
+    _socket!.add(message);
+    return true;
   }
 
-  Future<bool> sendJsonMessage(Map<String, dynamic> json) async {
-    return sendMessage(jsonEncode(json));
+  /// Closes the WebSocket connection gracefully.
+  Future<void> disconnect({
+    int code = WebSocketStatus.normalClosure,
+    String reason = 'Client disconnect',
+  }) async {
+    await _socket?.close(code, reason);
+    _socket = null;
   }
 
+  /// Adds listeners for incoming messages, errors, and close events.
+  ///
+  /// You can use [messages] for stream-based handling instead.
   void listen({
-    required void Function(String) onMessageReceived,
+    required void Function(String) onMessage,
     required VoidCallback onDone,
-    required void Function(String) onError,
+    required void Function(Object error) onError,
   }) {
-    stream.listen(
-      onMessageReceived,
+    final socket = _socket;
+    if (socket == null) {
+      throw StateError('WebSocket not connected.');
+    }
+
+    socket.listen(
+      (event) {
+        if (event is String) onMessage(event);
+      },
       onDone: onDone,
-      onError: (error) => onError(error.toString()),
+      onError: onError,
       cancelOnError: true,
     );
   }
+
+  /// Returns the WebSocket close code, if any.
+  int? get closeCode => _socket?.closeCode;
+
+  /// Returns the WebSocket close reason, if any.
+  String? get closeReason => _socket?.closeReason;
 }

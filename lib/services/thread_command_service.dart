@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dashboard/websocket/websocket_client.dart';
 import 'i_thread_command_service.dart';
 
@@ -8,18 +10,20 @@ class ThreadCommandService implements IThreadCommandService {
 
   @override
   Future<void> sendThreadEnableCommand() async {
-    await websocket.sendJsonMessage({
+    final message = jsonEncode({
       'type': 'command',
       'action': 'thread.enable',
     });
+    await websocket.sendMessage(message);
   }
 
   @override
   Future<void> sendThreadDisableCommand() async {
-    await websocket.sendJsonMessage({
+    final message = jsonEncode({
       'type': 'command',
       'action': 'thread.disable',
     });
+    await websocket.sendMessage(message);
   }
 
   @override
@@ -32,7 +36,7 @@ class ThreadCommandService implements IThreadCommandService {
     required String networkKey,
     required String pskc,
   }) async {
-    await websocket.sendJsonMessage({
+    final message = jsonEncode({
       'type': 'command',
       'action': 'thread.dataset_init',
       'payload': {
@@ -45,5 +49,6 @@ class ThreadCommandService implements IThreadCommandService {
         'pskc': pskc,
       },
     });
+    await websocket.sendMessage(message);
   }
 }

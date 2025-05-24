@@ -12,7 +12,7 @@ class MainPage extends StatelessWidget {
       children: [
         CardWidget(
           title: "WebSocket Connection",
-          child: WebsocketConnectFormWidget(),
+          child: WebsocketConnectionFormWidget(),
         ),
       ],
     );

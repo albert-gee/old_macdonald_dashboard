@@ -4,15 +4,11 @@ import 'package:dashboard/styles/app_dimensions.dart';
 import 'package:dashboard/widget/content/labeled_text_field.dart';
 import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';
 
-/// Form widget for establishing a WebSocket connection.
-///
-/// Provides a labeled input field for the connection URL and
-/// a set of context-aware control buttons: Connect, Clear, and Disconnect.
-class WebsocketConnectFormWidget extends StatelessWidget {
-  /// Controller for the WebSocket URL input field.
-  final TextEditingController urlController = TextEditingController();
+/// A form widget for entering a WebSocket URL and controlling connection state.
+class WebsocketConnectionFormWidget extends StatelessWidget {
+  final TextEditingController urlTextFieldController = TextEditingController();
 
-  WebsocketConnectFormWidget({super.key});
+  WebsocketConnectionFormWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +22,15 @@ class WebsocketConnectFormWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Input for the WebSocket URL
+            // URL input field
             LabeledTextField(
-              controller: urlController,
+              controller: urlTextFieldController,
               label: "WebSocket URL",
               hint: "wss://192.168.4.1/ws",
             ),
-
             const SizedBox(height: AppDimensions.spacingL),
 
-            // Action buttons: Connect, Clear, Disconnect
+            // Action buttons
             Row(
               children: [
                 // Connect / Reconnect button
@@ -44,54 +39,50 @@ class WebsocketConnectFormWidget extends StatelessWidget {
                     onPressed: isConnecting
                         ? null
                         : () => websocketBloc.add(
-                      WebsocketConnectionConnectingEvent(
-                        urlController.text,
-                      ),
-                    ),
+                              WebsocketConnectionConnectRequested(
+                                urlTextFieldController.text,
+                              ),
+                            ),
                     icon: isConnecting
                         ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Icon(Icons.wifi),
                     label: Text(
-                      isConnected
-                          ? "Reconnect"
-                          : isConnecting
+                      isConnecting
                           ? "Connecting..."
-                          : "Connect",
+                          : isConnected
+                              ? "Reconnect"
+                              : "Connect",
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isConnected
-                          ? Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 180)
-                          : isConnecting
-                          ? Theme.of(context).disabledColor
-                          : Theme.of(context).colorScheme.primary,
+                      backgroundColor: _getConnectButtonColor(
+                        context,
+                        isConnected,
+                        isConnecting,
+                      ),
                     ),
                   ),
                 ),
-
                 const SizedBox(width: AppDimensions.spacingM),
 
                 // Clear button
                 Flexible(
                   child: OutlinedButton(
-                    onPressed: urlController.clear,
+                    onPressed: urlTextFieldController.clear,
                     child: const Text("Clear"),
                   ),
                 ),
 
-                // Disconnect button (visible only when connected)
+                // Disconnect button (only when connected)
                 if (isConnected) ...[
                   const SizedBox(width: AppDimensions.spacingM),
                   Flexible(
                     child: OutlinedButton(
                       onPressed: () => websocketBloc.add(
-                        const WebsocketConnectionDisconnectingEvent(),
+                        const WebsocketConnectionDisconnectRequested(),
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.error,
@@ -106,5 +97,17 @@ class WebsocketConnectFormWidget extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// Returns the color for the Connect button based on state.
+  Color _getConnectButtonColor(
+    BuildContext context,
+    bool isConnected,
+    bool isConnecting,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (isConnecting) return Theme.of(context).disabledColor;
+    if (isConnected) return colorScheme.primary.withAlpha(180);
+    return colorScheme.primary;
   }
 }
