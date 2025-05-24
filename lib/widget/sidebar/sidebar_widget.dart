@@ -9,7 +9,7 @@ class SidebarWidget extends StatelessWidget {
   final String title;
   final String subTitle;
   final bool isCollapsed;
-  final List<SideMenuItem> menuItems;
+  final List<SidebarMenuItem> menuItems;
   final int selectedIndex;
   final ValueChanged<int> onItemSelected;
   final VoidCallback onToggleCollapse;

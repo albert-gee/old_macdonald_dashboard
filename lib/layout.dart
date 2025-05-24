@@ -42,12 +42,12 @@ class _LayoutState extends State<Layout> {
   ];
 
   /// Sidebar menu items.
-  late final List<SideMenuItem> menuItems = [
-    SideMenuItem(icon: Icons.dashboard, title: titles[0]),
-    SideMenuItem(icon: Icons.network_wifi, title: titles[1]),
-    SideMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
-    SideMenuItem(icon: Icons.lan, title: titles[3]),
-    SideMenuItem(icon: Icons.device_hub, title: titles[4]),
+  late final List<SidebarMenuItem> menuItems = [
+    SidebarMenuItem(icon: Icons.dashboard, title: titles[0]),
+    SidebarMenuItem(icon: Icons.network_wifi, title: titles[1]),
+    SidebarMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
+    SidebarMenuItem(icon: Icons.lan, title: titles[3]),
+    SidebarMenuItem(icon: Icons.device_hub, title: titles[4]),
   ];
 
   /// Corresponding pages for each menu item.

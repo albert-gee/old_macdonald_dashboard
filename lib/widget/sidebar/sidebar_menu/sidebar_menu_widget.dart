@@ -8,7 +8,7 @@ import 'sidebar_menu_item.dart';
 /// collapsed and expanded sidebar states.
 class SidebarMenuWidget extends StatelessWidget {
   /// The list of menu items to display in the sidebar.
-  final List<SideMenuItem> items;
+  final List<SidebarMenuItem> items;
 
   /// The index of the currently selected menu item.
   final int selectedIndex;
