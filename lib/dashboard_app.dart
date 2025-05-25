@@ -5,12 +5,12 @@ import 'package:get_it/get_it.dart';
 import 'styles/app_theme.dart';
 import 'layout.dart';
 import 'websocket/websocket_client.dart';
-import 'websocket/websocket_message_parser.dart';
+import 'websocket/websocket_message_handler.dart';
 
 // BLoCs
 import 'blocs/side_menu/side_menu_cubit.dart';
 import 'blocs/websocket_connection/websocket_connection_bloc.dart';
-import 'blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
+import 'blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 
 import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
 import 'blocs/thread/thread_address/thread_address_bloc.dart';
@@ -48,7 +48,7 @@ class DashboardApp extends StatelessWidget {
           BlocProvider(
             create: (_) => WebsocketConnectionBloc(
               websocket: getIt<WebSocketClient>(),
-              messageParser: getIt<WebSocketMessageParser>(),
+              messageHandler: getIt<WebSocketMessageHandler>(),
             ),
           ),
 
@@ -63,11 +63,7 @@ class DashboardApp extends StatelessWidget {
           BlocProvider(create: (_) => ThreadStackStatusBloc()),
 
           // Wi-Fi actions
-          BlocProvider(
-            create: (_) => WifiStaConnectBloc(
-              websocket: getIt<WebSocketClient>(),
-            ),
-          ),
+          BlocProvider(create: (_) => WifiStaConnectionBloc()),
         ],
         child: Layout(
           title: title,

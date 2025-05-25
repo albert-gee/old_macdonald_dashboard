@@ -1,221 +1,168 @@
-/// Base class for all WebSocket messages
 abstract class WebSocketMessage {
-  final String command;
+  final String type;
+  final String? action;
+  final dynamic payload;
 
-  const WebSocketMessage({
-    required this.command,
-  });
+  const WebSocketMessage({required this.type, this.action, required this.payload});
 
   factory WebSocketMessage.fromJson(Map<String, dynamic> json) {
-    final command = json['command'] as String;
+    final type = json['type'] as String;
+    final action = json['action'] as String?;
+    final payload = json['payload'];
 
-    print("WebSocketMessage: fromJson: command: $command, json: $json");
-
-    switch (command) {
-      case 'info':
-        return InfoMessage.fromJson(json);
-      case 'error':
-        return ErrorMessage.fromJson(json);
-      case 'thread_active_dataset':
-        return ThreadDatasetActiveMessage.fromJson(json);
-      case 'thread_role_set':
-        return ThreadRoleMessage.fromJson(json);
-      case 'ifconfig_status':
-        return IfconfigStatusMessage.fromJson(json);
-      case 'thread_status':
-        return ThreadStatusMessage.fromJson(json);
-      case 'wifi_sta_status':
-        return WifiStaStatusMessage.fromJson(json);
-      case 'temperature_set':
-        return TemperatureSetMessage.fromJson(json);
-      case 'result':
-        return ResultMessage.fromJson(json);
-      default:
-        return GenericMessage.fromJson(json);
+    if (type == 'websocket' && action == 'connected') {
+      return WebSocketConnectedMessage(payload['connected'] == true);
     }
-  }
 
-  Map<String, dynamic> toJson();
+    if (type == 'info') {
+      switch (action) {
+        case 'thread.stack_status':
+          return ThreadStackStatusMessage(payload['running'] == true);
+        case 'thread.interface_status':
+          return ThreadInterfaceStatusMessage(payload['interface_up'] == true);
+        case 'thread.attachment_status':
+          return ThreadAttachmentStatusMessage(payload['attached'] == true);
+        case 'thread.role':
+          return ThreadRoleMessage(payload['role']);
+        case 'thread.active_dataset':
+          return ThreadDatasetActiveMessage(Map<String, dynamic>.from(payload));
+        case 'ipv6.unicast_addresses':
+          return UnicastAddressListMessage(List<String>.from(payload['unicast']));
+        case 'ipv6.multicast_addresses':
+          return MulticastAddressListMessage(List<String>.from(payload['multicast']));
+        case 'thread.meshcop_service':
+          return MeshcopServiceStatusMessage(payload['published'] == true);
+        case 'wifi.sta_status':
+          return WifiStaStatusMessage(payload['status']);
+        case 'matter.commissioning_complete':
+          return MatterCommissioningCompleteMessage(
+            nodeId: payload['node_id'],
+            fabricIndex: payload['fabric_index'],
+          );
+        case 'matter.attribute_report':
+          return MatterAttributeReportMessage(
+            nodeId: payload['node_id'],
+            endpointId: payload['endpoint_id'],
+            clusterId: payload['cluster_id'],
+            attributeId: payload['attribute_id'],
+            value: payload['value'],
+          );
+        case 'matter.subscribe_done':
+          return MatterSubscribeDoneMessage(
+            nodeId: payload['node_id'],
+            subscriptionId: payload['subscription_id'],
+          );
+      }
+    }
+
+    return GenericMessage(type: type, action: action, payload: payload);
+  }
 }
 
-class ErrorMessage extends WebSocketMessage {
-  final String error;
-
-  const ErrorMessage({required this.error}) : super(command: 'error');
-
-  factory ErrorMessage.fromJson(Map<String, dynamic> json) {
-    return ErrorMessage(error: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': error,
-      };
+class WebSocketConnectedMessage extends WebSocketMessage {
+  final bool connected;
+  WebSocketConnectedMessage(this.connected)
+      : super(type: 'websocket', action: 'connected', payload: {'connected': connected});
 }
 
-class InfoMessage extends WebSocketMessage {
-  final String info;
-
-  const InfoMessage({required this.info}) : super(command: 'info');
-
-  factory InfoMessage.fromJson(Map<String, dynamic> json) {
-    return InfoMessage(info: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': info,
-      };
+class ThreadStackStatusMessage extends WebSocketMessage {
+  final bool running;
+  ThreadStackStatusMessage(this.running)
+      : super(type: 'info', action: 'thread.stack_status', payload: {'running': running});
 }
 
-class ThreadDatasetActiveMessage extends WebSocketMessage {
-  final Map<String, dynamic> dataset;
+class ThreadInterfaceStatusMessage extends WebSocketMessage {
+  final bool interfaceUp;
+  ThreadInterfaceStatusMessage(this.interfaceUp)
+      : super(type: 'info', action: 'thread.interface_status', payload: {'interface_up': interfaceUp});
+}
 
-  const ThreadDatasetActiveMessage({required this.dataset})
-      : super(command: 'thread_active_dataset');
-
-  factory ThreadDatasetActiveMessage.fromJson(Map<String, dynamic> json) {
-    return ThreadDatasetActiveMessage(
-        dataset: json['payload'] as Map<String, dynamic>);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': dataset,
-      };
+class ThreadAttachmentStatusMessage extends WebSocketMessage {
+  final bool attached;
+  ThreadAttachmentStatusMessage(this.attached)
+      : super(type: 'info', action: 'thread.attachment_status', payload: {'attached': attached});
 }
 
 class ThreadRoleMessage extends WebSocketMessage {
   final String role;
-
-  const ThreadRoleMessage({required this.role})
-      : super(command: 'thread_role_set');
-
-  factory ThreadRoleMessage.fromJson(Map<String, dynamic> json) {
-    return ThreadRoleMessage(role: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': role,
-      };
+  ThreadRoleMessage(this.role)
+      : super(type: 'info', action: 'thread.role', payload: {'role': role});
 }
 
-class IfconfigStatusMessage extends WebSocketMessage {
-  final String status;
-
-  const IfconfigStatusMessage({required this.status})
-      : super(command: 'ifconfig_status');
-
-  factory IfconfigStatusMessage.fromJson(Map<String, dynamic> json) {
-    return IfconfigStatusMessage(status: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': status,
-      };
+class ThreadDatasetActiveMessage extends WebSocketMessage {
+  final Map<String, dynamic> dataset;
+  ThreadDatasetActiveMessage(this.dataset)
+      : super(type: 'info', action: 'thread.active_dataset', payload: dataset);
 }
 
-class ThreadStatusMessage extends WebSocketMessage {
-  final String status;
+class UnicastAddressListMessage extends WebSocketMessage {
+  final List<String> addresses;
+  UnicastAddressListMessage(this.addresses)
+      : super(type: 'info', action: 'ipv6.unicast_addresses', payload: {'unicast': addresses});
+}
 
-  const ThreadStatusMessage({required this.status})
-      : super(command: 'thread_status');
+class MulticastAddressListMessage extends WebSocketMessage {
+  final List<String> addresses;
+  MulticastAddressListMessage(this.addresses)
+      : super(type: 'info', action: 'ipv6.multicast_addresses', payload: {'multicast': addresses});
+}
 
-  factory ThreadStatusMessage.fromJson(Map<String, dynamic> json) {
-    return ThreadStatusMessage(status: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': status,
-      };
+class MeshcopServiceStatusMessage extends WebSocketMessage {
+  final bool published;
+  MeshcopServiceStatusMessage(this.published)
+      : super(type: 'info', action: 'thread.meshcop_service', payload: {'published': published});
 }
 
 class WifiStaStatusMessage extends WebSocketMessage {
   final String status;
-
-  const WifiStaStatusMessage({required this.status})
-      : super(command: 'wifi_sta_status');
-
-  factory WifiStaStatusMessage.fromJson(Map<String, dynamic> json) {
-    return WifiStaStatusMessage(status: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': status,
-      };
+  WifiStaStatusMessage(this.status)
+      : super(type: 'info', action: 'wifi.sta_status', payload: {'status': status});
 }
 
-class TemperatureSetMessage extends WebSocketMessage {
-  final String temperature;
-
-  const TemperatureSetMessage({required this.temperature})
-      : super(command: 'temperature_set');
-
-  factory TemperatureSetMessage.fromJson(Map<String, dynamic> json) {
-    return TemperatureSetMessage(temperature: json['payload'] as String);
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': temperature,
-      };
+class MatterCommissioningCompleteMessage extends WebSocketMessage {
+  final int nodeId;
+  final int fabricIndex;
+  MatterCommissioningCompleteMessage({required this.nodeId, required this.fabricIndex})
+      : super(type: 'info', action: 'matter.commissioning_complete', payload: {
+    'node_id': nodeId,
+    'fabric_index': fabricIndex,
+  });
 }
 
-class ResultMessage extends WebSocketMessage {
-  final String result;
-  final DateTime timestamp;
+class MatterAttributeReportMessage extends WebSocketMessage {
+  final int nodeId;
+  final int endpointId;
+  final int clusterId;
+  final int attributeId;
+  final String value;
 
-  const ResultMessage({required this.result, required this.timestamp})
-      : super(command: 'result');
+  MatterAttributeReportMessage({
+    required this.nodeId,
+    required this.endpointId,
+    required this.clusterId,
+    required this.attributeId,
+    required this.value,
+  }) : super(type: 'info', action: 'matter.attribute_report', payload: {
+    'node_id': nodeId,
+    'endpoint_id': endpointId,
+    'cluster_id': clusterId,
+    'attribute_id': attributeId,
+    'value': value,
+  });
+}
 
-  factory ResultMessage.fromJson(Map<String, dynamic> json) {
-    final payload = json['payload'] as Map<String, dynamic>;
-    return ResultMessage(
-      result: payload['result'] as String,
-      timestamp: DateTime.parse(payload['timestamp'] as String),
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': {
-          'result': result,
-          'timestamp': timestamp.toIso8601String(),
-        },
-      };
+class MatterSubscribeDoneMessage extends WebSocketMessage {
+  final int nodeId;
+  final int subscriptionId;
+  MatterSubscribeDoneMessage({
+    required this.nodeId,
+    required this.subscriptionId,
+  }) : super(type: 'info', action: 'matter.subscribe_done', payload: {
+    'node_id': nodeId,
+    'subscription_id': subscriptionId,
+  });
 }
 
 class GenericMessage extends WebSocketMessage {
-  final dynamic payload;
-
-  const GenericMessage({
-    required String command,
-    required this.payload,
-  }) : super(command: command);
-
-  factory GenericMessage.fromJson(Map<String, dynamic> json) {
-    return GenericMessage(
-      command: json['command'] ?? 'unknown',
-      payload: json['payload'],
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'command': command,
-        'payload': payload,
-      };
+  GenericMessage({required super.type, super.action, required super.payload});
 }

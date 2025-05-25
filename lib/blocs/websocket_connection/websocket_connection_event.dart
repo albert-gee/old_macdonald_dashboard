@@ -28,6 +28,13 @@ final class WebsocketConnectionDisconnectRequested extends WebsocketConnectionEv
   const WebsocketConnectionDisconnectRequested();
 }
 
+/// Event emitted when the WebSocket connection is successfully established.
+///
+/// This event is typically used to update the UI or trigger subsequent actions
+final class WebsocketConnectionConnected extends WebsocketConnectionEvent {
+  const WebsocketConnectionConnected();
+}
+
 /// Event emitted when the WebSocket has been fully disconnected.
 ///
 /// This may occur due to user action, server-side closure, or error handling.

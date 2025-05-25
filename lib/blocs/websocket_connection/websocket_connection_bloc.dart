@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dashboard/websocket/websocket_client.dart';
-import 'package:dashboard/websocket/websocket_message_parser.dart';
+import 'package:dashboard/websocket/websocket_message_handler.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
@@ -15,7 +15,7 @@ part 'websocket_connection_state.dart';
 class WebsocketConnectionBloc
     extends Bloc<WebsocketConnectionEvent, WebsocketConnectionState> {
   final WebSocketClient websocket;
-  final WebSocketMessageParser messageParser;
+  final WebSocketMessageHandler messageHandler;
 
   StreamSubscription? _streamSub;
   String? _currentUrl;
@@ -28,7 +28,7 @@ class WebsocketConnectionBloc
 
   WebsocketConnectionBloc({
     required this.websocket,
-    required this.messageParser,
+    required this.messageHandler,
   }) : super(WebsocketConnectionDisconnectedState()) {
     on<WebsocketConnectionConnectRequested>(_onConnectRequested);
     on<WebsocketConnectionDisconnectRequested>(_onDisconnectRequested);
@@ -122,7 +122,7 @@ class WebsocketConnectionBloc
     _logger.i('Received message: $message');
 
     try {
-      messageParser.parse(message);
+      messageHandler.handle(message);
     } on MessageParseException catch (e) {
       _logger.e('Message parse error: ${e.message}');
     } catch (e, stack) {

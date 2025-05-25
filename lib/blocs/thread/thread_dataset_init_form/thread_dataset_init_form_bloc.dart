@@ -1,18 +1,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../services/i_thread_command_service.dart';
+import 'package:dashboard/services/i_thread_command_service.dart';
 import 'thread_dataset_init_form_event.dart';
 import 'thread_dataset_init_form_state.dart';
 
+/// Bloc for handling Thread Dataset initialization form submission.
 class ThreadDatasetInitFormBloc extends Bloc<ThreadDatasetInitFormEvent, ThreadDatasetInitFormState> {
-  final IThreadCommandService _threadCommandService = GetIt.instance<IThreadCommandService>();
+  final IThreadCommandService _threadCommandService;
 
-  ThreadDatasetInitFormBloc() : super(ThreadDatasetInitFormInitial()) {
-    on<ThreadDatasetInitSubmitted>(_onSubmitted);
+  ThreadDatasetInitFormBloc({IThreadCommandService? threadCommandService})
+      : _threadCommandService = threadCommandService ?? GetIt.I<IThreadCommandService>(),
+        super(ThreadDatasetInitFormInitial()) {
+    on<ThreadDatasetInitSubmitted>(_handleSubmitted);
   }
 
-  Future<void> _onSubmitted(
+  /// Handles the [ThreadDatasetInitSubmitted] event.
+  ///
+  /// Emits a submitting state, calls the service, and then emits success or failure.
+  Future<void> _handleSubmitted(
       ThreadDatasetInitSubmitted event,
       Emitter<ThreadDatasetInitFormState> emit,
       ) async {
@@ -29,8 +35,8 @@ class ThreadDatasetInitFormBloc extends Bloc<ThreadDatasetInitFormEvent, ThreadD
         pskc: event.pskc,
       );
       emit(ThreadDatasetInitFormSuccess());
-    } catch (e) {
-      emit(ThreadDatasetInitFormFailure(e.toString()));
+    } catch (error) {
+      emit(ThreadDatasetInitFormFailure(error.toString()));
     }
   }
 }

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dashboard/styles/app_dimensions.dart';
 import 'package:dashboard/widget/content/labeled_text_field.dart';
-import 'package:dashboard/blocs/wifi_sta_connect/wifi_sta_connect_bloc.dart';
+import 'package:dashboard/blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 
 /// A form for connecting the Wi-Fi STA interface to an existing Access Point.
 ///
 /// Includes SSID and password input fields, and triggers a connect event
-/// using [WifiStaConnectBloc].
+/// using [WifiStaConnectionBloc].
 class WifiStaConnectFormWidget extends StatelessWidget {
   final TextEditingController ssidController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -16,7 +16,7 @@ class WifiStaConnectFormWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<WifiStaConnectBloc>();
+    final bloc = context.read<WifiStaConnectionBloc>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,8 +62,8 @@ class WifiStaConnectFormWidget extends StatelessWidget {
     );
   }
 
-  void _connectToWifi(WifiStaConnectBloc bloc) {
-    bloc.add(WifiStaConnectSendEvent(
+  void _connectToWifi(WifiStaConnectionBloc bloc) {
+    bloc.add(WifiStaConnectionConnectRequested(
       ssidController.text,
       passwordController.text,
     ));
