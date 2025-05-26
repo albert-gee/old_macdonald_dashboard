@@ -86,7 +86,7 @@ class WebsocketConnectionBloc
     for (var attempt = 1; attempt <= _maxConnectionAttempts; attempt++) {
       try {
         final success = await websocket
-            .connect(url: url)
+            .connect(url: url, rootCAAsset: 'assets/rootCA.pem')
             .timeout(_connectTimeout);
 
         if (success) {
