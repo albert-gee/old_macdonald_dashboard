@@ -1,7 +1,8 @@
+import 'package:dashboard/widget/sidebar/sidebar_menu/websocket_connection_indicator_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dashboard/styles/app_dimensions.dart';
 
-import 'package:dashboard/pages/main_page.dart';
+import 'package:dashboard/pages/orchestrator_page.dart';
 import 'package:dashboard/pages/wifi_sta_page.dart';
 import 'package:dashboard/pages/wifi_ap_page.dart';
 import 'package:dashboard/pages/thread_page.dart';
@@ -34,7 +35,7 @@ class _LayoutState extends State<Layout> {
 
   /// Page titles used for the sidebar and header.
   final List<String> titles = [
-    'Main Page',
+    'Orchestrator',
     'Wi-Fi STA',
     'Wi-Fi AP',
     'Thread Network',
@@ -43,16 +44,37 @@ class _LayoutState extends State<Layout> {
 
   /// Sidebar menu items.
   late final List<SidebarMenuItem> menuItems = [
-    SidebarMenuItem(icon: Icons.dashboard, title: titles[0]),
-    SidebarMenuItem(icon: Icons.network_wifi, title: titles[1]),
-    SidebarMenuItem(icon: Icons.wifi_tethering, title: titles[2]),
-    SidebarMenuItem(icon: Icons.lan, title: titles[3]),
-    SidebarMenuItem(icon: Icons.device_hub, title: titles[4]),
+    SidebarMenuItem(
+        icon: WebsocketConnectionIndicatorWidget(), title: titles[0]),
+    SidebarMenuItem(
+        icon: Icon(
+          Icons.network_wifi,
+          color: Colors.white,
+        ),
+        title: titles[1]),
+    SidebarMenuItem(
+        icon: Icon(
+          Icons.wifi_tethering,
+          color: Colors.white,
+        ),
+        title: titles[2]),
+    SidebarMenuItem(
+        icon: Icon(
+          Icons.lan,
+          color: Colors.white,
+        ),
+        title: titles[3]),
+    SidebarMenuItem(
+        icon: Icon(
+          Icons.device_hub,
+          color: Colors.white,
+        ),
+        title: titles[4]),
   ];
 
   /// Corresponding pages for each menu item.
   late final List<Widget> pages = [
-    MainPage(),
+    OrchestratorPage(),
     WifiStaPage(),
     WifiApPage(),
     ThreadPage(),

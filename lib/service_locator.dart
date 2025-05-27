@@ -1,5 +1,5 @@
 import 'package:dashboard/websocket/websocket_client.dart';
-import 'package:dashboard/websocket/websocket_message_handler.dart';
+import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/services/matter_command_service.dart';
 import 'package:dashboard/services/i_wifi_command_service.dart';
@@ -15,7 +15,7 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupServiceLocator() async {
   // Core WebSocket services
   getIt.registerLazySingleton<WebSocketClient>(() => WebSocketClient());
-  getIt.registerLazySingleton<WebSocketMessageHandler>(() => WebSocketMessageHandler());
+  getIt.registerLazySingleton<WebSocketInboundMessageHandler>(() => WebSocketInboundMessageHandler());
 
   // Domain services
   getIt.registerLazySingleton<IThreadCommandService>(

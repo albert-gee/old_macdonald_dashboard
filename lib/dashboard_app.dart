@@ -5,7 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'styles/app_theme.dart';
 import 'layout.dart';
 import 'websocket/websocket_client.dart';
-import 'websocket/websocket_message_handler.dart';
+import 'websocket/websocket_inbound_message_handler.dart';
 
 // BLoCs
 import 'blocs/side_menu/side_menu_cubit.dart';
@@ -48,7 +48,7 @@ class DashboardApp extends StatelessWidget {
           BlocProvider(
             create: (_) => WebsocketConnectionBloc(
               websocket: getIt<WebSocketClient>(),
-              messageHandler: getIt<WebSocketMessageHandler>(),
+              messageHandler: getIt<WebSocketInboundMessageHandler>(),
             ),
           ),
 

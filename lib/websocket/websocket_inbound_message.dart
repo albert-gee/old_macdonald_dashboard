@@ -1,18 +1,19 @@
-abstract class WebSocketMessage {
+import 'package:logger/logger.dart';
+
+abstract class WebSocketInboundMessage {
   final String type;
   final String? action;
   final dynamic payload;
 
-  const WebSocketMessage({required this.type, this.action, required this.payload});
+  WebSocketInboundMessage({required this.type, this.action, required this.payload});
 
-  factory WebSocketMessage.fromJson(Map<String, dynamic> json) {
+  factory WebSocketInboundMessage.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String;
     final action = json['action'] as String?;
     final payload = json['payload'];
 
-    if (type == 'websocket' && action == 'connected') {
-      return WebSocketConnectedMessage(payload['connected'] == true);
-    }
+    final Logger logger = Logger();
+    logger.d('Parsing WebSocket message: type=$type, action=$action, payload=$payload');
 
     if (type == 'info') {
       switch (action) {
@@ -59,67 +60,61 @@ abstract class WebSocketMessage {
   }
 }
 
-class WebSocketConnectedMessage extends WebSocketMessage {
-  final bool connected;
-  WebSocketConnectedMessage(this.connected)
-      : super(type: 'websocket', action: 'connected', payload: {'connected': connected});
-}
-
-class ThreadStackStatusMessage extends WebSocketMessage {
+class ThreadStackStatusMessage extends WebSocketInboundMessage {
   final bool running;
   ThreadStackStatusMessage(this.running)
       : super(type: 'info', action: 'thread.stack_status', payload: {'running': running});
 }
 
-class ThreadInterfaceStatusMessage extends WebSocketMessage {
+class ThreadInterfaceStatusMessage extends WebSocketInboundMessage {
   final bool interfaceUp;
   ThreadInterfaceStatusMessage(this.interfaceUp)
       : super(type: 'info', action: 'thread.interface_status', payload: {'interface_up': interfaceUp});
 }
 
-class ThreadAttachmentStatusMessage extends WebSocketMessage {
+class ThreadAttachmentStatusMessage extends WebSocketInboundMessage {
   final bool attached;
   ThreadAttachmentStatusMessage(this.attached)
       : super(type: 'info', action: 'thread.attachment_status', payload: {'attached': attached});
 }
 
-class ThreadRoleMessage extends WebSocketMessage {
+class ThreadRoleMessage extends WebSocketInboundMessage {
   final String role;
   ThreadRoleMessage(this.role)
       : super(type: 'info', action: 'thread.role', payload: {'role': role});
 }
 
-class ThreadDatasetActiveMessage extends WebSocketMessage {
+class ThreadDatasetActiveMessage extends WebSocketInboundMessage {
   final Map<String, dynamic> dataset;
   ThreadDatasetActiveMessage(this.dataset)
       : super(type: 'info', action: 'thread.active_dataset', payload: dataset);
 }
 
-class UnicastAddressListMessage extends WebSocketMessage {
+class UnicastAddressListMessage extends WebSocketInboundMessage {
   final List<String> addresses;
   UnicastAddressListMessage(this.addresses)
       : super(type: 'info', action: 'ipv6.unicast_addresses', payload: {'unicast': addresses});
 }
 
-class MulticastAddressListMessage extends WebSocketMessage {
+class MulticastAddressListMessage extends WebSocketInboundMessage {
   final List<String> addresses;
   MulticastAddressListMessage(this.addresses)
       : super(type: 'info', action: 'ipv6.multicast_addresses', payload: {'multicast': addresses});
 }
 
-class MeshcopServiceStatusMessage extends WebSocketMessage {
+class MeshcopServiceStatusMessage extends WebSocketInboundMessage {
   final bool published;
   MeshcopServiceStatusMessage(this.published)
       : super(type: 'info', action: 'thread.meshcop_service', payload: {'published': published});
 }
 
-class WifiStaStatusMessage extends WebSocketMessage {
+class WifiStaStatusMessage extends WebSocketInboundMessage {
   final String status;
   WifiStaStatusMessage(this.status)
       : super(type: 'info', action: 'wifi.sta_status', payload: {'status': status});
 }
 
-class MatterCommissioningCompleteMessage extends WebSocketMessage {
+class MatterCommissioningCompleteMessage extends WebSocketInboundMessage {
   final int nodeId;
   final int fabricIndex;
   MatterCommissioningCompleteMessage({required this.nodeId, required this.fabricIndex})
@@ -129,7 +124,7 @@ class MatterCommissioningCompleteMessage extends WebSocketMessage {
   });
 }
 
-class MatterAttributeReportMessage extends WebSocketMessage {
+class MatterAttributeReportMessage extends WebSocketInboundMessage {
   final int nodeId;
   final int endpointId;
   final int clusterId;
@@ -151,7 +146,7 @@ class MatterAttributeReportMessage extends WebSocketMessage {
   });
 }
 
-class MatterSubscribeDoneMessage extends WebSocketMessage {
+class MatterSubscribeDoneMessage extends WebSocketInboundMessage {
   final int nodeId;
   final int subscriptionId;
   MatterSubscribeDoneMessage({
@@ -163,6 +158,6 @@ class MatterSubscribeDoneMessage extends WebSocketMessage {
   });
 }
 
-class GenericMessage extends WebSocketMessage {
+class GenericMessage extends WebSocketInboundMessage {
   GenericMessage({required super.type, super.action, required super.payload});
 }

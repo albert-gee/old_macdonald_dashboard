@@ -61,11 +61,7 @@ class SidebarMenuWidget extends StatelessWidget {
             // Displays the item's icon.
             leading: SizedBox(
               width: 24,
-              child: Icon(
-                item.icon,
-                // Changes the icon color based on selection state.
-                color: selected ? Colors.white : Colors.grey[400],
-              ),
+              child: item.icon,
             ),
             // Displays the item's title if the sidebar is not collapsed.
             title: isCollapsed
