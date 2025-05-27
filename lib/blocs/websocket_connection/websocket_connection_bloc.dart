@@ -43,13 +43,13 @@ class WebsocketConnectionBloc extends Bloc<WebsocketConnectionEvent, WebsocketCo
       final connected = await _tryConnect(_currentUrl!);
       if (connected) {
         emit(WebsocketConnectionConnectedState());
-        _logger.i('WebSocket connected to \$_currentUrl');
+        _logger.i('WebSocket connected to $_currentUrl');
       } else {
         emit(const WebsocketConnectionErrorState('Failed to connect'));
-        _logger.w('WebSocket connection failed after \$_maxConnectionAttempts attempts');
+        _logger.w('WebSocket connection failed after $_maxConnectionAttempts attempts');
       }
     } catch (e, stack) {
-      emit(WebsocketConnectionErrorState('Error: \$e'));
+      emit(WebsocketConnectionErrorState('Error: $e'));
       _logger.e('Unhandled WebSocket connection error', error: e, stackTrace: stack);
     }
   }
