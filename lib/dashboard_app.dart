@@ -16,7 +16,7 @@ import 'blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
 import 'blocs/thread/thread_address/thread_address_bloc.dart';
 import 'blocs/thread/thread_attachment_status/thread_attachment_status_bloc.dart';
-import 'blocs/thread/thread_dataset_init_form/thread_dataset_init_form_bloc.dart';
+import 'blocs/thread/thread_dataset_form/thread_dataset_form_bloc.dart';
 import 'blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
 import 'blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
 import 'blocs/thread/thread_role/thread_role_bloc.dart';

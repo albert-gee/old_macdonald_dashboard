@@ -97,8 +97,13 @@ class WebsocketConnectionBloc
   Future<bool> _tryConnect(String url) async {
     for (var attempt = 1; attempt <= _maxConnectionAttempts; attempt++) {
       try {
-        final success =
-            await websocket.connect(url: url).timeout(_connectTimeout);
+        final success = await websocket
+            .connect(
+              url: url,
+              rootCAAsset:
+                  url.startsWith('wss://') ? 'assets/rootCA.pem' : null,
+            )
+            .timeout(_connectTimeout);
 
         if (success) {
           await _streamSub?.cancel();

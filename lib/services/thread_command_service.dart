@@ -44,14 +44,14 @@ class ThreadCommandService implements IThreadCommandService {
   }) async {
     final message = jsonEncode({
       'type': 'command',
-      'action': 'thread.dataset_init',
+      'action': 'thread.dataset.init',
       'payload': {
         'channel': channel,
         'pan_id': panId,
         'network_name': networkName,
         'extended_pan_id': extendedPanId,
         'mesh_local_prefix': meshLocalPrefix,
-        'network_key': networkKey,
+        'master_key': networkKey,
         'pskc': pskc,
       },
     });

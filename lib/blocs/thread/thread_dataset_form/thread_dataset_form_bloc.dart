@@ -2,8 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:dashboard/services/i_thread_command_service.dart';
-import 'thread_dataset_init_form_event.dart';
-import 'thread_dataset_init_form_state.dart';
+import 'thread_dataset_form_event.dart';
+import 'thread_dataset_form_state.dart';
 
 /// Bloc for handling Thread Dataset initialization form submission.
 class ThreadDatasetInitFormBloc
