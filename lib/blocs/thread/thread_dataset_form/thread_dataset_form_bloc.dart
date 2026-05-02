@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 
 import 'package:dashboard/services/i_thread_command_service.dart';
 import 'thread_dataset_form_event.dart';
@@ -10,9 +9,9 @@ class ThreadDatasetInitFormBloc
     extends Bloc<ThreadDatasetInitFormEvent, ThreadDatasetInitFormState> {
   final IThreadCommandService _threadCommandService;
 
-  ThreadDatasetInitFormBloc({IThreadCommandService? threadCommandService})
-      : _threadCommandService =
-            threadCommandService ?? GetIt.I<IThreadCommandService>(),
+  ThreadDatasetInitFormBloc({
+    required IThreadCommandService threadCommandService,
+  })  : _threadCommandService = threadCommandService,
         super(ThreadDatasetInitFormInitial()) {
     on<ThreadDatasetInitSubmitted>(_handleSubmitted);
   }

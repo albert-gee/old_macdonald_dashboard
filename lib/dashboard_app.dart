@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 
-import 'services/i_orchestrator_url_storage.dart';
 import 'styles/app_theme.dart';
 import 'layout.dart';
 import 'src/core/config/app_config.dart';
-import 'websocket/websocket_client.dart';
+import 'src/core/config/app_dependencies.dart';
 import 'websocket/websocket_inbound_message_handler.dart';
 
 // BLoCs
@@ -26,10 +24,12 @@ import 'blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
 
 class DashboardApp extends StatefulWidget {
   final AppConfig config;
+  final AppDependencies dependencies;
 
   const DashboardApp({
     super.key,
     required this.config,
+    required this.dependencies,
   });
 
   @override
@@ -53,19 +53,24 @@ class _DashboardAppState extends State<DashboardApp> {
   @override
   void initState() {
     super.initState();
-    final getIt = GetIt.instance;
 
     _sideMenuCubit = SideMenuCubit();
     _threadActiveDatasetBloc = ThreadActiveDatasetBloc();
     _threadAddressBloc = ThreadAddressBloc();
     _threadAttachmentStatusBloc = ThreadAttachmentStatusBloc();
-    _threadCommandBloc = ThreadCommandBloc();
-    _threadDatasetInitFormBloc = ThreadDatasetInitFormBloc();
+    _threadCommandBloc = ThreadCommandBloc(
+      threadCommandService: widget.dependencies.threadCommandService,
+    );
+    _threadDatasetInitFormBloc = ThreadDatasetInitFormBloc(
+      threadCommandService: widget.dependencies.threadCommandService,
+    );
     _threadInterfaceStatusBloc = ThreadInterfaceStatusBloc();
     _threadMeshcopServiceStatusBloc = ThreadMeshcopServiceStatusBloc();
     _threadRoleBloc = ThreadRoleBloc();
     _threadStackStatusBloc = ThreadStackStatusBloc();
-    _wifiStaConnectionBloc = WifiStaConnectionBloc();
+    _wifiStaConnectionBloc = WifiStaConnectionBloc(
+      wifiCommandService: widget.dependencies.wifiCommandService,
+    );
 
     final messageHandler = WebSocketInboundMessageHandler(
       threadStackStatusBloc: _threadStackStatusBloc,
@@ -78,9 +83,9 @@ class _DashboardAppState extends State<DashboardApp> {
     );
 
     _websocketConnectionBloc = WebsocketConnectionBloc(
-      websocket: getIt<WebSocketClient>(),
+      websocket: widget.dependencies.webSocketClient,
       messageHandler: messageHandler,
-      urlStorage: getIt<IOrchestratorUrlStorage>(),
+      urlStorage: widget.dependencies.orchestratorUrlStorage,
     );
   }
 
@@ -132,6 +137,7 @@ class _DashboardAppState extends State<DashboardApp> {
         child: Layout(
           title: widget.config.appTitle,
           subTitle: widget.config.appSubtitle,
+          orchestratorUrlStorage: widget.dependencies.orchestratorUrlStorage,
         ),
       ),
     );

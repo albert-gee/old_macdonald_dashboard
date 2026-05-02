@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
-import 'package:get_it/get_it.dart';
 
 import 'thread_command_event.dart';
 import 'thread_command_state.dart';
@@ -8,9 +7,9 @@ import 'thread_command_state.dart';
 class ThreadCommandBloc extends Bloc<ThreadCommandEvent, ThreadCommandState> {
   final IThreadCommandService _threadCommandService;
 
-  ThreadCommandBloc({IThreadCommandService? threadCommandService})
-      : _threadCommandService =
-            threadCommandService ?? GetIt.I<IThreadCommandService>(),
+  ThreadCommandBloc({
+    required IThreadCommandService threadCommandService,
+  })  : _threadCommandService = threadCommandService,
         super(const ThreadCommandInitial()) {
     on<ThreadEnableRequested>(
       (event, emit) => _run(

@@ -1,9 +1,15 @@
 import 'package:dashboard/widget/content/card_widget.dart';
 import 'package:dashboard/widget/content/forms/websocket_connection_form_widget.dart';
+import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:flutter/material.dart';
 
 class OrchestratorPage extends StatelessWidget {
-  const OrchestratorPage({super.key});
+  final IOrchestratorUrlStorage urlStorage;
+
+  const OrchestratorPage({
+    super.key,
+    required this.urlStorage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +18,7 @@ class OrchestratorPage extends StatelessWidget {
       children: [
         CardWidget(
           title: "WebSocket Connection",
-          child: WebsocketConnectionFormWidget(),
+          child: WebsocketConnectionFormWidget(urlStorage: urlStorage),
         ),
       ],
     );

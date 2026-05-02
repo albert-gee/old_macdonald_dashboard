@@ -1,5 +1,6 @@
 import 'package:dashboard/widget/sidebar/sidebar_menu/websocket_connection_indicator_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:dashboard/styles/app_dimensions.dart';
 
 import 'package:dashboard/pages/orchestrator_page.dart';
@@ -18,11 +19,13 @@ import 'package:dashboard/widget/content/page_header.dart';
 class Layout extends StatefulWidget {
   final String title;
   final String subTitle;
+  final IOrchestratorUrlStorage orchestratorUrlStorage;
 
   const Layout({
     super.key,
     required this.title,
     required this.subTitle,
+    required this.orchestratorUrlStorage,
   });
 
   @override
@@ -74,7 +77,7 @@ class _LayoutState extends State<Layout> {
 
   /// Corresponding pages for each menu item.
   late final List<Widget> pages = [
-    OrchestratorPage(),
+    OrchestratorPage(urlStorage: widget.orchestratorUrlStorage),
     WifiStaPage(),
     WifiApPage(),
     ThreadPage(),

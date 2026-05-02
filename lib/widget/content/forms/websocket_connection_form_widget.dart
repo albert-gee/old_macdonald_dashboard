@@ -1,4 +1,3 @@
-import 'package:dashboard/service_locator.dart';
 import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +8,12 @@ import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.d
 
 /// A form widget for entering a WebSocket URL and controlling connection state.
 class WebsocketConnectionFormWidget extends StatefulWidget {
-  const WebsocketConnectionFormWidget({super.key});
+  final IOrchestratorUrlStorage urlStorage;
+
+  const WebsocketConnectionFormWidget({
+    super.key,
+    required this.urlStorage,
+  });
 
   @override
   State<WebsocketConnectionFormWidget> createState() =>
@@ -20,17 +24,15 @@ class _WebsocketConnectionFormWidgetState
     extends State<WebsocketConnectionFormWidget> {
   final TextEditingController _urlController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final IOrchestratorUrlStorage _urlStorage;
 
   @override
   void initState() {
     super.initState();
-    _urlStorage = getIt<IOrchestratorUrlStorage>();
     _loadSavedUrl();
   }
 
   Future<void> _loadSavedUrl() async {
-    final savedUrl = await _urlStorage.readUrl();
+    final savedUrl = await widget.urlStorage.readUrl();
     if (savedUrl != null && mounted) {
       setState(() {
         _urlController.text = savedUrl;
@@ -138,7 +140,7 @@ class _WebsocketConnectionFormWidgetState
       child: OutlinedButton(
         onPressed: () async {
           _urlController.clear();
-          await _urlStorage.clearUrl();
+          await widget.urlStorage.clearUrl();
         },
         child: const Text("Clear"),
       ),

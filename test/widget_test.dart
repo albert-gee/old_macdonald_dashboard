@@ -1,8 +1,12 @@
 import 'dart:convert';
 
 import 'package:dashboard/dashboard_app.dart';
-import 'package:dashboard/service_locator.dart';
+import 'package:dashboard/services/i_matter_command_service.dart';
+import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/services/i_thread_command_service.dart';
+import 'package:dashboard/services/i_wifi_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
+import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/websocket/websocket_client.dart';
 import 'package:dashboard/websocket/websocket_inbound_message.dart';
@@ -29,6 +33,16 @@ void main() {
     expect(config.appSubtitle, 'Controlled Environment');
     expect(config.defaultWebSocketUrl, 'wss://192.168.4.1/ws');
     expect(config.rootCaAssetPath, 'assets/rootCA.pem');
+  });
+
+  test('AppDependencies.create builds shared WebSocket-backed services', () {
+    final dependencies = AppDependencies.create();
+
+    expect(dependencies.webSocketClient, isA<WebSocketClient>());
+    expect(dependencies.orchestratorUrlStorage, isA<IOrchestratorUrlStorage>());
+    expect(dependencies.threadCommandService, isA<IThreadCommandService>());
+    expect(dependencies.wifiCommandService, isA<IWifiCommandService>());
+    expect(dependencies.matterCommandService, isA<IMatterCommandService>());
   });
 
   group('WebSocketInboundMessage parser', () {
@@ -136,12 +150,12 @@ void main() {
 
   testWidgets('DashboardApp smoke test', (tester) async {
     SharedPreferences.setMockInitialValues({});
-    await getIt.reset();
-    await setupServiceLocator();
+    final dependencies = AppDependencies.create();
 
     await tester.pumpWidget(
-      const DashboardApp(
-        config: AppConfig.local(),
+      DashboardApp(
+        config: const AppConfig.local(),
+        dependencies: dependencies,
       ),
     );
     await tester.pump();
@@ -152,12 +166,12 @@ void main() {
 
   testWidgets('ThreadPage smoke test', (tester) async {
     SharedPreferences.setMockInitialValues({});
-    await getIt.reset();
-    await setupServiceLocator();
+    final dependencies = AppDependencies.create();
 
     await tester.pumpWidget(
-      const DashboardApp(
-        config: AppConfig.local(),
+      DashboardApp(
+        config: const AppConfig.local(),
+        dependencies: dependencies,
       ),
     );
     await tester.pump();
