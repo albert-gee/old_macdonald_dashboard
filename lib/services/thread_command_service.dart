@@ -9,28 +9,41 @@ class ThreadCommandService implements IThreadCommandService {
   ThreadCommandService({required this.websocket});
 
   @override
-  Future<void> sendThreadEnableCommand() async {
-    final message = jsonEncode({
-      'type': 'command',
-      'action': 'thread.enable',
-    });
-    final sent = await websocket.sendMessage(message);
-    if (!sent) {
-      throw StateError('WebSocket is not connected.');
-    }
-  }
+  Future<void> sendThreadEnableCommand() => _sendCommand('thread.enable');
 
   @override
-  Future<void> sendThreadDisableCommand() async {
-    final message = jsonEncode({
-      'type': 'command',
-      'action': 'thread.disable',
-    });
-    final sent = await websocket.sendMessage(message);
-    if (!sent) {
-      throw StateError('WebSocket is not connected.');
-    }
-  }
+  Future<void> sendThreadDisableCommand() => _sendCommand('thread.disable');
+
+  @override
+  Future<void> sendThreadStatusGetCommand() =>
+      _sendCommand('thread.status_get');
+
+  @override
+  Future<void> sendThreadAttachedGetCommand() =>
+      _sendCommand('thread.attached_get');
+
+  @override
+  Future<void> sendThreadRoleGetCommand() => _sendCommand('thread.role_get');
+
+  @override
+  Future<void> sendThreadActiveDatasetGetCommand() =>
+      _sendCommand('thread.active_dataset_get');
+
+  @override
+  Future<void> sendThreadUnicastAddressesGetCommand() =>
+      _sendCommand('thread.unicast_addresses_get');
+
+  @override
+  Future<void> sendThreadMulticastAddressesGetCommand() =>
+      _sendCommand('thread.multicast_addresses_get');
+
+  @override
+  Future<void> sendThreadBorderRouterInitCommand() =>
+      _sendCommand('thread.br_init');
+
+  @override
+  Future<void> sendThreadBorderRouterDeinitCommand() =>
+      _sendCommand('thread.br_deinit');
 
   @override
   Future<void> sendThreadDatasetInitCommand({
@@ -41,21 +54,31 @@ class ThreadCommandService implements IThreadCommandService {
     required String meshLocalPrefix,
     required String networkKey,
     required String pskc,
+  }) =>
+      _sendCommand(
+        'thread.dataset.init',
+        payload: {
+          'channel': channel,
+          'pan_id': panId,
+          'network_name': networkName,
+          'extended_pan_id': extendedPanId,
+          'mesh_local_prefix': meshLocalPrefix,
+          'master_key': networkKey,
+          'pskc': pskc,
+        },
+      );
+
+  Future<void> _sendCommand(
+    String action, {
+    Map<String, Object?>? payload,
   }) async {
-    final message = jsonEncode({
+    final body = <String, Object?>{
       'type': 'command',
-      'action': 'thread.dataset.init',
-      'payload': {
-        'channel': channel,
-        'pan_id': panId,
-        'network_name': networkName,
-        'extended_pan_id': extendedPanId,
-        'mesh_local_prefix': meshLocalPrefix,
-        'master_key': networkKey,
-        'pskc': pskc,
-      },
-    });
-    final sent = await websocket.sendMessage(message);
+      'action': action,
+      if (payload != null) 'payload': payload,
+    };
+
+    final sent = await websocket.sendMessage(jsonEncode(body));
     if (!sent) {
       throw StateError('WebSocket is not connected.');
     }

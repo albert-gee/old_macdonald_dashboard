@@ -16,6 +16,7 @@ import 'blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
 import 'blocs/thread/thread_address/thread_address_bloc.dart';
 import 'blocs/thread/thread_attachment_status/thread_attachment_status_bloc.dart';
+import 'blocs/thread/thread_command/thread_command_bloc.dart';
 import 'blocs/thread/thread_dataset_form/thread_dataset_form_bloc.dart';
 import 'blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
 import 'blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
@@ -42,6 +43,7 @@ class _DashboardAppState extends State<DashboardApp> {
   late final ThreadActiveDatasetBloc _threadActiveDatasetBloc;
   late final ThreadAddressBloc _threadAddressBloc;
   late final ThreadAttachmentStatusBloc _threadAttachmentStatusBloc;
+  late final ThreadCommandBloc _threadCommandBloc;
   late final ThreadDatasetInitFormBloc _threadDatasetInitFormBloc;
   late final ThreadInterfaceStatusBloc _threadInterfaceStatusBloc;
   late final ThreadMeshcopServiceStatusBloc _threadMeshcopServiceStatusBloc;
@@ -58,6 +60,7 @@ class _DashboardAppState extends State<DashboardApp> {
     _threadActiveDatasetBloc = ThreadActiveDatasetBloc();
     _threadAddressBloc = ThreadAddressBloc();
     _threadAttachmentStatusBloc = ThreadAttachmentStatusBloc();
+    _threadCommandBloc = ThreadCommandBloc();
     _threadDatasetInitFormBloc = ThreadDatasetInitFormBloc();
     _threadInterfaceStatusBloc = ThreadInterfaceStatusBloc();
     _threadMeshcopServiceStatusBloc = ThreadMeshcopServiceStatusBloc();
@@ -89,6 +92,7 @@ class _DashboardAppState extends State<DashboardApp> {
     _threadActiveDatasetBloc.close();
     _threadAddressBloc.close();
     _threadAttachmentStatusBloc.close();
+    _threadCommandBloc.close();
     _threadDatasetInitFormBloc.close();
     _threadInterfaceStatusBloc.close();
     _threadMeshcopServiceStatusBloc.close();
@@ -116,6 +120,7 @@ class _DashboardAppState extends State<DashboardApp> {
           BlocProvider.value(value: _threadActiveDatasetBloc),
           BlocProvider.value(value: _threadAddressBloc),
           BlocProvider.value(value: _threadAttachmentStatusBloc),
+          BlocProvider.value(value: _threadCommandBloc),
           BlocProvider.value(value: _threadDatasetInitFormBloc),
           BlocProvider.value(value: _threadInterfaceStatusBloc),
           BlocProvider.value(value: _threadMeshcopServiceStatusBloc),

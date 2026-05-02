@@ -1,6 +1,14 @@
 abstract class IThreadCommandService {
   Future<void> sendThreadEnableCommand();
   Future<void> sendThreadDisableCommand();
+  Future<void> sendThreadStatusGetCommand();
+  Future<void> sendThreadAttachedGetCommand();
+  Future<void> sendThreadRoleGetCommand();
+  Future<void> sendThreadActiveDatasetGetCommand();
+  Future<void> sendThreadUnicastAddressesGetCommand();
+  Future<void> sendThreadMulticastAddressesGetCommand();
+  Future<void> sendThreadBorderRouterInitCommand();
+  Future<void> sendThreadBorderRouterDeinitCommand();
 
   Future<void> sendThreadDatasetInitCommand({
     required int channel,

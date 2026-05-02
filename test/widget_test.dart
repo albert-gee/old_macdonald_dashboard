@@ -55,27 +55,73 @@ void main() {
     });
   });
 
-  test('ThreadCommandService encodes dataset init protocol', () async {
-    final websocket = FakeWebSocketClient();
-    final service = ThreadCommandService(websocket: websocket);
+  group('ThreadCommandService protocol', () {
+    test('encodes all no-payload Thread command actions', () async {
+      await _expectThreadCommand(
+        expectedAction: 'thread.enable',
+        send: (service) => service.sendThreadEnableCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.disable',
+        send: (service) => service.sendThreadDisableCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.status_get',
+        send: (service) => service.sendThreadStatusGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.attached_get',
+        send: (service) => service.sendThreadAttachedGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.role_get',
+        send: (service) => service.sendThreadRoleGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.active_dataset_get',
+        send: (service) => service.sendThreadActiveDatasetGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.unicast_addresses_get',
+        send: (service) => service.sendThreadUnicastAddressesGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.multicast_addresses_get',
+        send: (service) => service.sendThreadMulticastAddressesGetCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.br_init',
+        send: (service) => service.sendThreadBorderRouterInitCommand(),
+      );
+      await _expectThreadCommand(
+        expectedAction: 'thread.br_deinit',
+        send: (service) => service.sendThreadBorderRouterDeinitCommand(),
+      );
+    });
 
-    await service.sendThreadDatasetInitCommand(
-      channel: 15,
-      panId: 4660,
-      networkName: 'OldMacdonald',
-      extendedPanId: '0011223344556677',
-      meshLocalPrefix: 'fd00::/64',
-      networkKey: '00112233445566778899aabbccddeeff',
-      pskc: 'ffeeddccbbaa99887766554433221100',
-    );
+    test('encodes dataset init protocol', () async {
+      final websocket = FakeWebSocketClient();
+      final service = ThreadCommandService(websocket: websocket);
 
-    final message = jsonDecode(websocket.sentMessage!) as Map<String, dynamic>;
-    final payload = message['payload'] as Map<String, dynamic>;
+      await service.sendThreadDatasetInitCommand(
+        channel: 15,
+        panId: 4660,
+        networkName: 'OldMacdonald',
+        extendedPanId: '0011223344556677',
+        meshLocalPrefix: 'fd00::/64',
+        networkKey: '00112233445566778899aabbccddeeff',
+        pskc: 'ffeeddccbbaa99887766554433221100',
+      );
 
-    expect(message['type'], 'command');
-    expect(message['action'], 'thread.dataset.init');
-    expect(payload['master_key'], '00112233445566778899aabbccddeeff');
-    expect(payload.containsKey('network_' 'key'), isFalse);
+      final message =
+          jsonDecode(websocket.sentMessage!) as Map<String, dynamic>;
+      final payload = message['payload'] as Map<String, dynamic>;
+
+      expect(message['type'], 'command');
+      expect(message['action'], 'thread.dataset.init');
+      expect(payload['master_key'], '00112233445566778899aabbccddeeff');
+      expect(payload.containsKey('network_' 'key'), isFalse);
+    });
   });
 
   testWidgets('DashboardApp smoke test', (tester) async {
@@ -94,4 +140,45 @@ void main() {
     expect(find.text('Old MacDonald'), findsOneWidget);
     expect(find.text('Orchestrator'), findsWidgets);
   });
+
+  testWidgets('ThreadPage smoke test', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await getIt.reset();
+    await setupServiceLocator();
+
+    await tester.pumpWidget(
+      const DashboardApp(
+        title: 'Old MacDonald',
+        subTitle: 'Controlled Environment',
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Thread Network'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Thread Status'), findsOneWidget);
+    expect(find.text('Active Dataset'), findsOneWidget);
+    expect(find.text('IP Addresses'), findsOneWidget);
+    expect(find.text('Enable Thread'), findsOneWidget);
+    expect(find.text('Disable Thread'), findsOneWidget);
+    expect(find.text('Refresh Status'), findsOneWidget);
+    expect(find.text('Init Border Router'), findsOneWidget);
+    expect(find.text('Thread Dataset'), findsOneWidget);
+  });
+}
+
+Future<void> _expectThreadCommand({
+  required String expectedAction,
+  required Future<void> Function(ThreadCommandService service) send,
+}) async {
+  final websocket = FakeWebSocketClient();
+  final service = ThreadCommandService(websocket: websocket);
+
+  await send(service);
+
+  final message = jsonDecode(websocket.sentMessage!) as Map<String, dynamic>;
+  expect(message['type'], 'command');
+  expect(message['action'], expectedAction);
+  expect(message.containsKey('payload'), isFalse);
 }
