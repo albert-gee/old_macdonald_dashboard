@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dashboard/dashboard_app.dart';
+import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';

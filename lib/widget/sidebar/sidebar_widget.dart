@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/widget/sidebar/sidebar_toggle_button_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_widget.dart';

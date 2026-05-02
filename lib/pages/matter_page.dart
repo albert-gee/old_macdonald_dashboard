@@ -1,4 +1,4 @@
-import 'package:dashboard/widget/content/card_widget.dart';
+import 'package:dashboard/src/core/widgets/card_widget.dart';
 import 'package:flutter/material.dart';
 
 class MatterPage extends StatelessWidget {

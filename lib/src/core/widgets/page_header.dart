@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
 
 /// A standard top-level header widget with vertical spacing.
 ///

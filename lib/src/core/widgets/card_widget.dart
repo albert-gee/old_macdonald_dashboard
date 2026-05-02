@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dashboard/styles/app_colors.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
-import 'package:dashboard/styles/app_shadows.dart';
+import 'package:dashboard/src/core/theme/app_colors.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/theme/app_shadows.dart';
 
 /// A reusable container for displaying titled sections of content.
 ///

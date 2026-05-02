@@ -1,7 +1,7 @@
 import 'package:dashboard/widget/sidebar/sidebar_menu/websocket_connection_indicator_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:dashboard/services/i_orchestrator_url_storage.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
 
 import 'package:dashboard/pages/orchestrator_page.dart';
 import 'package:dashboard/pages/wifi_sta_page.dart';
@@ -11,7 +11,7 @@ import 'package:dashboard/pages/matter_page.dart';
 
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';
-import 'package:dashboard/widget/content/page_header.dart';
+import 'package:dashboard/src/core/widgets/page_header.dart';
 
 /// Main application layout with persistent sidebar navigation.
 ///

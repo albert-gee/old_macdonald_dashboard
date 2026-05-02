@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
-import 'package:dashboard/widget/content/labeled_text_field.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/widgets/labeled_text_field.dart';
 import 'package:dashboard/blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 
 /// A form for connecting the Wi-Fi STA interface to an existing Access Point.

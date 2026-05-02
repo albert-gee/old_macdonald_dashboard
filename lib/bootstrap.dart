@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
-import 'dashboard_app.dart';
+import 'src/app/dashboard_app.dart';
 import 'src/core/config/app_dependencies.dart';
 import 'src/core/config/app_config.dart';
 

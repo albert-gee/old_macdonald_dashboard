@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'styles/app_theme.dart';
+import 'package:dashboard/blocs/side_menu/side_menu_cubit.dart';
+import 'package:dashboard/blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_address/thread_address_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_attachment_status/thread_attachment_status_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_command/thread_command_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_dataset_form/thread_dataset_form_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
+import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
+import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';
+import 'package:dashboard/blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
+import 'package:dashboard/src/core/config/app_config.dart';
+import 'package:dashboard/src/core/config/app_dependencies.dart';
+import 'package:dashboard/src/core/theme/app_theme.dart';
+import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
+
 import 'layout.dart';
-import 'src/core/config/app_config.dart';
-import 'src/core/config/app_dependencies.dart';
-import 'websocket/websocket_inbound_message_handler.dart';
-
-// BLoCs
-import 'blocs/side_menu/side_menu_cubit.dart';
-import 'blocs/websocket_connection/websocket_connection_bloc.dart';
-import 'blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
-
-import 'blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
-import 'blocs/thread/thread_address/thread_address_bloc.dart';
-import 'blocs/thread/thread_attachment_status/thread_attachment_status_bloc.dart';
-import 'blocs/thread/thread_command/thread_command_bloc.dart';
-import 'blocs/thread/thread_dataset_form/thread_dataset_form_bloc.dart';
-import 'blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
-import 'blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
-import 'blocs/thread/thread_role/thread_role_bloc.dart';
-import 'blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
 
 class DashboardApp extends StatefulWidget {
   final AppConfig config;

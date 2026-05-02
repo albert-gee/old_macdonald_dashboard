@@ -13,10 +13,10 @@ import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_mesh
 import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
 import 'package:dashboard/blocs/thread/thread_role/thread_role_state.dart';
 import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'package:dashboard/styles/app_dimensions.dart';
-import 'package:dashboard/widget/content/card_widget.dart';
-import 'package:dashboard/widget/content/labeled_text_field.dart';
-import 'package:dashboard/widget/content/status_card_widget.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/widgets/card_widget.dart';
+import 'package:dashboard/src/core/widgets/labeled_text_field.dart';
+import 'package:dashboard/src/core/widgets/status_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
