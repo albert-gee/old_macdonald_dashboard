@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'services/i_orchestrator_url_storage.dart';
 import 'styles/app_theme.dart';
 import 'layout.dart';
+import 'src/core/config/app_config.dart';
 import 'websocket/websocket_client.dart';
 import 'websocket/websocket_inbound_message_handler.dart';
 
@@ -24,13 +25,11 @@ import 'blocs/thread/thread_role/thread_role_bloc.dart';
 import 'blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
 
 class DashboardApp extends StatefulWidget {
-  final String title;
-  final String subTitle;
+  final AppConfig config;
 
   const DashboardApp({
     super.key,
-    required this.title,
-    required this.subTitle,
+    required this.config,
   });
 
   @override
@@ -105,7 +104,7 @@ class _DashboardAppState extends State<DashboardApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: widget.title,
+      title: widget.config.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: MultiBlocProvider(
@@ -131,8 +130,8 @@ class _DashboardAppState extends State<DashboardApp> {
           BlocProvider.value(value: _wifiStaConnectionBloc),
         ],
         child: Layout(
-          title: widget.title,
-          subTitle: widget.subTitle,
+          title: widget.config.appTitle,
+          subTitle: widget.config.appSubtitle,
         ),
       ),
     );

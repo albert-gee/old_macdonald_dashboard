@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dashboard/dashboard_app.dart';
 import 'package:dashboard/service_locator.dart';
 import 'package:dashboard/services/thread_command_service.dart';
+import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/websocket/websocket_client.dart';
 import 'package:dashboard/websocket/websocket_inbound_message.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +21,15 @@ class FakeWebSocketClient extends WebSocketClient {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('AppConfig.local exposes local defaults', () {
+    const config = AppConfig.local();
+
+    expect(config.appTitle, 'Old MacDonald');
+    expect(config.appSubtitle, 'Controlled Environment');
+    expect(config.defaultWebSocketUrl, 'wss://192.168.4.1/ws');
+    expect(config.rootCaAssetPath, 'assets/rootCA.pem');
+  });
 
   group('WebSocketInboundMessage parser', () {
     test('parses thread stack status', () {
@@ -131,8 +141,7 @@ void main() {
 
     await tester.pumpWidget(
       const DashboardApp(
-        title: 'Old MacDonald',
-        subTitle: 'Controlled Environment',
+        config: AppConfig.local(),
       ),
     );
     await tester.pump();
@@ -148,8 +157,7 @@ void main() {
 
     await tester.pumpWidget(
       const DashboardApp(
-        title: 'Old MacDonald',
-        subTitle: 'Controlled Environment',
+        config: AppConfig.local(),
       ),
     );
     await tester.pump();
