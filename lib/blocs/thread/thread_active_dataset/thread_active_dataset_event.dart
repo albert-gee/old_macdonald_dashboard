@@ -6,7 +6,7 @@ class ThreadActiveDatasetUpdated extends Equatable {
   final String extendedPanId;
   final String meshLocalPrefix;
   final int panId;
-  final int channel;
+  final int threadChannel;
 
   const ThreadActiveDatasetUpdated({
     required this.activeTimestamp,
@@ -14,10 +14,16 @@ class ThreadActiveDatasetUpdated extends Equatable {
     required this.extendedPanId,
     required this.meshLocalPrefix,
     required this.panId,
-    required this.channel,
-  });
+    required int channel,
+  }) : threadChannel = channel;
 
   @override
-  List<Object> get props =>
-      [activeTimestamp, networkName, extendedPanId, meshLocalPrefix, panId, channel];
+  List<Object> get props => [
+        activeTimestamp,
+        networkName,
+        extendedPanId,
+        meshLocalPrefix,
+        panId,
+        threadChannel
+      ];
 }

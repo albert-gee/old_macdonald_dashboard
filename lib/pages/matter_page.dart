@@ -1,7 +1,7 @@
+import 'package:dashboard/widget/content/card_widget.dart';
 import 'package:flutter/material.dart';
 
 class MatterPage extends StatelessWidget {
-
   const MatterPage({super.key});
 
   @override
@@ -9,39 +9,13 @@ class MatterPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // PairBleThreadWidget
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Expanded(
-            //   flex: 1,
-            //   child: PairBleThreadWidget(),
-            // ),
-            // const SizedBox(width: 20.0),
-            // Expanded(
-            //   flex: 1,
-            //   child: ClusterCommandWidget(),
-            // ),
-          ],
+        CardWidget(
+          title: 'Matter Controls',
+          child: Text(
+            'Matter controls are not available in this stabilized build. They will be rebuilt in the Matter feature refactor.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ),
-        const SizedBox(height: 20.0),
-
-        // ReadAttributeCommandWidget
-        // Row(
-        //   crossAxisAlignment: CrossAxisAlignment.start,
-        //   children: [
-        //     Expanded(
-        //       flex: 1,
-        //       child: ReadAttributeCommandWidget(),
-        //     ),
-        //     const SizedBox(width: 20.0),
-        //     Expanded(
-        //       flex: 1,
-        //       child: SubscribeAttributeCommandWidget(),
-        //     ),
-        //   ],
-        // ),
-        // const SizedBox(height: 20.0),
       ],
     );
   }

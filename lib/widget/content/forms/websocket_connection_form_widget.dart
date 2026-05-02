@@ -1,6 +1,7 @@
+import 'package:dashboard/service_locator.dart';
+import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dashboard/styles/app_dimensions.dart';
 import 'package:dashboard/widget/content/labeled_text_field.dart';
@@ -18,16 +19,18 @@ class WebsocketConnectionFormWidget extends StatefulWidget {
 class _WebsocketConnectionFormWidgetState
     extends State<WebsocketConnectionFormWidget> {
   final TextEditingController _urlController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final IOrchestratorUrlStorage _urlStorage;
 
   @override
   void initState() {
     super.initState();
+    _urlStorage = getIt<IOrchestratorUrlStorage>();
     _loadSavedUrl();
   }
 
   Future<void> _loadSavedUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedUrl = prefs.getString('orchestrator_url');
+    final savedUrl = await _urlStorage.readUrl();
     if (savedUrl != null && mounted) {
       setState(() {
         _urlController.text = savedUrl;
@@ -49,57 +52,75 @@ class _WebsocketConnectionFormWidgetState
         final isConnecting = state is WebsocketConnectionConnectingState;
         final isConnected = state is WebsocketConnectionConnectedState;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            LabeledTextField(
-              controller: _urlController,
-              label: "WebSocket URL",
-              hint: "wss://192.168.4.1/ws",
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Row(
-              children: [
-                _buildConnectButton(bloc, isConnecting, isConnected),
-                const SizedBox(width: AppDimensions.spacingM),
-                _buildClearButton(),
-                if (isConnected) ...[
+        return Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LabeledTextField(
+                controller: _urlController,
+                label: "WebSocket URL",
+                hint: "wss://192.168.4.1/ws",
+                validator: _validateUrl,
+              ),
+              const SizedBox(height: AppDimensions.spacingL),
+              Row(
+                children: [
+                  _buildConnectButton(bloc, isConnecting, isConnected),
                   const SizedBox(width: AppDimensions.spacingM),
-                  _buildDisconnectButton(bloc),
+                  _buildClearButton(),
+                  if (isConnected) ...[
+                    const SizedBox(width: AppDimensions.spacingM),
+                    _buildDisconnectButton(bloc),
+                  ],
                 ],
+              ),
+              if (state is WebsocketConnectionErrorState) ...[
+                const SizedBox(height: AppDimensions.spacingM),
+                Text(
+                  state.message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
               ],
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
   Widget _buildConnectButton(
-      WebsocketConnectionBloc bloc,
-      bool isConnecting,
-      bool isConnected,
-      ) {
+    WebsocketConnectionBloc bloc,
+    bool isConnecting,
+    bool isConnected,
+  ) {
     return Flexible(
       child: ElevatedButton.icon(
         onPressed: isConnecting
             ? null
-            : () => bloc.add(
-          WebsocketConnectionConnectRequested(_urlController.text),
-        ),
+            : () {
+                if (_formKey.currentState?.validate() != true) return;
+                bloc.add(
+                  WebsocketConnectionConnectRequested(
+                    _urlController.text.trim(),
+                  ),
+                );
+              },
         icon: isConnecting
             ? const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : const Icon(Icons.wifi),
         label: Text(
           isConnecting
               ? "Connecting..."
               : isConnected
-              ? "Reconnect"
-              : "Connect",
+                  ? "Reconnect"
+                  : "Connect",
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: _getConnectButtonColor(
@@ -115,10 +136,25 @@ class _WebsocketConnectionFormWidgetState
   Widget _buildClearButton() {
     return Flexible(
       child: OutlinedButton(
-        onPressed: _urlController.clear,
+        onPressed: () async {
+          _urlController.clear();
+          await _urlStorage.clearUrl();
+        },
         child: const Text("Clear"),
       ),
     );
+  }
+
+  String? _validateUrl(String? value) {
+    final url = value?.trim() ?? '';
+    if (url.isEmpty) return 'URL is required.';
+    final uri = Uri.tryParse(url);
+    if (uri == null ||
+        (uri.scheme != 'ws' && uri.scheme != 'wss') ||
+        uri.host.isEmpty) {
+      return 'Enter a valid ws:// or wss:// URL.';
+    }
+    return null;
   }
 
   Widget _buildDisconnectButton(WebsocketConnectionBloc bloc) {
@@ -135,10 +171,10 @@ class _WebsocketConnectionFormWidgetState
   }
 
   Color _getConnectButtonColor(
-      BuildContext context,
-      bool isConnected,
-      bool isConnecting,
-      ) {
+    BuildContext context,
+    bool isConnected,
+    bool isConnecting,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     if (isConnecting) return Theme.of(context).disabledColor;
     if (isConnected) return colorScheme.primary.withAlpha(180);

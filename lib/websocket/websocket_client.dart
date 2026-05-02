@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:logger/logger.dart';
 
 /// A secure WebSocket client with optional TLS root CA and stream handling.
 class WebSocketClient {
   WebSocket? _socket;
   bool _connecting = false;
+  final Logger _logger = Logger();
 
   /// Whether the client is currently attempting to connect.
   bool get isConnecting => _connecting;
@@ -58,12 +60,11 @@ class WebSocketClient {
         customClient: context != null ? HttpClient(context: context) : null,
       );
 
-      // Client ping disabled — relying on server-side ping for keep-alive.
-      _socket!.pingInterval = null;
+      _socket!.pingInterval = pingInterval;
 
       return true;
     } catch (e) {
-      print('WebSocket connection failed: $e');
+      _logger.e('WebSocket connection failed', error: e);
       return false;
     } finally {
       _connecting = false;
@@ -91,7 +92,7 @@ class WebSocketClient {
   /// Adds listeners for incoming messages, errors, and close events.
   ///
   /// You can use [messages] for stream-based handling instead.
-  void listen({
+  StreamSubscription<String> listen({
     required void Function(String) onMessage,
     required VoidCallback onDone,
     required void Function(Object error) onError,
@@ -101,14 +102,12 @@ class WebSocketClient {
       throw StateError('WebSocket not connected.');
     }
 
-    socket.listen(
-      (event) {
-        if (event is String) onMessage(event);
-      },
-      onDone: onDone,
-      onError: onError,
-      cancelOnError: true,
-    );
+    return socket.cast<String>().listen(
+          onMessage,
+          onDone: onDone,
+          onError: onError,
+          cancelOnError: true,
+        );
   }
 
   /// Returns the WebSocket close code, if any.

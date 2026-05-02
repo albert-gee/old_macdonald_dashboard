@@ -1,3 +1,4 @@
+import 'package:dashboard/widget/content/card_widget.dart';
 import 'package:flutter/material.dart';
 
 class ThreadPage extends StatelessWidget {
@@ -8,22 +9,13 @@ class ThreadPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Two-column layout for Thread widgets
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Expanded(
-            //   flex: 1,
-            //   child: ThreadDatasetInitFormWidget(),
-            // ),
-            // const SizedBox(width: 20.0),
-            // Expanded(
-            //   flex: 1,
-            //   child: ThreadDatasetActiveWidget(),
-            // ),
-          ],
+        CardWidget(
+          title: 'Thread Controls',
+          child: Text(
+            'Thread controls are not available in this stabilized build. They will be rebuilt in the Thread feature refactor.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ),
-        const SizedBox(height: 50.0),
       ],
     );
   }

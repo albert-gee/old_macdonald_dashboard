@@ -8,6 +8,7 @@ class LabeledTextField extends StatelessWidget {
   final bool enabled;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
   const LabeledTextField({
     super.key,
@@ -17,6 +18,7 @@ class LabeledTextField extends StatelessWidget {
     this.enabled = true,
     this.obscureText = false,
     this.keyboardType,
+    this.validator,
   });
 
   @override
@@ -29,13 +31,14 @@ class LabeledTextField extends StatelessWidget {
       enabled: enabled,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      validator: validator,
       style: theme.textTheme.bodyLarge,
       cursorColor: theme.colorScheme.primary,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         filled: true,
-        fillColor: theme.colorScheme.surface.withOpacity(0.8),
+        fillColor: theme.colorScheme.surface.withValues(alpha: 0.8),
         contentPadding: const EdgeInsets.symmetric(
           vertical: AppDimensions.spacingM,
           horizontal: AppDimensions.spacingM,
@@ -43,22 +46,22 @@ class LabeledTextField extends StatelessWidget {
         labelStyle: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
           color: enabled
-              ? theme.colorScheme.onSurface.withOpacity(0.9)
+              ? theme.colorScheme.onSurface.withValues(alpha: 0.9)
               : theme.disabledColor,
         ),
         hintStyle: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(0.4),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
         ),
         border: OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: theme.dividerColor.withOpacity(0.2),
+            color: theme.dividerColor.withValues(alpha: 0.2),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: theme.dividerColor.withOpacity(0.3),
+            color: theme.dividerColor.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -71,7 +74,7 @@ class LabeledTextField extends StatelessWidget {
         disabledBorder: OutlineInputBorder(
           borderRadius: borderRadius,
           borderSide: BorderSide(
-            color: theme.dividerColor.withOpacity(0.1),
+            color: theme.dividerColor.withValues(alpha: 0.1),
           ),
         ),
       ),

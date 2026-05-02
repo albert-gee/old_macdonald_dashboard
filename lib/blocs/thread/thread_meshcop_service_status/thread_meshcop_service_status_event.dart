@@ -7,7 +7,8 @@ abstract class ThreadMeshcopServiceStatusEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class ThreadMeshcopServiceStatusUpdated extends ThreadMeshcopServiceStatusEvent {
+class ThreadMeshcopServiceStatusUpdated
+    extends ThreadMeshcopServiceStatusEvent {
   final bool isPublished;
 
   const ThreadMeshcopServiceStatusUpdated(this.isPublished);

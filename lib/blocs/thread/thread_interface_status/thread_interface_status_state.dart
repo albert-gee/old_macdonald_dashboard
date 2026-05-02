@@ -5,7 +5,8 @@ class ThreadInterfaceStatusState extends Equatable {
 
   const ThreadInterfaceStatusState({required this.isInterfaceUp});
 
-  factory ThreadInterfaceStatusState.initial() => const ThreadInterfaceStatusState(isInterfaceUp: false);
+  factory ThreadInterfaceStatusState.initial() =>
+      const ThreadInterfaceStatusState(isInterfaceUp: false);
 
   ThreadInterfaceStatusState copyWith({bool? isInterfaceUp}) {
     return ThreadInterfaceStatusState(

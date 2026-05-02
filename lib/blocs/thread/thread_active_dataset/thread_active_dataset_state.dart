@@ -6,7 +6,7 @@ class ThreadActiveDatasetState extends Equatable {
   final String extendedPanId;
   final String meshLocalPrefix;
   final int panId;
-  final int channel;
+  final int threadChannel;
 
   const ThreadActiveDatasetState({
     required this.activeTimestamp,
@@ -14,17 +14,17 @@ class ThreadActiveDatasetState extends Equatable {
     required this.extendedPanId,
     required this.meshLocalPrefix,
     required this.panId,
-    required this.channel,
-  });
+    required int channel,
+  }) : threadChannel = channel;
 
   factory ThreadActiveDatasetState.initial() => const ThreadActiveDatasetState(
-    activeTimestamp: 0,
-    networkName: '',
-    extendedPanId: '',
-    meshLocalPrefix: '',
-    panId: 0,
-    channel: 0,
-  );
+        activeTimestamp: 0,
+        networkName: '',
+        extendedPanId: '',
+        meshLocalPrefix: '',
+        panId: 0,
+        channel: 0,
+      );
 
   ThreadActiveDatasetState copyWith({
     int? activeTimestamp,
@@ -40,11 +40,17 @@ class ThreadActiveDatasetState extends Equatable {
       extendedPanId: extendedPanId ?? this.extendedPanId,
       meshLocalPrefix: meshLocalPrefix ?? this.meshLocalPrefix,
       panId: panId ?? this.panId,
-      channel: channel ?? this.channel,
+      channel: channel ?? threadChannel,
     );
   }
 
   @override
-  List<Object> get props =>
-      [activeTimestamp, networkName, extendedPanId, meshLocalPrefix, panId, channel];
+  List<Object> get props => [
+        activeTimestamp,
+        networkName,
+        extendedPanId,
+        meshLocalPrefix,
+        panId,
+        threadChannel
+      ];
 }

@@ -11,7 +11,8 @@ sealed class WebsocketConnectionEvent extends Equatable {
 /// Event triggered when a WebSocket connection is requested.
 ///
 /// This is typically initiated by the user or the UI layer.
-final class WebsocketConnectionConnectRequested extends WebsocketConnectionEvent {
+final class WebsocketConnectionConnectRequested
+    extends WebsocketConnectionEvent {
   /// The WebSocket URI to connect to (e.g. wss://192.168.4.1/ws).
   final String wsUri;
 
@@ -24,7 +25,8 @@ final class WebsocketConnectionConnectRequested extends WebsocketConnectionEvent
 /// Event triggered when a WebSocket disconnection is requested.
 ///
 /// Typically initiated by the user.
-final class WebsocketConnectionDisconnectRequested extends WebsocketConnectionEvent {
+final class WebsocketConnectionDisconnectRequested
+    extends WebsocketConnectionEvent {
   const WebsocketConnectionDisconnectRequested();
 }
 

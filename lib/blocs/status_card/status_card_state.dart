@@ -9,9 +9,9 @@ abstract class StatusCardState<T> extends Equatable {
 }
 
 class StatusCardInitial<T> extends StatusCardState<T> {
-  const StatusCardInitial(T value) : super(value);
+  const StatusCardInitial(super.value);
 }
 
 class StatusCardUpdated<T> extends StatusCardState<T> {
-  const StatusCardUpdated(T value) : super(value);
+  const StatusCardUpdated(super.value);
 }

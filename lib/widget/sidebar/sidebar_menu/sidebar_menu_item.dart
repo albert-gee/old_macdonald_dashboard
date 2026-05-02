@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 /// A class representing a single item in the sidebar menu.
 class SidebarMenuItem {
-
   /// The icon widget associated with the menu item.
   final Widget icon;
 

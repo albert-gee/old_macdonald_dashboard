@@ -14,7 +14,10 @@ class ThreadCommandService implements IThreadCommandService {
       'type': 'command',
       'action': 'thread.enable',
     });
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -23,7 +26,10 @@ class ThreadCommandService implements IThreadCommandService {
       'type': 'command',
       'action': 'thread.disable',
     });
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -49,6 +55,9 @@ class ThreadCommandService implements IThreadCommandService {
         'pskc': pskc,
       },
     });
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 }

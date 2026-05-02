@@ -1,8 +1,9 @@
 import 'package:dashboard/websocket/websocket_client.dart';
-import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
+import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/services/matter_command_service.dart';
 import 'package:dashboard/services/i_wifi_command_service.dart';
+import 'package:dashboard/services/orchestrator_url_storage.dart';
 import 'package:dashboard/services/wifi_command_service.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
@@ -15,19 +16,20 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupServiceLocator() async {
   // Core WebSocket services
   getIt.registerLazySingleton<WebSocketClient>(() => WebSocketClient());
-  getIt.registerLazySingleton<WebSocketInboundMessageHandler>(() => WebSocketInboundMessageHandler());
+  getIt.registerLazySingleton<IOrchestratorUrlStorage>(
+    () => OrchestratorUrlStorage(),
+  );
 
   // Domain services
   getIt.registerLazySingleton<IThreadCommandService>(
-        () => ThreadCommandService(websocket: getIt<WebSocketClient>()),
+    () => ThreadCommandService(websocket: getIt<WebSocketClient>()),
   );
 
   getIt.registerLazySingleton<IWifiCommandService>(
-        () => WifiCommandService(websocket: getIt<WebSocketClient>()),
+    () => WifiCommandService(websocket: getIt<WebSocketClient>()),
   );
 
   getIt.registerLazySingleton<IMatterCommandService>(
-        () => MatterCommandService(websocket: getIt<WebSocketClient>()),
+    () => MatterCommandService(websocket: getIt<WebSocketClient>()),
   );
-
 }

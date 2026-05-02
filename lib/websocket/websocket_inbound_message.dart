@@ -1,81 +1,106 @@
-import 'package:logger/logger.dart';
-
 abstract class WebSocketInboundMessage {
   final String type;
   final String? action;
   final dynamic payload;
 
-  WebSocketInboundMessage({required this.type, this.action, required this.payload});
+  WebSocketInboundMessage(
+      {required this.type, this.action, required this.payload});
 
   factory WebSocketInboundMessage.fromJson(Map<String, dynamic> json) {
-    final type = json['type'] as String;
-    final action = json['action'] as String?;
-    final payload = json['payload'];
+    final rawType = json['type'];
+    final rawAction = json['action'];
+    final rawPayload = json['payload'];
 
-    final Logger logger = Logger();
-    logger.d('Parsing WebSocket message: type=$type, action=$action, payload=$payload');
+    final type = rawType is String ? rawType : '';
+    final action = rawAction is String ? rawAction : null;
+    final payload = rawPayload is Map
+        ? Map<String, dynamic>.from(rawPayload)
+        : <String, dynamic>{};
 
     if (type == 'info') {
       switch (action) {
         case 'thread.stack_status':
-          return ThreadStackStatusMessage(payload['running'] == true);
+          return ThreadStackStatusMessage(_boolValue(payload['running']));
         case 'thread.interface_status':
-          return ThreadInterfaceStatusMessage(payload['interface_up'] == true);
+          return ThreadInterfaceStatusMessage(
+              _boolValue(payload['interface_up']));
         case 'thread.attachment_status':
-          return ThreadAttachmentStatusMessage(payload['attached'] == true);
+          return ThreadAttachmentStatusMessage(_boolValue(payload['attached']));
         case 'thread.role':
-          return ThreadRoleMessage(payload['role']);
+          return ThreadRoleMessage(_stringValue(payload['role']));
         case 'thread.active_dataset':
-          return ThreadDatasetActiveMessage(Map<String, dynamic>.from(payload));
+          return ThreadDatasetActiveMessage(payload);
         case 'ipv6.unicast_addresses':
-          return UnicastAddressListMessage(List<String>.from(payload['unicast']));
+          return UnicastAddressListMessage(
+              _stringListValue(payload['unicast']));
         case 'ipv6.multicast_addresses':
-          return MulticastAddressListMessage(List<String>.from(payload['multicast']));
+          return MulticastAddressListMessage(
+              _stringListValue(payload['multicast']));
         case 'thread.meshcop_service':
-          return MeshcopServiceStatusMessage(payload['published'] == true);
+          return MeshcopServiceStatusMessage(_boolValue(payload['published']));
         case 'wifi.sta_status':
-          return WifiStaStatusMessage(payload['status']);
+          return WifiStaStatusMessage(_stringValue(payload['status']));
         case 'matter.commissioning_complete':
           return MatterCommissioningCompleteMessage(
-            nodeId: payload['node_id'],
-            fabricIndex: payload['fabric_index'],
+            nodeId: _intValue(payload['node_id']),
+            fabricIndex: _intValue(payload['fabric_index']),
           );
         case 'matter.attribute_report':
           return MatterAttributeReportMessage(
-            nodeId: payload['node_id'],
-            endpointId: payload['endpoint_id'],
-            clusterId: payload['cluster_id'],
-            attributeId: payload['attribute_id'],
-            value: payload['value'],
+            nodeId: _intValue(payload['node_id']),
+            endpointId: _intValue(payload['endpoint_id']),
+            clusterId: _intValue(payload['cluster_id']),
+            attributeId: _intValue(payload['attribute_id']),
+            value: _stringValue(payload['value']),
           );
         case 'matter.subscribe_done':
           return MatterSubscribeDoneMessage(
-            nodeId: payload['node_id'],
-            subscriptionId: payload['subscription_id'],
+            nodeId: _intValue(payload['node_id']),
+            subscriptionId: _intValue(payload['subscription_id']),
           );
       }
     }
 
-    return GenericMessage(type: type, action: action, payload: payload);
+    return GenericMessage(type: type, action: action, payload: rawPayload);
+  }
+
+  static bool _boolValue(Object? value) => value is bool ? value : false;
+
+  static String _stringValue(Object? value) => value is String ? value : '';
+
+  static int _intValue(Object? value) => value is int ? value : 0;
+
+  static List<String> _stringListValue(Object? value) {
+    if (value is! List) return const [];
+    return value.whereType<String>().toList();
   }
 }
 
 class ThreadStackStatusMessage extends WebSocketInboundMessage {
   final bool running;
   ThreadStackStatusMessage(this.running)
-      : super(type: 'info', action: 'thread.stack_status', payload: {'running': running});
+      : super(
+            type: 'info',
+            action: 'thread.stack_status',
+            payload: {'running': running});
 }
 
 class ThreadInterfaceStatusMessage extends WebSocketInboundMessage {
   final bool interfaceUp;
   ThreadInterfaceStatusMessage(this.interfaceUp)
-      : super(type: 'info', action: 'thread.interface_status', payload: {'interface_up': interfaceUp});
+      : super(
+            type: 'info',
+            action: 'thread.interface_status',
+            payload: {'interface_up': interfaceUp});
 }
 
 class ThreadAttachmentStatusMessage extends WebSocketInboundMessage {
   final bool attached;
   ThreadAttachmentStatusMessage(this.attached)
-      : super(type: 'info', action: 'thread.attachment_status', payload: {'attached': attached});
+      : super(
+            type: 'info',
+            action: 'thread.attachment_status',
+            payload: {'attached': attached});
 }
 
 class ThreadRoleMessage extends WebSocketInboundMessage {
@@ -93,35 +118,48 @@ class ThreadDatasetActiveMessage extends WebSocketInboundMessage {
 class UnicastAddressListMessage extends WebSocketInboundMessage {
   final List<String> addresses;
   UnicastAddressListMessage(this.addresses)
-      : super(type: 'info', action: 'ipv6.unicast_addresses', payload: {'unicast': addresses});
+      : super(
+            type: 'info',
+            action: 'ipv6.unicast_addresses',
+            payload: {'unicast': addresses});
 }
 
 class MulticastAddressListMessage extends WebSocketInboundMessage {
   final List<String> addresses;
   MulticastAddressListMessage(this.addresses)
-      : super(type: 'info', action: 'ipv6.multicast_addresses', payload: {'multicast': addresses});
+      : super(
+            type: 'info',
+            action: 'ipv6.multicast_addresses',
+            payload: {'multicast': addresses});
 }
 
 class MeshcopServiceStatusMessage extends WebSocketInboundMessage {
   final bool published;
   MeshcopServiceStatusMessage(this.published)
-      : super(type: 'info', action: 'thread.meshcop_service', payload: {'published': published});
+      : super(
+            type: 'info',
+            action: 'thread.meshcop_service',
+            payload: {'published': published});
 }
 
 class WifiStaStatusMessage extends WebSocketInboundMessage {
   final String status;
   WifiStaStatusMessage(this.status)
-      : super(type: 'info', action: 'wifi.sta_status', payload: {'status': status});
+      : super(
+            type: 'info',
+            action: 'wifi.sta_status',
+            payload: {'status': status});
 }
 
 class MatterCommissioningCompleteMessage extends WebSocketInboundMessage {
   final int nodeId;
   final int fabricIndex;
-  MatterCommissioningCompleteMessage({required this.nodeId, required this.fabricIndex})
+  MatterCommissioningCompleteMessage(
+      {required this.nodeId, required this.fabricIndex})
       : super(type: 'info', action: 'matter.commissioning_complete', payload: {
-    'node_id': nodeId,
-    'fabric_index': fabricIndex,
-  });
+          'node_id': nodeId,
+          'fabric_index': fabricIndex,
+        });
 }
 
 class MatterAttributeReportMessage extends WebSocketInboundMessage {
@@ -138,12 +176,12 @@ class MatterAttributeReportMessage extends WebSocketInboundMessage {
     required this.attributeId,
     required this.value,
   }) : super(type: 'info', action: 'matter.attribute_report', payload: {
-    'node_id': nodeId,
-    'endpoint_id': endpointId,
-    'cluster_id': clusterId,
-    'attribute_id': attributeId,
-    'value': value,
-  });
+          'node_id': nodeId,
+          'endpoint_id': endpointId,
+          'cluster_id': clusterId,
+          'attribute_id': attributeId,
+          'value': value,
+        });
 }
 
 class MatterSubscribeDoneMessage extends WebSocketInboundMessage {
@@ -153,9 +191,9 @@ class MatterSubscribeDoneMessage extends WebSocketInboundMessage {
     required this.nodeId,
     required this.subscriptionId,
   }) : super(type: 'info', action: 'matter.subscribe_done', payload: {
-    'node_id': nodeId,
-    'subscription_id': subscriptionId,
-  });
+          'node_id': nodeId,
+          'subscription_id': subscriptionId,
+        });
 }
 
 class GenericMessage extends WebSocketInboundMessage {

@@ -23,7 +23,10 @@ class MatterCommandService implements IMatterCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -42,7 +45,10 @@ class MatterCommandService implements IMatterCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -65,7 +71,10 @@ class MatterCommandService implements IMatterCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -86,7 +95,10 @@ class MatterCommandService implements IMatterCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 
   @override
@@ -111,6 +123,9 @@ class MatterCommandService implements IMatterCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 }

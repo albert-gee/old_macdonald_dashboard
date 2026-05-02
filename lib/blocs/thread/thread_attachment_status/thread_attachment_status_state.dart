@@ -5,7 +5,8 @@ class ThreadAttachmentStatusState extends Equatable {
 
   const ThreadAttachmentStatusState({required this.isAttached});
 
-  factory ThreadAttachmentStatusState.initial() => const ThreadAttachmentStatusState(isAttached: false);
+  factory ThreadAttachmentStatusState.initial() =>
+      const ThreadAttachmentStatusState(isAttached: false);
 
   ThreadAttachmentStatusState copyWith({bool? isAttached}) {
     return ThreadAttachmentStatusState(

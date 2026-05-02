@@ -8,7 +8,8 @@ class WifiCommandService implements IWifiCommandService {
   WifiCommandService({required this.websocket});
 
   @override
-  Future<void> sendStaConnectCommand({required String ssid, required String password}) async {
+  Future<void> sendStaConnectCommand(
+      {required String ssid, required String password}) async {
     final message = jsonEncode({
       'type': 'command',
       'action': 'wifi.sta_connect',
@@ -18,6 +19,9 @@ class WifiCommandService implements IWifiCommandService {
       },
     });
 
-    await websocket.sendMessage(message);
+    final sent = await websocket.sendMessage(message);
+    if (!sent) {
+      throw StateError('WebSocket is not connected.');
+    }
   }
 }

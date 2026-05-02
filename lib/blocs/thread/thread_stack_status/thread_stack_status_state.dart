@@ -5,7 +5,8 @@ class ThreadStackStatusState extends Equatable {
 
   const ThreadStackStatusState({required this.isRunning});
 
-  factory ThreadStackStatusState.initial() => const ThreadStackStatusState(isRunning: false);
+  factory ThreadStackStatusState.initial() =>
+      const ThreadStackStatusState(isRunning: false);
 
   ThreadStackStatusState copyWith({bool? isRunning}) {
     return ThreadStackStatusState(isRunning: isRunning ?? this.isRunning);

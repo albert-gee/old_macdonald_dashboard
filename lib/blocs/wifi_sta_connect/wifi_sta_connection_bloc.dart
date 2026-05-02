@@ -22,11 +22,11 @@ class WifiStaConnectionBloc
           ssid: event.ssid,
           password: event.password,
         );
-        // emit(success
-        //     ? const WifiStaConnectSuccessState()
-        //     : const WifiStaConnectFailureState("Failed to connect to Wi-Fi."));
+        emit(const WifiStaConnectSuccessState());
       } catch (e) {
-        emit(WifiStaConnectFailureState(e.toString()));
+        emit(const WifiStaConnectFailureState(
+          'Failed to send Wi-Fi STA connect command. Make sure the WebSocket is connected.',
+        ));
       }
     });
   }

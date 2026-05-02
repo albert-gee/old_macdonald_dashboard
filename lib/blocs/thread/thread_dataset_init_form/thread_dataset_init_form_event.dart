@@ -8,7 +8,7 @@ abstract class ThreadDatasetInitFormEvent extends Equatable {
 }
 
 class ThreadDatasetInitSubmitted extends ThreadDatasetInitFormEvent {
-  final int channel;
+  final int threadChannel;
   final int panId;
   final String networkName;
   final String extendedPanId;
@@ -17,23 +17,23 @@ class ThreadDatasetInitSubmitted extends ThreadDatasetInitFormEvent {
   final String pskc;
 
   const ThreadDatasetInitSubmitted({
-    required this.channel,
+    required int channel,
     required this.panId,
     required this.networkName,
     required this.extendedPanId,
     required this.meshLocalPrefix,
     required this.networkKey,
     required this.pskc,
-  });
+  }) : threadChannel = channel;
 
   @override
   List<Object?> get props => [
-    channel,
-    panId,
-    networkName,
-    extendedPanId,
-    meshLocalPrefix,
-    networkKey,
-    pskc,
-  ];
+        threadChannel,
+        panId,
+        networkName,
+        extendedPanId,
+        meshLocalPrefix,
+        networkKey,
+        pskc,
+      ];
 }

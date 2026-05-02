@@ -25,6 +25,7 @@ void main() {
       subTitle: _appSubTitle,
     ));
   }, (error, stackTrace) {
-    _logger.e('Unhandled error in main()', error: error, stackTrace: stackTrace);
+    _logger.e('Unhandled error in main()',
+        error: error, stackTrace: stackTrace);
   });
 }

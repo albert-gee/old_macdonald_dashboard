@@ -10,9 +10,9 @@ class ThreadAddressState extends Equatable {
   });
 
   factory ThreadAddressState.initial() => const ThreadAddressState(
-    unicastAddresses: [],
-    multicastAddresses: [],
-  );
+        unicastAddresses: [],
+        multicastAddresses: [],
+      );
 
   ThreadAddressState copyWith({
     List<String>? unicastAddresses,
