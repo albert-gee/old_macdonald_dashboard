@@ -120,7 +120,7 @@ void main() {
       expect(message['type'], 'command');
       expect(message['action'], 'thread.dataset.init');
       expect(payload['master_key'], '00112233445566778899aabbccddeeff');
-      expect(payload.containsKey('network_' 'key'), isFalse);
+      expect(payload.containsKey('network_key'), isFalse);
     });
   });
 
