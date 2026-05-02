@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'i_matter_command_service.dart';
 
 class MatterCommandService implements IMatterCommandService {
-  final WebSocketClient websocket;
+  final IWebSocketClient websocket;
 
   MatterCommandService({required this.websocket});
 

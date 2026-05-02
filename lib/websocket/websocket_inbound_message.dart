@@ -1,9 +1,9 @@
 abstract class WebSocketInboundMessage {
   final String type;
   final String? action;
-  final dynamic payload;
+  final Map<String, Object?> payload;
 
-  WebSocketInboundMessage(
+  const WebSocketInboundMessage(
       {required this.type, this.action, required this.payload});
 
   factory WebSocketInboundMessage.fromJson(Map<String, dynamic> json) {
@@ -13,9 +13,7 @@ abstract class WebSocketInboundMessage {
 
     final type = rawType is String ? rawType : '';
     final action = rawAction is String ? rawAction : null;
-    final payload = rawPayload is Map
-        ? Map<String, dynamic>.from(rawPayload)
-        : <String, dynamic>{};
+    final payload = _payloadMap(rawPayload);
 
     if (type == 'info') {
       switch (action) {
@@ -61,7 +59,16 @@ abstract class WebSocketInboundMessage {
       }
     }
 
-    return GenericMessage(type: type, action: action, payload: rawPayload);
+    return GenericMessage(type: type, action: action, payload: payload);
+  }
+
+  static Map<String, Object?> _payloadMap(Object? value) {
+    if (value is Map) {
+      return value.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+    return const <String, Object?>{};
   }
 
   static bool _boolValue(Object? value) => value is bool ? value : false;
@@ -110,7 +117,7 @@ class ThreadRoleMessage extends WebSocketInboundMessage {
 }
 
 class ThreadDatasetActiveMessage extends WebSocketInboundMessage {
-  final Map<String, dynamic> dataset;
+  final Map<String, Object?> dataset;
   ThreadDatasetActiveMessage(this.dataset)
       : super(type: 'info', action: 'thread.active_dataset', payload: dataset);
 }

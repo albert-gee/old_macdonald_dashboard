@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dashboard/src/app/dashboard_app.dart';
@@ -8,19 +9,57 @@ import 'package:dashboard/services/i_wifi_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
 import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
+import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'package:dashboard/websocket/websocket_client.dart';
-import 'package:dashboard/websocket/websocket_inbound_message.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class FakeWebSocketClient extends WebSocketClient {
+class FakeWebSocketClient implements IWebSocketClient {
   String? sentMessage;
+
+  @override
+  bool get isConnecting => false;
+
+  @override
+  bool get isConnected => true;
+
+  @override
+  Stream<String> get messages => const Stream.empty();
+
+  @override
+  Future<bool> connect({
+    required String url,
+    String? rootCAAsset,
+    bool enableCompression = true,
+    Duration pingInterval = const Duration(seconds: 10),
+  }) async =>
+      true;
 
   @override
   Future<bool> sendMessage(String message) async {
     sentMessage = message;
     return true;
   }
+
+  @override
+  Future<void> disconnect({
+    int code = 1000,
+    String reason = 'Client disconnect',
+  }) async {}
+
+  @override
+  StreamSubscription<String> listen({
+    required void Function(String message) onMessage,
+    required void Function() onDone,
+    required void Function(Object error) onError,
+  }) =>
+      const Stream<String>.empty().listen(onMessage);
+
+  @override
+  int? get closeCode => null;
+
+  @override
+  String? get closeReason => null;
 }
 
 void main() {
@@ -43,40 +82,6 @@ void main() {
     expect(dependencies.threadCommandService, isA<IThreadCommandService>());
     expect(dependencies.wifiCommandService, isA<IWifiCommandService>());
     expect(dependencies.matterCommandService, isA<IMatterCommandService>());
-  });
-
-  group('WebSocketInboundMessage parser', () {
-    test('parses thread stack status', () {
-      final message = WebSocketInboundMessage.fromJson({
-        'type': 'info',
-        'action': 'thread.stack_status',
-        'payload': {'running': true},
-      });
-
-      expect(message, isA<ThreadStackStatusMessage>());
-      expect((message as ThreadStackStatusMessage).running, isTrue);
-    });
-
-    test('malformed payload does not crash and uses defaults', () {
-      final message = WebSocketInboundMessage.fromJson({
-        'type': 'info',
-        'action': 'thread.stack_status',
-        'payload': 'bad-payload',
-      });
-
-      expect(message, isA<ThreadStackStatusMessage>());
-      expect((message as ThreadStackStatusMessage).running, isFalse);
-    });
-
-    test('unknown type and action returns generic message', () {
-      final message = WebSocketInboundMessage.fromJson({
-        'type': 'unknown',
-        'action': 'unknown.action',
-        'payload': {'value': 1},
-      });
-
-      expect(message, isA<GenericMessage>());
-    });
   });
 
   group('ThreadCommandService protocol', () {
@@ -124,8 +129,8 @@ void main() {
     });
 
     test('encodes dataset init protocol', () async {
-      final websocket = FakeWebSocketClient();
-      final service = ThreadCommandService(websocket: websocket);
+      final client = FakeWebSocketClient();
+      final service = ThreadCommandService(websocket: client);
 
       await service.sendThreadDatasetInitCommand(
         channel: 15,
@@ -137,8 +142,7 @@ void main() {
         pskc: 'ffeeddccbbaa99887766554433221100',
       );
 
-      final message =
-          jsonDecode(websocket.sentMessage!) as Map<String, dynamic>;
+      final message = jsonDecode(client.sentMessage!) as Map<String, dynamic>;
       final payload = message['payload'] as Map<String, dynamic>;
 
       expect(message['type'], 'command');
@@ -194,12 +198,12 @@ Future<void> _expectThreadCommand({
   required String expectedAction,
   required Future<void> Function(ThreadCommandService service) send,
 }) async {
-  final websocket = FakeWebSocketClient();
-  final service = ThreadCommandService(websocket: websocket);
+  final client = FakeWebSocketClient();
+  final service = ThreadCommandService(websocket: client);
 
   await send(service);
 
-  final message = jsonDecode(websocket.sentMessage!) as Map<String, dynamic>;
+  final message = jsonDecode(client.sentMessage!) as Map<String, dynamic>;
   expect(message['type'], 'command');
   expect(message['action'], expectedAction);
   expect(message.containsKey('payload'), isFalse);

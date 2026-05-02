@@ -4,22 +4,27 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 
+import 'i_websocket_client.dart';
+
 /// A secure WebSocket client with optional TLS root CA and stream handling.
-class WebSocketClient {
+class WebSocketClient implements IWebSocketClient {
   WebSocket? _socket;
   bool _connecting = false;
   final Logger _logger = Logger();
 
   /// Whether the client is currently attempting to connect.
+  @override
   bool get isConnecting => _connecting;
 
   /// Whether the WebSocket is connected and open.
+  @override
   bool get isConnected =>
       _socket != null && _socket!.readyState == WebSocket.open;
 
   /// Stream of incoming string messages.
   ///
   /// Throws [StateError] if called before the connection is established.
+  @override
   Stream<String> get messages {
     final socket = _socket;
     if (socket == null) {
@@ -32,6 +37,7 @@ class WebSocketClient {
   ///
   /// [url] must be a `ws://` or `wss://` URI.
   /// Optionally provide [rootCAAsset] for secure TLS (wss).
+  @override
   Future<bool> connect({
     required String url,
     String? rootCAAsset,
@@ -74,6 +80,7 @@ class WebSocketClient {
   /// Sends a string message over the WebSocket.
   ///
   /// Returns `true` if the message was sent.
+  @override
   Future<bool> sendMessage(String message) async {
     if (!isConnected) return false;
     _socket!.add(message);
@@ -81,6 +88,7 @@ class WebSocketClient {
   }
 
   /// Closes the WebSocket connection gracefully.
+  @override
   Future<void> disconnect({
     int code = WebSocketStatus.normalClosure,
     String reason = 'Client disconnect',
@@ -92,6 +100,7 @@ class WebSocketClient {
   /// Adds listeners for incoming messages, errors, and close events.
   ///
   /// You can use [messages] for stream-based handling instead.
+  @override
   StreamSubscription<String> listen({
     required void Function(String) onMessage,
     required VoidCallback onDone,
@@ -111,8 +120,10 @@ class WebSocketClient {
   }
 
   /// Returns the WebSocket close code, if any.
+  @override
   int? get closeCode => _socket?.closeCode;
 
   /// Returns the WebSocket close reason, if any.
+  @override
   String? get closeReason => _socket?.closeReason;
 }

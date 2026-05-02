@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dashboard/services/i_orchestrator_url_storage.dart';
-import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/websocket/i_websocket_client.dart';
+import 'package:dashboard/websocket/websocket_connection_settings.dart';
 import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,9 +12,10 @@ part 'websocket_connection_state.dart';
 
 class WebsocketConnectionBloc
     extends Bloc<WebsocketConnectionEvent, WebsocketConnectionState> {
-  final WebSocketClient websocket;
+  final IWebSocketClient websocket;
   final WebSocketInboundMessageHandler messageHandler;
   final IOrchestratorUrlStorage urlStorage;
+  final String rootCaAssetPath;
 
   StreamSubscription<String>? _streamSub;
   String? _currentUrl;
@@ -28,6 +30,7 @@ class WebsocketConnectionBloc
     required this.websocket,
     required this.messageHandler,
     required this.urlStorage,
+    required this.rootCaAssetPath,
   }) : super(WebsocketConnectionDisconnectedState()) {
     on<WebsocketConnectionConnectRequested>(_onConnectRequested);
     on<WebsocketConnectionDisconnectRequested>(_onDisconnectRequested);
@@ -38,8 +41,12 @@ class WebsocketConnectionBloc
     WebsocketConnectionConnectRequested event,
     Emitter<WebsocketConnectionState> emit,
   ) async {
-    final url = event.wsUri.trim();
-    if (!_isValidWebSocketUrl(url)) {
+    final settings = WebSocketConnectionSettings.fromInput(
+      event.wsUri,
+      rootCaAssetPath: rootCaAssetPath,
+    );
+
+    if (settings == null) {
       emit(const WebsocketConnectionErrorState(
         'Enter a valid ws:// or wss:// URL.',
       ));
@@ -47,11 +54,11 @@ class WebsocketConnectionBloc
     }
 
     emit(WebsocketConnectionConnectingState());
-    _currentUrl = url;
+    _currentUrl = settings.url;
     await _disconnect();
 
     try {
-      final connected = await _tryConnect(_currentUrl!);
+      final connected = await _tryConnect(settings);
       if (connected) {
         await urlStorage.saveUrl(_currentUrl!);
         emit(WebsocketConnectionConnectedState());
@@ -66,14 +73,6 @@ class WebsocketConnectionBloc
       _logger.e('Unhandled WebSocket connection error',
           error: e, stackTrace: stack);
     }
-  }
-
-  bool _isValidWebSocketUrl(String url) {
-    if (url.isEmpty) return false;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return false;
-    if (uri.scheme != 'ws' && uri.scheme != 'wss') return false;
-    return uri.host.isNotEmpty;
   }
 
   Future<void> _onDisconnectRequested(
@@ -94,14 +93,13 @@ class WebsocketConnectionBloc
     _logger.i('WebSocket disconnected');
   }
 
-  Future<bool> _tryConnect(String url) async {
+  Future<bool> _tryConnect(WebSocketConnectionSettings settings) async {
     for (var attempt = 1; attempt <= _maxConnectionAttempts; attempt++) {
       try {
         final success = await websocket
             .connect(
-              url: url,
-              rootCAAsset:
-                  url.startsWith('wss://') ? 'assets/rootCA.pem' : null,
+              url: settings.url,
+              rootCAAsset: settings.rootCAAsset,
             )
             .timeout(_connectTimeout);
 
@@ -122,7 +120,9 @@ class WebsocketConnectionBloc
             error: e, stackTrace: stack);
       }
 
-      await Future.delayed(_retryDelay);
+      if (attempt < _maxConnectionAttempts) {
+        await Future.delayed(_retryDelay);
+      }
     }
 
     return false;

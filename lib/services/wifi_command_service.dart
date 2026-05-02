@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'i_wifi_command_service.dart';
 
 class WifiCommandService implements IWifiCommandService {
-  final WebSocketClient websocket;
+  final IWebSocketClient websocket;
 
   WifiCommandService({required this.websocket});
 

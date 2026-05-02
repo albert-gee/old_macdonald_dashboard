@@ -84,6 +84,7 @@ class _DashboardAppState extends State<DashboardApp> {
       websocket: widget.dependencies.webSocketClient,
       messageHandler: messageHandler,
       urlStorage: widget.dependencies.orchestratorUrlStorage,
+      rootCaAssetPath: widget.config.rootCaAssetPath,
     );
   }
 
