@@ -1,5 +1,5 @@
-import 'package:dashboard/services/i_matter_command_service.dart';
-import 'package:dashboard/services/matter_command_service.dart';
+import 'package:dashboard/src/features/matter/data/repositories/i_matter_command_service.dart';
+import 'package:dashboard/src/features/matter/data/repositories/matter_command_service.dart';
 import 'package:dashboard/src/features/orchestrator/data/datasources/orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/thread/data/repositories/i_thread_command_service.dart';

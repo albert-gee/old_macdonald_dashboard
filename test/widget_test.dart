@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dashboard/src/app/dashboard_app.dart';
-import 'package:dashboard/services/i_matter_command_service.dart';
+import 'package:dashboard/src/features/matter/data/repositories/i_matter_command_service.dart';
+import 'package:dashboard/src/features/matter/data/repositories/matter_command_service.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/thread/data/repositories/i_thread_command_service.dart';
 import 'package:dashboard/src/features/thread/data/repositories/thread_command_service.dart';
@@ -102,6 +103,28 @@ void main() {
       expect(message['action'], 'wifi.sta_connect');
       expect(payload['ssid'], 'test-ssid');
       expect(payload['password'], 'test-password');
+    });
+  });
+
+  group('MatterCommandService protocol', () {
+    test('encodes controller initialize command', () async {
+      final client = FakeWebSocketClient();
+      final service = MatterCommandService(websocket: client);
+
+      await service.initializeController(
+        nodeId: 123,
+        fabricId: 456,
+        listenPort: 5540,
+      );
+
+      final message = jsonDecode(client.sentMessage!) as Map<String, dynamic>;
+      final payload = message['payload'] as Map<String, dynamic>;
+
+      expect(message['type'], 'command');
+      expect(message['action'], 'matter.controller_init');
+      expect(payload['node_id'], 123);
+      expect(payload['fabric_id'], 456);
+      expect(payload['listen_port'], 5540);
     });
   });
 
