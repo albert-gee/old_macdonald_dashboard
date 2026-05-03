@@ -1,5 +1,5 @@
 import 'package:dashboard/src/core/widgets/card_widget.dart';
-import 'package:dashboard/widget/content/forms/wifi_sta_connect_form_widget.dart';
+import 'package:dashboard/src/features/wifi/presentation/widgets/wifi_sta_connect_form_widget.dart';
 import 'package:flutter/material.dart';
 
 class WifiStaPage extends StatelessWidget {

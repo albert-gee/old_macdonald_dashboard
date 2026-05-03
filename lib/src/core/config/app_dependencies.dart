@@ -1,12 +1,12 @@
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
-import 'package:dashboard/services/i_wifi_command_service.dart';
 import 'package:dashboard/services/matter_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
-import 'package:dashboard/services/wifi_command_service.dart';
-import 'package:dashboard/websocket/websocket_client.dart';
 import 'package:dashboard/src/features/orchestrator/data/datasources/orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
+import 'package:dashboard/src/features/wifi/data/repositories/wifi_command_service.dart';
+import 'package:dashboard/websocket/websocket_client.dart';
 
 class AppDependencies {
   final WebSocketClient webSocketClient;

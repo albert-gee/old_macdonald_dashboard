@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:dashboard/services/i_wifi_command_service.dart';
+import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
 
 part 'wifi_sta_connection_event.dart';
 

@@ -5,10 +5,11 @@ import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
-import 'package:dashboard/services/i_wifi_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';
 import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
+import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
+import 'package:dashboard/src/features/wifi/data/repositories/wifi_command_service.dart';
 import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'package:dashboard/websocket/websocket_client.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,6 +83,26 @@ void main() {
     expect(dependencies.threadCommandService, isA<IThreadCommandService>());
     expect(dependencies.wifiCommandService, isA<IWifiCommandService>());
     expect(dependencies.matterCommandService, isA<IMatterCommandService>());
+  });
+
+  group('WifiCommandService protocol', () {
+    test('encodes STA connect command', () async {
+      final client = FakeWebSocketClient();
+      final service = WifiCommandService(websocket: client);
+
+      await service.sendStaConnectCommand(
+        ssid: 'test-ssid',
+        password: 'test-password',
+      );
+
+      final message = jsonDecode(client.sentMessage!) as Map<String, dynamic>;
+      final payload = message['payload'] as Map<String, dynamic>;
+
+      expect(message['type'], 'command');
+      expect(message['action'], 'wifi.sta_connect');
+      expect(payload['ssid'], 'test-ssid');
+      expect(payload['password'], 'test-password');
+    });
   });
 
   group('ThreadCommandService protocol', () {
