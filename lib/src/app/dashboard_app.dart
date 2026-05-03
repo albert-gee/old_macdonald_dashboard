@@ -11,11 +11,11 @@ import 'package:dashboard/blocs/thread/thread_interface_status/thread_interface_
 import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
 import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
 import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';
 import 'package:dashboard/blocs/wifi_sta_connect/wifi_sta_connection_bloc.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/theme/app_theme.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/blocs/websocket_connection_bloc.dart';
 import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
 
 import 'layout.dart';

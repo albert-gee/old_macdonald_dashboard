@@ -1,5 +1,5 @@
-import 'package:dashboard/widget/content/forms/websocket_connection_form_widget.dart';
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/widgets/websocket_connection_form_widget.dart';
 import 'package:dashboard/src/core/widgets/card_widget.dart';
 import 'package:flutter/material.dart';
 

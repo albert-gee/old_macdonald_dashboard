@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'package:dashboard/websocket/websocket_connection_settings.dart';
 import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';

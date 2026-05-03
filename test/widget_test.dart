@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/services/i_thread_command_service.dart';
 import 'package:dashboard/services/i_wifi_command_service.dart';
 import 'package:dashboard/services/thread_command_service.dart';

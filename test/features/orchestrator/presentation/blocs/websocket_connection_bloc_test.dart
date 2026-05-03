@@ -7,8 +7,8 @@ import 'package:dashboard/blocs/thread/thread_interface_status/thread_interface_
 import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
 import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
 import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'package:dashboard/blocs/websocket_connection/websocket_connection_bloc.dart';
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/blocs/websocket_connection_bloc.dart';
 import 'package:dashboard/websocket/i_websocket_client.dart';
 import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
 import 'package:flutter_test/flutter_test.dart';

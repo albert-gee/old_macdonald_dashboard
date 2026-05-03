@@ -1,13 +1,13 @@
 import 'package:dashboard/widget/sidebar/sidebar_menu/websocket_connection_indicator_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 
-import 'package:dashboard/pages/orchestrator_page.dart';
 import 'package:dashboard/pages/wifi_sta_page.dart';
 import 'package:dashboard/pages/wifi_ap_page.dart';
 import 'package:dashboard/pages/thread_page.dart';
 import 'package:dashboard/pages/matter_page.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_page.dart';
 
 import 'package:dashboard/widget/sidebar/sidebar_widget.dart';
 import 'package:dashboard/widget/sidebar/sidebar_menu/sidebar_menu_item.dart';

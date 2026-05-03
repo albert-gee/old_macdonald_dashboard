@@ -1,4 +1,4 @@
-import 'package:dashboard/services/i_orchestrator_url_storage.dart';
+import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart' as prefs;
 
 typedef SharedPrefs = prefs.SharedPreferences;
