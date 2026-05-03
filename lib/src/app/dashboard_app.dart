@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:dashboard/blocs/side_menu/side_menu_cubit.dart';
+import 'package:dashboard/src/app/blocs/side_menu_cubit.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/theme/app_theme.dart';
@@ -16,7 +16,7 @@ import 'package:dashboard/src/features/thread/presentation/blocs/thread_meshcop_
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thread_role_bloc.dart';
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_bloc.dart';
 import 'package:dashboard/src/features/wifi/presentation/blocs/wifi_sta_connection_bloc.dart';
-import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
+import 'package:dashboard/src/core/websocket/websocket_inbound_message_handler.dart';
 
 import 'layout.dart';
 

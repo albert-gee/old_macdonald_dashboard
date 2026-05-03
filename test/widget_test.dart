@@ -11,8 +11,8 @@ import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/wifi_command_service.dart';
-import 'package:dashboard/websocket/i_websocket_client.dart';
-import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/src/core/websocket/i_websocket_client.dart';
+import 'package:dashboard/src/core/websocket/websocket_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

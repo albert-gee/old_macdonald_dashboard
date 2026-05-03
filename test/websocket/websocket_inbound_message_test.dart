@@ -1,4 +1,4 @@
-import 'package:dashboard/websocket/websocket_inbound_message.dart';
+import 'package:dashboard/src/core/websocket/websocket_inbound_message.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

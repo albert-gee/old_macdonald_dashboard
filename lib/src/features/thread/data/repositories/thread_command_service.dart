@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dashboard/websocket/i_websocket_client.dart';
+import 'package:dashboard/src/core/websocket/i_websocket_client.dart';
 import 'i_thread_command_service.dart';
 
 class ThreadCommandService implements IThreadCommandService {

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
-import 'package:dashboard/websocket/i_websocket_client.dart';
-import 'package:dashboard/websocket/websocket_connection_settings.dart';
-import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
+import 'package:dashboard/src/core/websocket/i_websocket_client.dart';
+import 'package:dashboard/src/core/websocket/websocket_connection_settings.dart';
+import 'package:dashboard/src/core/websocket/websocket_inbound_message_handler.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';

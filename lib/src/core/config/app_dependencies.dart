@@ -6,7 +6,7 @@ import 'package:dashboard/src/features/thread/data/repositories/i_thread_command
 import 'package:dashboard/src/features/thread/data/repositories/thread_command_service.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/wifi_command_service.dart';
-import 'package:dashboard/websocket/websocket_client.dart';
+import 'package:dashboard/src/core/websocket/websocket_client.dart';
 
 class AppDependencies {
   final WebSocketClient webSocketClient;

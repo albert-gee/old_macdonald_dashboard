@@ -14,7 +14,7 @@ import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thr
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thread_role_event.dart';
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_bloc.dart';
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_event.dart';
-import 'package:dashboard/websocket/websocket_inbound_message.dart';
+import 'package:dashboard/src/core/websocket/websocket_inbound_message.dart';
 import 'package:logger/logger.dart';
 
 class WebSocketInboundMessageHandler {

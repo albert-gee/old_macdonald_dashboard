@@ -9,8 +9,8 @@ import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thr
 import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_bloc.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/blocs/websocket_connection_bloc.dart';
-import 'package:dashboard/websocket/i_websocket_client.dart';
-import 'package:dashboard/websocket/websocket_inbound_message_handler.dart';
+import 'package:dashboard/src/core/websocket/i_websocket_client.dart';
+import 'package:dashboard/src/core/websocket/websocket_inbound_message_handler.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class FakeWebSocketClient implements IWebSocketClient {
