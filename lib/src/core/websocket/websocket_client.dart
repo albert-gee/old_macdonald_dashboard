@@ -1,129 +1,153 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 
-import 'i_websocket_client.dart';
+import 'package:dashboard/src/core/errors/app_failure.dart';
+import 'package:dashboard/src/core/errors/result.dart';
+import 'package:dashboard/src/core/websocket/websocket_connection_settings.dart';
+import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 
-/// A secure WebSocket client with optional TLS root CA and stream handling.
-class WebSocketClient implements IWebSocketClient {
+abstract interface class WebSocketClient {
+  bool get isConnected;
+  bool get isConnecting;
+  Stream<String> get messages;
+  Stream<WebSocketConnectionStatus> get status;
+
+  Future<Result<void>> connect(WebSocketConnectionSettings settings);
+
+  Future<Result<void>> send(String message);
+
+  Future<void> disconnect({
+    int code = 1000,
+    String reason = 'Client disconnect',
+  });
+
+  Future<void> dispose();
+}
+
+/// `dart:io` WebSocket implementation for local desktop/mobile dashboard builds.
+///
+/// This client is intentionally not web-compatible.
+final class IoWebSocketClient implements WebSocketClient {
+  final Logger _logger;
+  final StreamController<String> _messagesController =
+      StreamController<String>.broadcast();
+  final StreamController<WebSocketConnectionStatus> _statusController =
+      StreamController<WebSocketConnectionStatus>.broadcast();
+
   WebSocket? _socket;
+  StreamSubscription<dynamic>? _subscription;
   bool _connecting = false;
-  final Logger _logger = Logger();
 
-  /// Whether the client is currently attempting to connect.
+  IoWebSocketClient({Logger? logger}) : _logger = logger ?? Logger();
+
   @override
   bool get isConnecting => _connecting;
 
-  /// Whether the WebSocket is connected and open.
   @override
   bool get isConnected =>
       _socket != null && _socket!.readyState == WebSocket.open;
 
-  /// Stream of incoming string messages.
-  ///
-  /// Throws [StateError] if called before the connection is established.
   @override
-  Stream<String> get messages {
-    final socket = _socket;
-    if (socket == null) {
-      throw StateError('WebSocket connection not established.');
-    }
-    return socket.cast<String>();
-  }
+  Stream<String> get messages => _messagesController.stream;
 
-  /// Connects to the WebSocket server.
-  ///
-  /// [url] must be a `ws://` or `wss://` URI.
-  /// Optionally provide [rootCAAsset] for secure TLS (wss).
   @override
-  Future<bool> connect({
-    required String url,
-    String? rootCAAsset,
-    bool enableCompression = true,
-    Duration pingInterval = const Duration(seconds: 10),
-  }) async {
-    if (_connecting) return false;
-    if (isConnected) return true;
+  Stream<WebSocketConnectionStatus> get status => _statusController.stream;
+
+  @override
+  Future<Result<void>> connect(WebSocketConnectionSettings settings) async {
+    if (_connecting || isConnected) return const Success(null);
 
     _connecting = true;
+    _statusController.add(WebSocketConnectionStatus.connecting);
+
     try {
-      // Set up a security context
       SecurityContext? context;
-      if (url.startsWith('wss://') && rootCAAsset != null) {
-        final certData = await rootBundle.loadString(rootCAAsset);
-        context = SecurityContext();
-        context.setTrustedCertificatesBytes(utf8.encode(certData));
+      if (settings.rootCAAsset != null) {
+        final certData = await rootBundle.loadString(settings.rootCAAsset!);
+        context = SecurityContext()
+          ..setTrustedCertificatesBytes(utf8.encode(certData));
       }
 
-      // Connect to the WebSocket server
-      _socket = await WebSocket.connect(
-        url,
-        compression: enableCompression
-            ? CompressionOptions.compressionDefault
-            : CompressionOptions.compressionOff,
+      final socket = await WebSocket.connect(
+        settings.url,
+        compression: CompressionOptions.compressionDefault,
         customClient: context != null ? HttpClient(context: context) : null,
       );
+      socket.pingInterval = const Duration(seconds: 10);
 
-      _socket!.pingInterval = pingInterval;
+      await _subscription?.cancel();
+      _socket = socket;
+      _subscription = socket.listen(
+        (message) {
+          if (message is String) _messagesController.add(message);
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          _logger.e(
+            'WebSocket stream error',
+            error: error,
+            stackTrace: stackTrace,
+          );
+          _statusController.add(WebSocketConnectionStatus.disconnected);
+        },
+        onDone: () {
+          _socket = null;
+          _statusController.add(WebSocketConnectionStatus.disconnected);
+        },
+        cancelOnError: true,
+      );
 
-      return true;
-    } catch (e) {
-      _logger.e('WebSocket connection failed', error: e);
-      return false;
+      _statusController.add(WebSocketConnectionStatus.connected);
+      return const Success(null);
+    } catch (error, stackTrace) {
+      _logger.e(
+        'WebSocket connection failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      _statusController.add(WebSocketConnectionStatus.disconnected);
+      return FailureResult(
+        WebSocketConnectionFailure('Unable to connect to WebSocket.'),
+      );
     } finally {
       _connecting = false;
     }
   }
 
-  /// Sends a string message over the WebSocket.
-  ///
-  /// Returns `true` if the message was sent.
   @override
-  Future<bool> sendMessage(String message) async {
-    if (!isConnected) return false;
-    _socket!.add(message);
-    return true;
-  }
-
-  /// Closes the WebSocket connection gracefully.
-  @override
-  Future<void> disconnect({
-    int code = WebSocketStatus.normalClosure,
-    String reason = 'Client disconnect',
-  }) async {
-    await _socket?.close(code, reason);
-    _socket = null;
-  }
-
-  /// Adds listeners for incoming messages, errors, and close events.
-  ///
-  /// You can use [messages] for stream-based handling instead.
-  @override
-  StreamSubscription<String> listen({
-    required void Function(String) onMessage,
-    required VoidCallback onDone,
-    required void Function(Object error) onError,
-  }) {
+  Future<Result<void>> send(String message) async {
     final socket = _socket;
-    if (socket == null) {
-      throw StateError('WebSocket not connected.');
+    if (socket == null || socket.readyState != WebSocket.open) {
+      return const FailureResult(WebSocketDisconnectedFailure());
     }
 
-    return socket.cast<String>().listen(
-          onMessage,
-          onDone: onDone,
-          onError: onError,
-          cancelOnError: true,
-        );
+    try {
+      socket.add(message);
+      return const Success(null);
+    } catch (error) {
+      return FailureResult(WebSocketSendFailure('Unable to send command.'));
+    }
   }
 
-  /// Returns the WebSocket close code, if any.
   @override
-  int? get closeCode => _socket?.closeCode;
+  Future<void> disconnect({
+    int code = 1000,
+    String reason = 'Client disconnect',
+  }) async {
+    await _subscription?.cancel();
+    _subscription = null;
+    await _socket?.close(code, reason);
+    _socket = null;
+    _statusController.add(WebSocketConnectionStatus.disconnected);
+  }
 
-  /// Returns the WebSocket close reason, if any.
   @override
-  String? get closeReason => _socket?.closeReason;
+  Future<void> dispose() async {
+    await disconnect();
+    await _messagesController.close();
+    await _statusController.close();
+  }
 }

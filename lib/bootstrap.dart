@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import 'src/app/dashboard_app.dart';
-import 'src/core/config/app_dependencies.dart';
+import 'src/app/providers.dart';
 import 'src/core/config/app_config.dart';
 
 final Logger _logger = Logger();
@@ -12,12 +13,13 @@ final Logger _logger = Logger();
 Future<void> bootstrap(AppConfig config) async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    final dependencies = AppDependencies.create();
 
     runApp(
-      DashboardApp(
-        config: config,
-        dependencies: dependencies,
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+        ],
+        child: const DashboardApp(),
       ),
     );
   }, (error, stackTrace) {
