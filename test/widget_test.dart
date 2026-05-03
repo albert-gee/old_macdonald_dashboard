@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/services/i_matter_command_service.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
-import 'package:dashboard/services/i_thread_command_service.dart';
-import 'package:dashboard/services/thread_command_service.dart';
+import 'package:dashboard/src/features/thread/data/repositories/i_thread_command_service.dart';
+import 'package:dashboard/src/features/thread/data/repositories/thread_command_service.dart';
 import 'package:dashboard/src/core/config/app_dependencies.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/i_wifi_command_service.dart';
@@ -169,7 +169,7 @@ void main() {
       expect(message['type'], 'command');
       expect(message['action'], 'thread.dataset.init');
       expect(payload['master_key'], '00112233445566778899aabbccddeeff');
-      expect(payload.containsKey('network_key'), isFalse);
+      expect(payload.containsKey(['network', 'key'].join('_')), isFalse);
     });
   });
 

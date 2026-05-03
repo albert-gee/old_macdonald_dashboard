@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:dashboard/services/i_thread_command_service.dart';
+import 'package:dashboard/src/features/thread/data/repositories/i_thread_command_service.dart';
 
 import 'thread_command_event.dart';
 import 'thread_command_state.dart';

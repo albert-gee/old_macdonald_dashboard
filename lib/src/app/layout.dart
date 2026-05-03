@@ -4,8 +4,8 @@ import 'package:dashboard/src/core/theme/app_dimensions.dart';
 
 import 'package:dashboard/src/features/wifi/presentation/screens/wifi_sta_page.dart';
 import 'package:dashboard/src/features/wifi/presentation/screens/wifi_ap_page.dart';
-import 'package:dashboard/pages/thread_page.dart';
 import 'package:dashboard/pages/matter_page.dart';
+import 'package:dashboard/src/features/thread/presentation/screens/thread_page.dart';
 import 'package:dashboard/src/features/orchestrator/data/repositories/i_orchestrator_url_storage.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_page.dart';
 

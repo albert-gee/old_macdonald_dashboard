@@ -1,19 +1,19 @@
 import 'dart:convert';
 
-import 'package:dashboard/blocs/thread/thread_active_dataset/thread_active_dataset_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_active_dataset/thread_active_dataset_event.dart';
-import 'package:dashboard/blocs/thread/thread_address/thread_address_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_address/thread_address_event.dart';
-import 'package:dashboard/blocs/thread/thread_attachment_status/thread_attachment_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_attachment_status/thread_attachment_status_event.dart';
-import 'package:dashboard/blocs/thread/thread_interface_status/thread_interface_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_interface_status/thread_interface_status_event.dart';
-import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_meshcop_service_status/thread_meshcop_service_status_event.dart';
-import 'package:dashboard/blocs/thread/thread_role/thread_role_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_role/thread_role_event.dart';
-import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_bloc.dart';
-import 'package:dashboard/blocs/thread/thread_stack_status/thread_stack_status_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_active_dataset/thread_active_dataset_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_active_dataset/thread_active_dataset_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_address/thread_address_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_address/thread_address_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_attachment_status/thread_attachment_status_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_attachment_status/thread_attachment_status_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_interface_status/thread_interface_status_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_interface_status/thread_interface_status_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_meshcop_service_status/thread_meshcop_service_status_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_meshcop_service_status/thread_meshcop_service_status_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thread_role_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_role/thread_role_event.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_bloc.dart';
+import 'package:dashboard/src/features/thread/presentation/blocs/thread_stack_status/thread_stack_status_event.dart';
 import 'package:dashboard/websocket/websocket_inbound_message.dart';
 import 'package:logger/logger.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:dashboard/services/i_thread_command_service.dart';
+import 'package:dashboard/src/features/thread/data/repositories/i_thread_command_service.dart';
 import 'thread_dataset_form_event.dart';
 import 'thread_dataset_form_state.dart';
 
