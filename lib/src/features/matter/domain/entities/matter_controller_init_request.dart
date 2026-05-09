@@ -1,5 +1,5 @@
 final class MatterControllerInitRequest {
-  final int nodeId;
+  final String nodeId;
   final int fabricId;
   final int listenPort;
 

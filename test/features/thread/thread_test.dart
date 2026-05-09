@@ -25,23 +25,62 @@ void main() {
     await repository.initBorderRouter();
     await repository.deinitBorderRouter();
 
-    expect(
-      connection.sent
-          .map((message) => jsonDecode(message) as Map<String, Object?>)
-          .map((body) => body['action']),
-      [
-        'thread.enable',
-        'thread.disable',
-        'thread.status_get',
-        'thread.attached_get',
-        'thread.role_get',
-        'thread.active_dataset_get',
-        'thread.unicast_addresses_get',
-        'thread.multicast_addresses_get',
-        'thread.br_init',
-        'thread.br_deinit',
-      ],
-    );
+    final bodies = connection.sent
+        .map((message) => jsonDecode(message) as Map<String, Object?>)
+        .toList();
+
+    expect(bodies, [
+      {
+        'type': 'command',
+        'action': 'thread.enable',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.disable',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.status_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.attached_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.role_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.active_dataset_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.unicast_addresses_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.multicast_addresses_get',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.br_init',
+        'payload': <String, Object?>{},
+      },
+      {
+        'type': 'command',
+        'action': 'thread.br_deinit',
+        'payload': <String, Object?>{},
+      },
+    ]);
   });
 
   test('dataset init encodes master_key', () async {
@@ -63,7 +102,17 @@ void main() {
 
     final body = jsonDecode(connection.sent.single) as Map<String, Object?>;
     final payload = body['payload'] as Map<String, Object?>;
+    expect(body['type'], 'command');
     expect(body['action'], 'thread.dataset.init');
+    expect(payload, {
+      'channel': 15,
+      'pan_id': 1,
+      'network_name': 'mesh',
+      'extended_pan_id': 'epan',
+      'mesh_local_prefix': 'fd00::/64',
+      'master_key': 'key',
+      'pskc': 'pskc',
+    });
     expect(payload['master_key'], 'key');
     expect(payload.containsKey('network_key'), isFalse);
   });

@@ -65,6 +65,9 @@ final class OrchestratorConnectionController
         );
         return;
       case Success(value: final value):
+        if (_connectionRepository.isConnected) {
+          await _connectionRepository.disconnect();
+        }
         final result = await _connectionRepository.connect(value);
         switch (result) {
           case Success():

@@ -64,7 +64,7 @@ void main() {
     expect(find.text('Network name is required.'), findsOneWidget);
   });
 
-  testWidgets('matter controller validates integer fields', (tester) async {
+  testWidgets('matter controller validates unsigned node ID', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: Scaffold(body: MatterControllerInitForm())),
@@ -75,7 +75,10 @@ void main() {
     await tester.tap(find.text('Initialize Controller'));
     await tester.pump();
 
-    expect(find.text('Node ID must be an integer.'), findsOneWidget);
+    expect(
+      find.text('Node ID must be an unsigned decimal integer.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('matter screen and dashboard navigation smoke test',

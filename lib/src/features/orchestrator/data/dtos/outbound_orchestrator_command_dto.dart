@@ -13,7 +13,7 @@ final class OutboundOrchestratorCommandDto {
     return jsonEncode({
       'type': 'command',
       'action': action,
-      if (payload != null) 'payload': payload,
+      'payload': payload ?? const <String, Object?>{},
     });
   }
 }

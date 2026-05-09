@@ -41,6 +41,7 @@ final class IoWebSocketClient implements WebSocketClient {
   WebSocket? _socket;
   StreamSubscription<dynamic>? _subscription;
   bool _connecting = false;
+  String? _currentUrl;
 
   IoWebSocketClient({Logger? logger}) : _logger = logger ?? Logger();
 
@@ -59,7 +60,11 @@ final class IoWebSocketClient implements WebSocketClient {
 
   @override
   Future<Result<void>> connect(WebSocketConnectionSettings settings) async {
-    if (_connecting || isConnected) return const Success(null);
+    if (_connecting) return const Success(null);
+    if (isConnected) {
+      if (_currentUrl == settings.url) return const Success(null);
+      await disconnect(reason: 'Reconnect to different URL');
+    }
 
     _connecting = true;
     _statusController.add(WebSocketConnectionStatus.connecting);
@@ -100,6 +105,7 @@ final class IoWebSocketClient implements WebSocketClient {
         cancelOnError: true,
       );
 
+      _currentUrl = settings.url;
       _statusController.add(WebSocketConnectionStatus.connected);
       return const Success(null);
     } catch (error, stackTrace) {
@@ -108,6 +114,7 @@ final class IoWebSocketClient implements WebSocketClient {
         error: error,
         stackTrace: stackTrace,
       );
+      _currentUrl = null;
       _statusController.add(WebSocketConnectionStatus.disconnected);
       return FailureResult(
         WebSocketConnectionFailure('Unable to connect to WebSocket.'),
@@ -141,6 +148,7 @@ final class IoWebSocketClient implements WebSocketClient {
     _subscription = null;
     await _socket?.close(code, reason);
     _socket = null;
+    _currentUrl = null;
     _statusController.add(WebSocketConnectionStatus.disconnected);
   }
 

@@ -32,7 +32,7 @@ void main() {
 
     await repository.initializeController(
       const MatterControllerInitRequest(
-        nodeId: 1,
+        nodeId: '1',
         fabricId: 2,
         listenPort: 5540,
       ),
@@ -72,18 +72,61 @@ void main() {
       ),
     );
 
-    expect(
-      connection.sent
-          .map((message) => jsonDecode(message) as Map<String, Object?>)
-          .map((body) => body['action']),
-      [
-        'matter.controller_init',
-        'matter.pair_ble_thread',
-        'matter.cluster_command_invoke',
-        'matter.attribute_read',
-        'matter.attribute_subscribe',
-      ],
-    );
+    final bodies = connection.sent
+        .map((message) => jsonDecode(message) as Map<String, Object?>)
+        .toList();
+
+    expect(bodies.first, {
+      'type': 'command',
+      'action': 'matter.controller_init',
+      'payload': {
+        'node_id': '1',
+        'fabric_id': 2,
+        'listen_port': 5540,
+      },
+    });
+    expect(bodies[1], {
+      'type': 'command',
+      'action': 'matter.pair_ble_thread',
+      'payload': {
+        'node_id': '1',
+        'setup_code': '20202021',
+        'discriminator': '3840',
+      },
+    });
+    expect(bodies[2], {
+      'type': 'command',
+      'action': 'matter.cluster_command_invoke',
+      'payload': {
+        'destination_id': '1',
+        'endpoint_id': 1,
+        'cluster_id': 6,
+        'command_id': 1,
+        'command_data': '{}',
+      },
+    });
+    expect(bodies[3], {
+      'type': 'command',
+      'action': 'matter.attribute_read',
+      'payload': {
+        'node_id': '1',
+        'endpoint_id': 1,
+        'cluster_id': 6,
+        'attribute_id': 0,
+      },
+    });
+    expect(bodies[4], {
+      'type': 'command',
+      'action': 'matter.attribute_subscribe',
+      'payload': {
+        'node_id': '1',
+        'endpoint_id': 1,
+        'cluster_id': 6,
+        'attribute_id': 0,
+        'min_interval': 1,
+        'max_interval': 60,
+      },
+    });
   });
 
   test('matter event controller updates on events', () async {

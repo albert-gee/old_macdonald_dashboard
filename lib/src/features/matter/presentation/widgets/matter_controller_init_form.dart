@@ -40,7 +40,11 @@ class _MatterControllerInitFormState
         runSpacing: AppDimensions.spacingM,
         crossAxisAlignment: WrapCrossAlignment.end,
         children: [
-          _field(_nodeId, 'Node ID'),
+          _field(
+            _nodeId,
+            'Node ID',
+            validator: matterUnsignedDecimalStringValidator('Node ID'),
+          ),
           _field(_fabricId, 'Fabric ID'),
           _field(_listenPort, 'Listen port'),
           ElevatedButton(
@@ -52,14 +56,18 @@ class _MatterControllerInitFormState
     );
   }
 
-  Widget _field(TextEditingController controller, String label) {
+  Widget _field(
+    TextEditingController controller,
+    String label, {
+    String? Function(String?)? validator,
+  }) {
     return SizedBox(
       width: 180,
       child: AppLabeledTextField(
         controller: controller,
         label: label,
         keyboardType: TextInputType.number,
-        validator: matterIntValidator(label),
+        validator: validator ?? matterIntValidator(label),
       ),
     );
   }
@@ -68,7 +76,7 @@ class _MatterControllerInitFormState
     if (_formKey.currentState?.validate() != true) return;
     ref.read(matterCommandControllerProvider.notifier).initializeController(
           MatterControllerInitRequest(
-            nodeId: int.parse(_nodeId.text.trim()),
+            nodeId: _nodeId.text.trim(),
             fabricId: int.parse(_fabricId.text.trim()),
             listenPort: int.parse(_listenPort.text.trim()),
           ),

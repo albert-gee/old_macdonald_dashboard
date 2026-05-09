@@ -58,6 +58,22 @@ void main() {
     expect(controller.state.status, WebSocketConnectionStatus.connected);
   });
 
+  test('connect to different URL disconnects before reconnecting', () async {
+    final connectionRepo = _ConnectionRepo(connected: true);
+    final controller = OrchestratorConnectionController(
+      config: config,
+      urlRepository: _UrlRepo(saved: 'ws://old/ws'),
+      connectionRepository: connectionRepo,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    await controller.connect('ws://new/ws');
+
+    expect(connectionRepo.disconnects, 1);
+    expect(connectionRepo.connectedUrls, ['ws://new/ws']);
+    expect(controller.state.url, 'ws://new/ws');
+  });
+
   test('disconnected connect failure produces safe error', () async {
     final controller = OrchestratorConnectionController(
       config: config,
@@ -94,20 +110,33 @@ final class _UrlRepo implements OrchestratorUrlRepository {
 
 final class _ConnectionRepo implements OrchestratorConnectionRepository {
   final Result<void> connectResult;
-  _ConnectionRepo({this.connectResult = const Success(null)});
+  final List<String> connectedUrls = [];
+  int disconnects = 0;
+  bool connected;
+
+  _ConnectionRepo({
+    this.connectResult = const Success(null),
+    this.connected = false,
+  });
 
   @override
-  bool get isConnected => false;
+  bool get isConnected => connected;
 
   @override
   Stream<WebSocketConnectionStatus> get status => const Stream.empty();
 
   @override
-  Future<Result<void>> connect(WebSocketConnectionSettings settings) async =>
-      connectResult;
+  Future<Result<void>> connect(WebSocketConnectionSettings settings) async {
+    connectedUrls.add(settings.url);
+    if (connectResult is Success<void>) connected = true;
+    return connectResult;
+  }
 
   @override
-  Future<void> disconnect() async {}
+  Future<void> disconnect() async {
+    disconnects += 1;
+    connected = false;
+  }
 
   @override
   Future<Result<void>> sendRaw(String message) async => const Success(null);
