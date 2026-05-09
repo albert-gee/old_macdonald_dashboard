@@ -31,6 +31,10 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Local orchestrator trust anchor. Copy assets/rootCA.example.pem or your
+# generated orchestrator root CA to this path for local secure WebSocket builds.
+/assets/rootCA.pem
+
 # Symbolication related
 app.*.symbols
 
@@ -41,4 +45,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/assets/rootCA.pem
