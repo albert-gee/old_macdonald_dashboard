@@ -5,19 +5,19 @@ import 'package:dashboard/src/features/matter/domain/entities/matter_cluster_com
 import 'package:dashboard/src/features/matter/domain/entities/matter_controller_init_request.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_pair_ble_thread_request.dart';
 import 'package:dashboard/src/features/matter/domain/repositories/matter_command_repository.dart';
-import 'package:dashboard/src/features/orchestrator/data/dtos/outbound_orchestrator_command_dto.dart';
-import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_connection_repository.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
+import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_command_client.dart';
 
 final class MatterCommandRepositoryImpl implements MatterCommandRepository {
-  final OrchestratorConnectionRepository _connectionRepository;
+  final OrchestratorCommandClient _client;
 
-  MatterCommandRepositoryImpl({
-    required OrchestratorConnectionRepository connectionRepository,
-  }) : _connectionRepository = connectionRepository;
+  MatterCommandRepositoryImpl({required OrchestratorCommandClient client})
+    : _client = client;
 
   @override
-  Future<Result<void>> initializeController(
-      MatterControllerInitRequest request) {
+  Future<Result<OrchestratorCommandResult>> initializeController(
+    MatterControllerInitRequest request,
+  ) {
     return _send('matter.controller_init', {
       'node_id': request.nodeId,
       'fabric_id': request.fabricId,
@@ -26,7 +26,9 @@ final class MatterCommandRepositoryImpl implements MatterCommandRepository {
   }
 
   @override
-  Future<Result<void>> pairBleThread(MatterPairBleThreadRequest request) {
+  Future<Result<OrchestratorCommandResult>> pairBleThread(
+    MatterPairBleThreadRequest request,
+  ) {
     return _send('matter.pair_ble_thread', {
       'node_id': request.nodeId,
       'setup_code': request.setupCode,
@@ -35,8 +37,9 @@ final class MatterCommandRepositoryImpl implements MatterCommandRepository {
   }
 
   @override
-  Future<Result<void>> invokeClusterCommand(
-      MatterClusterCommandRequest request) {
+  Future<Result<OrchestratorCommandResult>> invokeClusterCommand(
+    MatterClusterCommandRequest request,
+  ) {
     return _send('matter.cluster_command_invoke', {
       'destination_id': request.destinationId,
       'endpoint_id': request.endpointId,
@@ -47,7 +50,9 @@ final class MatterCommandRepositoryImpl implements MatterCommandRepository {
   }
 
   @override
-  Future<Result<void>> readAttribute(MatterAttributeReadRequest request) {
+  Future<Result<OrchestratorCommandResult>> readAttribute(
+    MatterAttributeReadRequest request,
+  ) {
     return _send('matter.attribute_read', {
       'node_id': request.nodeId,
       'endpoint_id': request.endpointId,
@@ -57,7 +62,7 @@ final class MatterCommandRepositoryImpl implements MatterCommandRepository {
   }
 
   @override
-  Future<Result<void>> subscribeAttribute(
+  Future<Result<OrchestratorCommandResult>> subscribeAttribute(
     MatterAttributeSubscribeRequest request,
   ) {
     return _send('matter.attribute_subscribe', {
@@ -70,12 +75,10 @@ final class MatterCommandRepositoryImpl implements MatterCommandRepository {
     });
   }
 
-  Future<Result<void>> _send(String action, Map<String, Object?> payload) {
-    return _connectionRepository.sendRaw(
-      OutboundOrchestratorCommandDto(
-        action: action,
-        payload: payload,
-      ).toJsonString(),
-    );
+  Future<Result<OrchestratorCommandResult>> _send(
+    String action,
+    Map<String, Object?> payload,
+  ) {
+    return _client.sendCommand(action, payload: payload);
   }
 }

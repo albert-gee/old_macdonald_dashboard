@@ -33,7 +33,5 @@ final class MatterSubscribeDoneEvent extends MatterEvent {
 final class MatterEventState {
   final List<MatterEvent> recentEvents;
 
-  const MatterEventState({
-    this.recentEvents = const [],
-  });
+  const MatterEventState({this.recentEvents = const []});
 }

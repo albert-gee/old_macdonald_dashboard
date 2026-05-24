@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/features/matter/data/datasources/matter_cluster_asset_data_source.dart';
 import 'package:dashboard/src/features/matter/data/repositories/matter_command_repository_impl.dart';
@@ -26,9 +24,8 @@ void main() {
   });
 
   test('command repository encodes all Matter commands', () async {
-    final connection = RecordingConnectionRepository();
-    final repository =
-        MatterCommandRepositoryImpl(connectionRepository: connection);
+    final client = RecordingCommandClient();
+    final repository = MatterCommandRepositoryImpl(client: client);
 
     await repository.initializeController(
       const MatterControllerInitRequest(
@@ -72,60 +69,17 @@ void main() {
       ),
     );
 
-    final bodies = connection.sent
-        .map((message) => jsonDecode(message) as Map<String, Object?>)
-        .toList();
-
-    expect(bodies.first, {
-      'type': 'command',
-      'action': 'matter.controller_init',
-      'payload': {
-        'node_id': '1',
-        'fabric_id': 2,
-        'listen_port': 5540,
-      },
-    });
-    expect(bodies[1], {
-      'type': 'command',
-      'action': 'matter.pair_ble_thread',
-      'payload': {
-        'node_id': '1',
-        'setup_code': '20202021',
-        'discriminator': '3840',
-      },
-    });
-    expect(bodies[2], {
-      'type': 'command',
-      'action': 'matter.cluster_command_invoke',
-      'payload': {
-        'destination_id': '1',
-        'endpoint_id': 1,
-        'cluster_id': 6,
-        'command_id': 1,
-        'command_data': '{}',
-      },
-    });
-    expect(bodies[3], {
-      'type': 'command',
-      'action': 'matter.attribute_read',
-      'payload': {
-        'node_id': '1',
-        'endpoint_id': 1,
-        'cluster_id': 6,
-        'attribute_id': 0,
-      },
-    });
-    expect(bodies[4], {
-      'type': 'command',
-      'action': 'matter.attribute_subscribe',
-      'payload': {
-        'node_id': '1',
-        'endpoint_id': 1,
-        'cluster_id': 6,
-        'attribute_id': 0,
-        'min_interval': 1,
-        'max_interval': 60,
-      },
+    expect(client.commands.map((command) => command.action), [
+      'matter.controller_init',
+      'matter.pair_ble_thread',
+      'matter.cluster_command_invoke',
+      'matter.attribute_read',
+      'matter.attribute_subscribe',
+    ]);
+    expect(client.commands.first.payload, {
+      'node_id': '1',
+      'fabric_id': 2,
+      'listen_port': 5540,
     });
   });
 

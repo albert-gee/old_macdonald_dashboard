@@ -116,7 +116,9 @@ class _MatterAttributeSubscribeFormState
         _attribute == null) {
       return;
     }
-    ref.read(matterCommandControllerProvider.notifier).subscribeAttribute(
+    ref
+        .read(matterCommandControllerProvider.notifier)
+        .subscribeAttribute(
           MatterAttributeSubscribeRequest(
             nodeId: _nodeId.text.trim(),
             endpointId: int.parse(_endpointId.text.trim()),

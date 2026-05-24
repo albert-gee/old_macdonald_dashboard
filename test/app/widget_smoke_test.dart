@@ -2,6 +2,7 @@ import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/errors/result.dart';
+import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_attribute.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_cluster.dart';
 import 'package:dashboard/src/features/matter/domain/repositories/matter_cluster_repository.dart';
@@ -22,8 +23,9 @@ void main() {
     rootCaAssetPath: 'assets/rootCA.pem',
   );
 
-  testWidgets('Wi-Fi form validation prevents empty SSID/password',
-      (tester) async {
+  testWidgets('Wi-Fi form validation prevents empty SSID/password', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: Scaffold(body: WifiStaScreen())),
@@ -48,8 +50,9 @@ void main() {
     expect(find.text('Thread Dataset'), findsOneWidget);
   });
 
-  testWidgets('dataset form validation prevents invalid fields',
-      (tester) async {
+  testWidgets('dataset form validation prevents invalid fields', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: Scaffold(body: ThreadDatasetForm())),
@@ -81,8 +84,9 @@ void main() {
     );
   });
 
-  testWidgets('matter screen and dashboard navigation smoke test',
-      (tester) async {
+  testWidgets('matter screen and dashboard navigation smoke test', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(
       ProviderScope(
@@ -106,8 +110,22 @@ void main() {
 
     await tester.tap(find.text('Matter Network').first);
     await tester.pumpAndSettle();
+    expect(find.text('Matter Network'), findsWidgets);
     expect(find.text('Controller Init'), findsOneWidget);
     expect(find.text('Pair BLE Thread'), findsWidgets);
+  });
+
+  testWidgets('developer screen contains raw Matter tools', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+        ],
+        child: const MaterialApp(home: Scaffold(body: DeveloperScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
     expect(find.text('Cluster Command'), findsOneWidget);
     expect(find.text('Read Attribute'), findsWidgets);
     expect(find.text('Subscribe Attribute'), findsWidgets);
@@ -121,9 +139,7 @@ final class _ClusterRepo implements MatterClusterRepository {
       MatterCluster(
         id: '0x0006',
         name: 'On/Off',
-        attributes: [
-          MatterAttribute(id: '0x0000', name: 'OnOff'),
-        ],
+        attributes: [MatterAttribute(id: '0x0000', name: 'OnOff')],
       ),
     ]);
   }

@@ -8,7 +8,7 @@ final class SharedPreferencesStore implements PreferencesStore {
   final Future<SharedPreferences> _preferences;
 
   SharedPreferencesStore({Future<SharedPreferences>? preferences})
-      : _preferences = preferences ?? SharedPreferences.getInstance();
+    : _preferences = preferences ?? SharedPreferences.getInstance();
 
   @override
   Future<Result<String?>> readString(String key) async {

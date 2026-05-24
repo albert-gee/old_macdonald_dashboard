@@ -28,8 +28,9 @@ class _WebsocketConnectionFormState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(orchestratorConnectionControllerProvider);
-    final controller =
-        ref.read(orchestratorConnectionControllerProvider.notifier);
+    final controller = ref.read(
+      orchestratorConnectionControllerProvider.notifier,
+    );
 
     if (_urlController.text != state.url) {
       _urlController.text = state.url;
@@ -94,10 +95,10 @@ class _WebsocketConnectionFormState
             Text(
               state.message!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: state.success
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.error,
-                  ),
+                color: state.success
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
+              ),
             ),
           ],
         ],

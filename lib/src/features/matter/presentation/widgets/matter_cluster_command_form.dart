@@ -99,7 +99,9 @@ class _MatterClusterCommandFormState
 
   void _submit() {
     if (_formKey.currentState?.validate() != true || _cluster == null) return;
-    ref.read(matterCommandControllerProvider.notifier).invokeClusterCommand(
+    ref
+        .read(matterCommandControllerProvider.notifier)
+        .invokeClusterCommand(
           MatterClusterCommandRequest(
             destinationId: _destinationId.text.trim(),
             endpointId: int.parse(_endpointId.text.trim()),

@@ -74,7 +74,9 @@ class _MatterControllerInitFormState
 
   void _submit() {
     if (_formKey.currentState?.validate() != true) return;
-    ref.read(matterCommandControllerProvider.notifier).initializeController(
+    ref
+        .read(matterCommandControllerProvider.notifier)
+        .initializeController(
           MatterControllerInitRequest(
             nodeId: _nodeId.text.trim(),
             fabricId: int.parse(_fabricId.text.trim()),

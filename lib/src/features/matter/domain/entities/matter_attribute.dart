@@ -2,10 +2,7 @@ final class MatterAttribute {
   final String id;
   final String name;
 
-  const MatterAttribute({
-    required this.id,
-    required this.name,
-  });
+  const MatterAttribute({required this.id, required this.name});
 
   int get numericId {
     final normalized = id.trim().toLowerCase();

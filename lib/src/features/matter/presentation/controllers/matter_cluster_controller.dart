@@ -8,8 +8,8 @@ final class MatterClusterController extends StateNotifier<MatterClusterState> {
   final MatterClusterRepository _repository;
 
   MatterClusterController({required MatterClusterRepository repository})
-      : _repository = repository,
-        super(const MatterClusterState(loading: true)) {
+    : _repository = repository,
+      super(const MatterClusterState(loading: true)) {
     load();
   }
 
@@ -18,8 +18,9 @@ final class MatterClusterController extends StateNotifier<MatterClusterState> {
     final result = await _repository.loadClusters();
     state = switch (result) {
       Success(value: final clusters) => MatterClusterState(clusters: clusters),
-      FailureResult(failure: final failure) =>
-        MatterClusterState(message: failure.message),
+      FailureResult(failure: final failure) => MatterClusterState(
+        message: failure.message,
+      ),
     };
   }
 }

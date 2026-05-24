@@ -11,7 +11,8 @@ class ThreadAddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAddresses = addresses.unicastAddresses.isNotEmpty ||
+    final hasAddresses =
+        addresses.unicastAddresses.isNotEmpty ||
         addresses.multicastAddresses.isNotEmpty;
     return AppCard(
       title: 'IP Addresses',

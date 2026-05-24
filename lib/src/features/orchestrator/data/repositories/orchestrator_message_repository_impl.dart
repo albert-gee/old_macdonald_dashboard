@@ -14,8 +14,8 @@ final class OrchestratorMessageRepositoryImpl
     required WebSocketClient webSocketClient,
     InboundOrchestratorMessageMapper mapper =
         const InboundOrchestratorMessageMapper(),
-  })  : _webSocketClient = webSocketClient,
-        _mapper = mapper;
+  }) : _webSocketClient = webSocketClient,
+       _mapper = mapper;
 
   @override
   Stream<OrchestratorMessage> watchMessages() {

@@ -12,9 +12,9 @@ class ThreadCommandsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(threadCommandControllerProvider, (previous, next) {
       if (next.message != null && next.message != previous?.message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.message!)));
       }
     });
     final state = ref.watch(threadCommandControllerProvider);

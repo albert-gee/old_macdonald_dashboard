@@ -1,6 +1,8 @@
 import 'package:dashboard/src/features/matter/domain/entities/matter_attribute_report.dart';
 import 'package:dashboard/src/features/orchestrator/data/dtos/inbound_orchestrator_message_dto.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_snapshot.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_active_dataset.dart';
 
 final class InboundOrchestratorMessageMapper {
@@ -8,6 +10,37 @@ final class InboundOrchestratorMessageMapper {
 
   OrchestratorMessage map(InboundOrchestratorMessageDto dto) {
     final payload = dto.payload;
+    switch (dto.type) {
+      case 'command_result':
+        return CommandResultReceived(
+          OrchestratorCommandResult(
+            requestId: dto.requestId ?? '',
+            action: dto.action ?? '',
+            ok: dto.ok ?? false,
+            payload: payload,
+            error: dto.error == null
+                ? null
+                : OrchestratorCommandError(
+                    code: _string(dto.error!['code']),
+                    message: _string(dto.error!['message']),
+                  ),
+          ),
+        );
+      case 'state_snapshot':
+        return StateSnapshotReceived(OrchestratorSnapshot.fromPayload(payload));
+      case 'event':
+        return OrchestratorEventReceived(
+          event: dto.event ?? '',
+          payload: payload,
+          receivedAt: DateTime.now(),
+        );
+      case 'error':
+        return OrchestratorProtocolErrorReceived(
+          code: _string(dto.error?['code']),
+          message: _string(dto.error?['message']),
+        );
+    }
+
     if (dto.type == 'info') {
       switch (dto.action) {
         case 'thread.stack_status':
@@ -31,14 +64,16 @@ final class InboundOrchestratorMessageMapper {
           );
         case 'ipv6.unicast_addresses':
           return ThreadUnicastAddressesReceived(
-              _stringList(payload['unicast']));
+            _stringList(payload['unicast']),
+          );
         case 'ipv6.multicast_addresses':
           return ThreadMulticastAddressesReceived(
             _stringList(payload['multicast']),
           );
         case 'thread.meshcop_service':
           return ThreadMeshcopServiceStatusReceived(
-              _bool(payload['published']));
+            _bool(payload['published']),
+          );
         case 'wifi.sta_status':
           return WifiStaStatusReceived(_string(payload['status']));
         case 'matter.commissioning_complete':

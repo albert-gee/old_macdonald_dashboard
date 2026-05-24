@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 
+import 'package:dashboard/src/core/security/certificate_fingerprint.dart';
 import 'package:dashboard/src/core/errors/app_failure.dart';
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_settings.dart';
@@ -76,11 +78,31 @@ final class IoWebSocketClient implements WebSocketClient {
         context = SecurityContext()
           ..setTrustedCertificatesBytes(utf8.encode(certData));
       }
+      HttpClient? client;
+      if (context != null) {
+        client = HttpClient(context: context);
+      } else if (settings.secure &&
+          (settings.trustedFingerprint != null ||
+              settings.allowUntrustedForPairing)) {
+        client = HttpClient();
+        client.badCertificateCallback = (cert, host, port) {
+          final fingerprint = sha256.convert(cert.der).toString();
+          final trusted = settings.trustedFingerprint;
+          if (trusted == null) {
+            _logger.w(
+              'Rejected untrusted certificate for $host. SHA-256: '
+              '${CertificateFingerprint.parse(fingerprint).display}',
+            );
+            return settings.allowUntrustedForPairing;
+          }
+          return fingerprint == CertificateFingerprint.parse(trusted).compact;
+        };
+      }
 
       final socket = await WebSocket.connect(
         settings.url,
         compression: CompressionOptions.compressionDefault,
-        customClient: context != null ? HttpClient(context: context) : null,
+        customClient: client,
       );
       socket.pingInterval = const Duration(seconds: 10);
 

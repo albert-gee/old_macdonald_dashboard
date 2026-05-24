@@ -9,12 +9,16 @@ final class MatterClusterAssetDataSource {
   Future<Result<List<MatterClusterDto>>> loadClusters() async {
     try {
       final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      final clusterPaths = manifest
-          .listAssets()
-          .where((path) =>
-              path.startsWith('assets/clusters/') && path.endsWith('.xml'))
-          .toList()
-        ..sort();
+      final clusterPaths =
+          manifest
+              .listAssets()
+              .where(
+                (path) =>
+                    path.startsWith('assets/clusters/') &&
+                    path.endsWith('.xml'),
+              )
+              .toList()
+            ..sort();
 
       final clusters = <MatterClusterDto>[];
       for (final path in clusterPaths) {
@@ -31,12 +35,15 @@ final class MatterClusterAssetDataSource {
   MatterClusterDto _parseCluster(String xmlString) {
     final document = XmlDocument.parse(xmlString);
     final clusterElement = document.getElement('cluster');
-    final attributes = clusterElement
+    final attributes =
+        clusterElement
             ?.findAllElements('attribute')
-            .map((element) => MatterAttributeDto(
-                  id: element.getAttribute('id') ?? '',
-                  name: element.getAttribute('name') ?? '',
-                ))
+            .map(
+              (element) => MatterAttributeDto(
+                id: element.getAttribute('id') ?? '',
+                name: element.getAttribute('name') ?? '',
+              ),
+            )
             .toList() ??
         const <MatterAttributeDto>[];
 

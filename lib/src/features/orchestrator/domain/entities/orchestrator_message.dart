@@ -1,8 +1,42 @@
 import 'package:dashboard/src/features/matter/domain/entities/matter_attribute_report.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_snapshot.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_active_dataset.dart';
 
 sealed class OrchestratorMessage {
   const OrchestratorMessage();
+}
+
+final class CommandResultReceived extends OrchestratorMessage {
+  final OrchestratorCommandResult result;
+  const CommandResultReceived(this.result);
+}
+
+final class StateSnapshotReceived extends OrchestratorMessage {
+  final OrchestratorSnapshot snapshot;
+  const StateSnapshotReceived(this.snapshot);
+}
+
+final class OrchestratorEventReceived extends OrchestratorMessage {
+  final String event;
+  final Map<String, Object?> payload;
+  final DateTime receivedAt;
+
+  const OrchestratorEventReceived({
+    required this.event,
+    required this.payload,
+    required this.receivedAt,
+  });
+}
+
+final class OrchestratorProtocolErrorReceived extends OrchestratorMessage {
+  final String code;
+  final String message;
+
+  const OrchestratorProtocolErrorReceived({
+    required this.code,
+    required this.message,
+  });
 }
 
 final class ThreadStackStatusReceived extends OrchestratorMessage {

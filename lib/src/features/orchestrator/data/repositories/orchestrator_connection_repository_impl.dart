@@ -8,9 +8,9 @@ final class OrchestratorConnectionRepositoryImpl
     implements OrchestratorConnectionRepository {
   final WebSocketClient _webSocketClient;
 
-  OrchestratorConnectionRepositoryImpl(
-      {required WebSocketClient webSocketClient})
-      : _webSocketClient = webSocketClient;
+  OrchestratorConnectionRepositoryImpl({
+    required WebSocketClient webSocketClient,
+  }) : _webSocketClient = webSocketClient;
 
   @override
   bool get isConnected => _webSocketClient.isConnected;

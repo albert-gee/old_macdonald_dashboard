@@ -11,8 +11,8 @@ final class MatterClusterRepositoryImpl implements MatterClusterRepository {
   MatterClusterRepositoryImpl({
     required MatterClusterAssetDataSource dataSource,
     MatterClusterMapper mapper = const MatterClusterMapper(),
-  })  : _dataSource = dataSource,
-        _mapper = mapper;
+  }) : _dataSource = dataSource,
+       _mapper = mapper;
 
   @override
   Future<Result<List<MatterCluster>>> loadClusters() async {

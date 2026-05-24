@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dashboard/src/core/errors/app_failure.dart';
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/features/wifi/data/repositories/wifi_command_repository_impl.dart';
@@ -11,24 +9,23 @@ import '../../fakes.dart';
 
 void main() {
   test('command repository encodes wifi.sta_connect', () async {
-    final connection = RecordingConnectionRepository();
-    final repository =
-        WifiCommandRepositoryImpl(connectionRepository: connection);
+    final client = RecordingCommandClient();
+    final repository = WifiCommandRepositoryImpl(client: client);
 
     await repository.connectSta(
       const WifiStaCredentials(ssid: 'ssid', password: 'password'),
     );
 
-    final body = jsonDecode(connection.sent.single) as Map<String, Object?>;
-    expect(body['action'], 'wifi.sta_connect');
-    expect(body['payload'], {'ssid': 'ssid', 'password': 'password'});
+    expect(client.commands.single.action, 'wifi.sta_connect');
+    expect(client.commands.single.payload, {
+      'ssid': 'ssid',
+      'password': 'password',
+    });
   });
 
   test('connect controller success', () async {
     final controller = WifiStaConnectController(
-      repository: WifiCommandRepositoryImpl(
-        connectionRepository: RecordingConnectionRepository(),
-      ),
+      repository: WifiCommandRepositoryImpl(client: RecordingCommandClient()),
     );
     await controller.connect(
       const WifiStaCredentials(ssid: 'ssid', password: 'password'),
@@ -37,12 +34,10 @@ void main() {
   });
 
   test('connect controller disconnected failure', () async {
+    final client = RecordingCommandClient()
+      ..nextResult = const FailureResult(WebSocketDisconnectedFailure());
     final controller = WifiStaConnectController(
-      repository: WifiCommandRepositoryImpl(
-        connectionRepository: RecordingConnectionRepository(
-          sendResult: const FailureResult(WebSocketDisconnectedFailure()),
-        ),
-      ),
+      repository: WifiCommandRepositoryImpl(client: client),
     );
     await controller.connect(
       const WifiStaCredentials(ssid: 'ssid', password: 'password'),

@@ -40,9 +40,9 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
   Widget build(BuildContext context) {
     ref.listen(threadDatasetInitControllerProvider, (previous, next) {
       if (next.message != null && next.message != previous?.message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.message!)));
       }
     });
     final state = ref.watch(threadDatasetInitControllerProvider);
@@ -133,7 +133,9 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
 
   void _submit() {
     if (_formKey.currentState?.validate() != true) return;
-    ref.read(threadDatasetInitControllerProvider.notifier).submit(
+    ref
+        .read(threadDatasetInitControllerProvider.notifier)
+        .submit(
           ThreadDatasetInitRequest(
             channel: int.parse(_channelController.text.trim()),
             panId: int.parse(_panIdController.text.trim()),

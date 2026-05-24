@@ -2,7 +2,7 @@ class AppConfig {
   final String appTitle;
   final String appSubtitle;
   final String defaultWebSocketUrl;
-  final String rootCaAssetPath;
+  final String? rootCaAssetPath;
 
   const AppConfig({
     required this.appTitle,
@@ -12,8 +12,8 @@ class AppConfig {
   });
 
   const AppConfig.local()
-      : appTitle = 'Old MacDonald',
-        appSubtitle = 'Controlled Environment',
-        defaultWebSocketUrl = 'wss://192.168.4.1/ws',
-        rootCaAssetPath = 'assets/rootCA.pem';
+    : appTitle = 'Old MacDonald',
+      appSubtitle = 'Controlled Environment',
+      defaultWebSocketUrl = 'wss://192.168.4.1/ws',
+      rootCaAssetPath = null;
 }

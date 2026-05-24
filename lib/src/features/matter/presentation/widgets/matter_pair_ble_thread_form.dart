@@ -65,7 +65,9 @@ class _MatterPairBleThreadFormState
 
   void _submit() {
     if (_formKey.currentState?.validate() != true) return;
-    ref.read(matterCommandControllerProvider.notifier).pairBleThread(
+    ref
+        .read(matterCommandControllerProvider.notifier)
+        .pairBleThread(
           MatterPairBleThreadRequest(
             nodeId: _nodeId.text.trim(),
             setupCode: _setupCode.text.trim(),

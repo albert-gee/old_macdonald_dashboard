@@ -1,5 +1,1 @@
-enum WebSocketConnectionStatus {
-  disconnected,
-  connecting,
-  connected,
-}
+enum WebSocketConnectionStatus { disconnected, connecting, connected }

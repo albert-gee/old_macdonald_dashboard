@@ -30,18 +30,36 @@ void main() {
   });
 
   test('ws returns null root CA', () {
-    final result = WebSocketConnectionSettings.fromInput(
-      'ws://localhost/ws',
-      rootCaAssetPath: rootCa,
-    ) as Success<WebSocketConnectionSettings>;
+    final result =
+        WebSocketConnectionSettings.fromInput(
+              'ws://localhost/ws',
+              rootCaAssetPath: rootCa,
+            )
+            as Success<WebSocketConnectionSettings>;
     expect(result.value.rootCAAsset, isNull);
   });
 
   test('wss returns configured root CA', () {
-    final result = WebSocketConnectionSettings.fromInput(
-      'wss://localhost/ws',
-      rootCaAssetPath: rootCa,
-    ) as Success<WebSocketConnectionSettings>;
+    final result =
+        WebSocketConnectionSettings.fromInput(
+              'wss://localhost/ws',
+              rootCaAssetPath: rootCa,
+            )
+            as Success<WebSocketConnectionSettings>;
     expect(result.value.rootCAAsset, rootCa);
+  });
+
+  test('wss without root CA is valid for fingerprint trust', () {
+    final result =
+        WebSocketConnectionSettings.fromInput(
+              'wss://192.168.4.1/ws',
+              trustedFingerprint:
+                  'aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899',
+            )
+            as Success<WebSocketConnectionSettings>;
+    expect(result.value.rootCAAsset, isNull);
+    expect(result.value.secure, isTrue);
+    expect(result.value.host, '192.168.4.1');
+    expect(result.value.trustedFingerprint, isNotNull);
   });
 }

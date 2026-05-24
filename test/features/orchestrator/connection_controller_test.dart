@@ -79,9 +79,8 @@ void main() {
       config: config,
       urlRepository: _UrlRepo(),
       connectionRepository: _ConnectionRepo(
-          connectResult: const FailureResult(
-        WebSocketDisconnectedFailure(),
-      )),
+        connectResult: const FailureResult(WebSocketDisconnectedFailure()),
+      ),
     );
     await controller.connect('ws://host/ws');
     expect(controller.state.message, 'WebSocket is not connected.');

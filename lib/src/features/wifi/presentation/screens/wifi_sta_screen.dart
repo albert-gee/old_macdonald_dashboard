@@ -17,10 +17,7 @@ class WifiStaScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppCard(
-            title: 'Wi-Fi STA Status',
-            child: Text(status),
-          ),
+          AppCard(title: 'Wi-Fi STA Status', child: Text(status)),
           const SizedBox(height: AppDimensions.spacingL),
           const AppCard(
             title: 'Wi-Fi STA Connection',

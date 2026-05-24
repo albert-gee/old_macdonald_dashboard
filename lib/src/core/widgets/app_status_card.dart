@@ -36,9 +36,9 @@ class AppStatusCard extends StatelessWidget {
             value,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: valueColor,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: valueColor,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),

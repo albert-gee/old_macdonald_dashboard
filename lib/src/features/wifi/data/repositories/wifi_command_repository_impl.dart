@@ -1,37 +1,22 @@
 import 'package:dashboard/src/core/errors/result.dart';
-import 'package:dashboard/src/features/orchestrator/data/dtos/outbound_orchestrator_command_dto.dart';
-import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_connection_repository.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
+import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_command_client.dart';
 import 'package:dashboard/src/features/wifi/domain/entities/wifi_sta_credentials.dart';
 import 'package:dashboard/src/features/wifi/domain/repositories/wifi_command_repository.dart';
 
 final class WifiCommandRepositoryImpl implements WifiCommandRepository {
-  final OrchestratorConnectionRepository _connectionRepository;
+  final OrchestratorCommandClient _client;
 
-  WifiCommandRepositoryImpl({
-    required OrchestratorConnectionRepository connectionRepository,
-  }) : _connectionRepository = connectionRepository;
+  WifiCommandRepositoryImpl({required OrchestratorCommandClient client})
+    : _client = client;
 
   @override
-  Future<Result<void>> connectSta(WifiStaCredentials credentials) {
-    return _send(
-      const OutboundOrchestratorCommandDto(
-        action: 'wifi.sta_connect',
-      ),
-      payload: {
-        'ssid': credentials.ssid,
-        'password': credentials.password,
-      },
+  Future<Result<OrchestratorCommandResult>> connectSta(
+    WifiStaCredentials credentials,
+  ) {
+    return _client.sendCommand(
+      'wifi.sta_connect',
+      payload: {'ssid': credentials.ssid, 'password': credentials.password},
     );
-  }
-
-  Future<Result<void>> _send(
-    OutboundOrchestratorCommandDto command, {
-    Map<String, Object?>? payload,
-  }) {
-    final dto = OutboundOrchestratorCommandDto(
-      action: command.action,
-      payload: payload,
-    );
-    return _connectionRepository.sendRaw(dto.toJsonString());
   }
 }

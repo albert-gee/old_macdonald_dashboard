@@ -4,9 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/src/core/widgets/app_card.dart';
-import 'package:dashboard/src/features/matter/presentation/widgets/matter_attribute_read_form.dart';
-import 'package:dashboard/src/features/matter/presentation/widgets/matter_attribute_subscribe_form.dart';
-import 'package:dashboard/src/features/matter/presentation/widgets/matter_cluster_command_form.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_controller_init_form.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_pair_ble_thread_form.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_recent_events_card.dart';
@@ -18,18 +15,39 @@ class MatterScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(matterCommandControllerProvider, (previous, next) {
       if (next.message != null && next.message != previous?.message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.message!)));
       }
     });
-    final clustersState = ref.watch(matterClusterControllerProvider);
-    final clusters = clustersState.clusters;
+    final snapshot = ref.watch(orchestratorRuntimeControllerProvider).snapshot;
+    final matter = snapshot?.matter;
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AppCard(
+            title: 'Matter Network',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Controller initialized: '
+                  '${matter?.controllerInitialized ?? false}',
+                ),
+                Text(
+                  'Commissioned nodes: '
+                  '${matter?.commissionedNodes.length ?? 0}',
+                ),
+                for (final node in matter?.commissionedNodes ?? const [])
+                  Text('${node.label ?? node.nodeId} (${node.nodeId})'),
+                const SizedBox(height: AppDimensions.spacingM),
+                const Text('Advanced raw Matter tools are in Developer.'),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
           const AppCard(
             title: 'Controller Init',
             child: MatterControllerInitForm(),
@@ -40,32 +58,6 @@ class MatterScreen extends ConsumerWidget {
             child: MatterPairBleThreadForm(),
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          AppCard(
-            title: 'Cluster Command',
-            child: clustersState.loading
-                ? const LinearProgressIndicator()
-                : MatterClusterCommandForm(clusters: clusters),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          AppCard(
-            title: 'Read Attribute',
-            child: clustersState.loading
-                ? const LinearProgressIndicator()
-                : MatterAttributeReadForm(clusters: clusters),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          AppCard(
-            title: 'Subscribe Attribute',
-            child: clustersState.loading
-                ? const LinearProgressIndicator()
-                : MatterAttributeSubscribeForm(clusters: clusters),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          if (clustersState.message != null)
-            Text(
-              clustersState.message!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
           const MatterRecentEventsCard(),
         ],
       ),

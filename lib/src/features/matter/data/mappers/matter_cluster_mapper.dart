@@ -10,10 +10,10 @@ final class MatterClusterMapper {
       id: dto.id,
       name: dto.name,
       attributes: dto.attributes
-          .map((attribute) => MatterAttribute(
-                id: attribute.id,
-                name: attribute.name,
-              ))
+          .map(
+            (attribute) =>
+                MatterAttribute(id: attribute.id, name: attribute.name),
+          )
           .toList(),
     );
   }

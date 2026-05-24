@@ -17,45 +17,131 @@ void main() {
   }
 
   test('maps known inbound actions', () {
-    expect(map('thread.stack_status', {'running': true}),
-        isA<ThreadStackStatusReceived>());
-    expect(map('thread.interface_status', {'interface_up': true}),
-        isA<ThreadInterfaceStatusReceived>());
-    expect(map('thread.attachment_status', {'attached': true}),
-        isA<ThreadAttachmentStatusReceived>());
+    expect(
+      map('thread.stack_status', {'running': true}),
+      isA<ThreadStackStatusReceived>(),
+    );
+    expect(
+      map('thread.interface_status', {'interface_up': true}),
+      isA<ThreadInterfaceStatusReceived>(),
+    );
+    expect(
+      map('thread.attachment_status', {'attached': true}),
+      isA<ThreadAttachmentStatusReceived>(),
+    );
     expect(map('thread.role', {'role': 'leader'}), isA<ThreadRoleReceived>());
-    expect(map('thread.active_dataset', {'network_name': 'mesh'}),
-        isA<ThreadActiveDatasetReceived>());
     expect(
-        map('ipv6.unicast_addresses', {
-          'unicast': ['fd00::1']
-        }),
-        isA<ThreadUnicastAddressesReceived>());
+      map('thread.active_dataset', {'network_name': 'mesh'}),
+      isA<ThreadActiveDatasetReceived>(),
+    );
     expect(
-        map('ipv6.multicast_addresses', {
-          'multicast': ['ff03::1']
-        }),
-        isA<ThreadMulticastAddressesReceived>());
-    expect(map('thread.meshcop_service', {'published': true}),
-        isA<ThreadMeshcopServiceStatusReceived>());
-    expect(map('wifi.sta_status', {'status': 'connected'}),
-        isA<WifiStaStatusReceived>());
+      map('ipv6.unicast_addresses', {
+        'unicast': ['fd00::1'],
+      }),
+      isA<ThreadUnicastAddressesReceived>(),
+    );
+    expect(
+      map('ipv6.multicast_addresses', {
+        'multicast': ['ff03::1'],
+      }),
+      isA<ThreadMulticastAddressesReceived>(),
+    );
+    expect(
+      map('thread.meshcop_service', {'published': true}),
+      isA<ThreadMeshcopServiceStatusReceived>(),
+    );
+    expect(
+      map('wifi.sta_status', {'status': 'connected'}),
+      isA<WifiStaStatusReceived>(),
+    );
     expect(
       map('matter.commissioning_complete', {'node_id': 1, 'fabric_index': 2}),
       isA<MatterCommissioningCompleteReceived>(),
     );
-    expect(map('matter.attribute_report', {'value': '42'}),
-        isA<MatterAttributeReportReceived>());
-    expect(map('matter.subscribe_done', {'node_id': 1, 'subscription_id': 7}),
-        isA<MatterSubscribeDoneReceived>());
+    expect(
+      map('matter.attribute_report', {'value': '42'}),
+      isA<MatterAttributeReportReceived>(),
+    );
+    expect(
+      map('matter.subscribe_done', {'node_id': 1, 'subscription_id': 7}),
+      isA<MatterSubscribeDoneReceived>(),
+    );
   });
 
   test('malformed payload does not crash', () {
-    expect(map('thread.stack_status', {'running': 'yes'}),
-        isA<ThreadStackStatusReceived>());
+    expect(
+      map('thread.stack_status', {'running': 'yes'}),
+      isA<ThreadStackStatusReceived>(),
+    );
   });
 
   test('unknown action returns unknown message', () {
     expect(map('other.action', {}), isA<UnknownOrchestratorMessageReceived>());
+  });
+
+  test('maps command_result success and failure', () {
+    final success = mapper.map(
+      const InboundOrchestratorMessageDto(
+        type: 'command_result',
+        requestId: 'req-1',
+        action: 'thread.status_get',
+        ok: true,
+        payload: {'enabled': true},
+      ),
+    );
+    expect(success, isA<CommandResultReceived>());
+    expect((success as CommandResultReceived).result.requestId, 'req-1');
+    expect(success.result.ok, isTrue);
+
+    final failure = mapper.map(
+      const InboundOrchestratorMessageDto(
+        type: 'command_result',
+        requestId: 'req-2',
+        action: 'matter.attribute_read',
+        ok: false,
+        error: {
+          'code': 'ESP_ERR_INVALID_ARG',
+          'message': 'Missing required field: node_id',
+        },
+      ),
+    );
+    expect((failure as CommandResultReceived).result.ok, isFalse);
+    expect(failure.result.error?.message, 'Missing required field: node_id');
+  });
+
+  test('maps state_snapshot event and protocol error', () {
+    expect(
+      mapper.map(
+        const InboundOrchestratorMessageDto(
+          type: 'state_snapshot',
+          payload: {
+            'wifi': {'ap_running': true},
+          },
+        ),
+      ),
+      isA<StateSnapshotReceived>(),
+    );
+    expect(
+      mapper.map(
+        const InboundOrchestratorMessageDto(
+          type: 'event',
+          event: 'wifi.sta_connected',
+          payload: {'ip': '192.168.1.2'},
+        ),
+      ),
+      isA<OrchestratorEventReceived>(),
+    );
+    expect(
+      mapper.map(
+        const InboundOrchestratorMessageDto(
+          type: 'error',
+          error: {
+            'code': 'INVALID_JSON',
+            'message': 'Message is not valid JSON',
+          },
+        ),
+      ),
+      isA<OrchestratorProtocolErrorReceived>(),
+    );
   });
 }

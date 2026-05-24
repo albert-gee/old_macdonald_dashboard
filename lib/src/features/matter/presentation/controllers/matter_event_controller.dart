@@ -9,16 +9,13 @@ final class MatterEventController extends StateNotifier<MatterEventState> {
   late final StreamSubscription<OrchestratorMessage> _subscription;
 
   MatterEventController({required Stream<OrchestratorMessage> messages})
-      : super(const MatterEventState()) {
+    : super(const MatterEventState()) {
     _subscription = messages.listen(_handleMessage);
   }
 
   void _handleMessage(OrchestratorMessage message) {
     final event = switch (message) {
-      MatterCommissioningCompleteReceived(
-        :final nodeId,
-        :final fabricIndex,
-      ) =>
+      MatterCommissioningCompleteReceived(:final nodeId, :final fabricIndex) =>
         MatterCommissioningCompleteEvent(
           nodeId: nodeId,
           fabricIndex: fabricIndex,

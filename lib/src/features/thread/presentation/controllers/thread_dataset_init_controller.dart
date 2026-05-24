@@ -10,19 +10,20 @@ final class ThreadDatasetInitController
   final ThreadCommandRepository _repository;
 
   ThreadDatasetInitController({required ThreadCommandRepository repository})
-      : _repository = repository,
-        super(const ThreadDatasetInitState());
+    : _repository = repository,
+      super(const ThreadDatasetInitState());
 
   Future<void> submit(ThreadDatasetInitRequest request) async {
     state = const ThreadDatasetInitState(submitting: true);
     final result = await _repository.initDataset(request);
     state = switch (result) {
       Success() => const ThreadDatasetInitState(
-          message: 'Thread dataset init command sent.',
-          success: true,
-        ),
-      FailureResult(failure: final failure) =>
-        ThreadDatasetInitState(message: failure.message),
+        message: 'Thread dataset initialized.',
+        success: true,
+      ),
+      FailureResult(failure: final failure) => ThreadDatasetInitState(
+        message: failure.message,
+      ),
     };
   }
 }

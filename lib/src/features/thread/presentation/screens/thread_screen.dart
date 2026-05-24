@@ -14,7 +14,18 @@ class ThreadScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(threadStatusControllerProvider).status;
+    final oldStatus = ref.watch(threadStatusControllerProvider).status;
+    final snapshot = ref.watch(orchestratorRuntimeControllerProvider).snapshot;
+    final thread = snapshot?.thread;
+    final status = thread == null
+        ? oldStatus
+        : oldStatus.copyWith(
+            stackRunning: thread.enabled,
+            interfaceUp: thread.enabled,
+            attached: thread.attached,
+            role: thread.role,
+            meshcopPublished: thread.datasetPresent,
+          );
 
     return SingleChildScrollView(
       child: Column(

@@ -11,22 +11,23 @@ import 'src/core/config/app_config.dart';
 final Logger _logger = Logger();
 
 Future<void> bootstrap(AppConfig config) async {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    runApp(
-      ProviderScope(
-        overrides: [
-          appConfigProvider.overrideWithValue(config),
-        ],
-        child: const DashboardApp(),
-      ),
-    );
-  }, (error, stackTrace) {
-    _logger.e(
-      'Unhandled error in bootstrap()',
-      error: error,
-      stackTrace: stackTrace,
-    );
-  });
+      runApp(
+        ProviderScope(
+          overrides: [appConfigProvider.overrideWithValue(config)],
+          child: const DashboardApp(),
+        ),
+      );
+    },
+    (error, stackTrace) {
+      _logger.e(
+        'Unhandled error in bootstrap()',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    },
+  );
 }

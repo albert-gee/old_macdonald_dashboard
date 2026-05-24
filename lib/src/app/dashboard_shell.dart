@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +7,9 @@ import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/src/core/widgets/app_page_header.dart';
+import 'package:dashboard/src/features/chamber/presentation/screens/chamber_screen.dart';
+import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
+import 'package:dashboard/src/features/devices/presentation/screens/devices_screen.dart';
 import 'package:dashboard/src/features/matter/presentation/screens/matter_screen.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_screen.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/widgets/websocket_connection_indicator.dart';
@@ -20,6 +25,16 @@ class DashboardShell extends ConsumerWidget {
       title: 'Orchestrator',
       icon: Icons.hub,
       builder: (_) => const OrchestratorScreen(),
+    ),
+    DashboardDestination(
+      title: 'Chamber',
+      icon: Icons.eco,
+      builder: (_) => const ChamberScreen(),
+    ),
+    DashboardDestination(
+      title: 'Devices',
+      icon: Icons.sensors,
+      builder: (_) => const DevicesScreen(),
     ),
     DashboardDestination(
       title: 'Wi-Fi STA',
@@ -41,6 +56,11 @@ class DashboardShell extends ConsumerWidget {
       icon: Icons.device_hub,
       builder: (_) => const MatterScreen(),
     ),
+    DashboardDestination(
+      title: 'Developer',
+      icon: Icons.terminal,
+      builder: (_) => const DeveloperScreen(),
+    ),
   ];
 
   @override
@@ -51,33 +71,49 @@ class DashboardShell extends ConsumerWidget {
     final destination = destinations[selectedIndex];
 
     return Scaffold(
-      body: Row(
-        children: [
-          _Sidebar(
-            title: config.appTitle,
-            subtitle: config.appSubtitle,
-            collapsed: collapsed,
-            selectedIndex: selectedIndex,
-            onToggle: () =>
-                ref.read(sidebarCollapsedProvider.notifier).state = !collapsed,
-            onSelect: (index) => ref
-                .read(selectedDashboardDestinationProvider.notifier)
-                .state = index,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingPage),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = math.max(constraints.maxWidth, 800.0);
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: width,
+              child: Row(
                 children: [
-                  AppPageHeader(title: destination.title),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Expanded(child: destination.builder(context)),
+                  _Sidebar(
+                    title: config.appTitle,
+                    subtitle: config.appSubtitle,
+                    collapsed: collapsed,
+                    selectedIndex: selectedIndex,
+                    onToggle: () =>
+                        ref.read(sidebarCollapsedProvider.notifier).state =
+                            !collapsed,
+                    onSelect: (index) =>
+                        ref
+                                .read(
+                                  selectedDashboardDestinationProvider.notifier,
+                                )
+                                .state =
+                            index,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppDimensions.paddingPage),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppPageHeader(title: destination.title),
+                          const SizedBox(height: AppDimensions.spacingL),
+                          Expanded(child: destination.builder(context)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -108,8 +144,8 @@ class _Sidebar extends StatelessWidget {
           ? AppDimensions.sidebarCollapsedWidth
           : AppDimensions.sidebarExpandedWidth,
       color: theme.colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: AppDimensions.spacingM),
           Padding(
@@ -149,33 +185,51 @@ class _Sidebar extends StatelessWidget {
               ),
             ),
           const Divider(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: DashboardShell.destinations.length,
-              itemBuilder: (context, index) {
-                final destination = DashboardShell.destinations[index];
-                final selected = index == selectedIndex;
-                final foreground = selected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.onSurface;
-                return ListTile(
-                  selected: selected,
-                  leading: destination.title == 'Orchestrator'
-                      ? const WebsocketConnectionIndicator()
-                      : Icon(destination.icon, color: foreground),
-                  title: collapsed
-                      ? null
-                      : Text(
-                          destination.title,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                  onTap: () => onSelect(index),
-                );
-              },
+          for (
+            var index = 0;
+            index < DashboardShell.destinations.length;
+            index++
+          )
+            _DestinationTile(
+              destination: DashboardShell.destinations[index],
+              selected: index == selectedIndex,
+              collapsed: collapsed,
+              onTap: () => onSelect(index),
             ),
-          ),
         ],
       ),
+    );
+  }
+}
+
+class _DestinationTile extends StatelessWidget {
+  final DashboardDestination destination;
+  final bool selected;
+  final bool collapsed;
+  final VoidCallback onTap;
+
+  const _DestinationTile({
+    required this.destination,
+    required this.selected,
+    required this.collapsed,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final foreground = selected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurface;
+    return ListTile(
+      selected: selected,
+      leading: destination.title == 'Orchestrator'
+          ? const WebsocketConnectionIndicator()
+          : Icon(destination.icon, color: foreground),
+      title: collapsed
+          ? null
+          : Text(destination.title, overflow: TextOverflow.ellipsis),
+      onTap: onTap,
     );
   }
 }

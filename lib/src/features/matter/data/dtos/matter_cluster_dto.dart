@@ -14,8 +14,5 @@ final class MatterAttributeDto {
   final String id;
   final String name;
 
-  const MatterAttributeDto({
-    required this.id,
-    required this.name,
-  });
+  const MatterAttributeDto({required this.id, required this.name});
 }

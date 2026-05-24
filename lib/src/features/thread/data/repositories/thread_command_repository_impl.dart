@@ -1,51 +1,58 @@
 import 'package:dashboard/src/core/errors/result.dart';
-import 'package:dashboard/src/features/orchestrator/data/dtos/outbound_orchestrator_command_dto.dart';
-import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_connection_repository.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
+import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_command_client.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_dataset_init_request.dart';
 import 'package:dashboard/src/features/thread/domain/repositories/thread_command_repository.dart';
 
 final class ThreadCommandRepositoryImpl implements ThreadCommandRepository {
-  final OrchestratorConnectionRepository _connectionRepository;
+  final OrchestratorCommandClient _client;
 
-  ThreadCommandRepositoryImpl({
-    required OrchestratorConnectionRepository connectionRepository,
-  }) : _connectionRepository = connectionRepository;
-
-  @override
-  Future<Result<void>> enable() => _send('thread.enable');
+  ThreadCommandRepositoryImpl({required OrchestratorCommandClient client})
+    : _client = client;
 
   @override
-  Future<Result<void>> disable() => _send('thread.disable');
+  Future<Result<OrchestratorCommandResult>> enable() => _send('thread.enable');
 
   @override
-  Future<Result<void>> refreshStatus() => _send('thread.status_get');
+  Future<Result<OrchestratorCommandResult>> disable() =>
+      _send('thread.disable');
 
   @override
-  Future<Result<void>> refreshAttachment() => _send('thread.attached_get');
+  Future<Result<OrchestratorCommandResult>> refreshStatus() =>
+      _send('thread.status_get');
 
   @override
-  Future<Result<void>> refreshRole() => _send('thread.role_get');
+  Future<Result<OrchestratorCommandResult>> refreshAttachment() =>
+      _send('thread.attached_get');
 
   @override
-  Future<Result<void>> refreshActiveDataset() =>
+  Future<Result<OrchestratorCommandResult>> refreshRole() =>
+      _send('thread.role_get');
+
+  @override
+  Future<Result<OrchestratorCommandResult>> refreshActiveDataset() =>
       _send('thread.active_dataset_get');
 
   @override
-  Future<Result<void>> refreshUnicastAddresses() =>
+  Future<Result<OrchestratorCommandResult>> refreshUnicastAddresses() =>
       _send('thread.unicast_addresses_get');
 
   @override
-  Future<Result<void>> refreshMulticastAddresses() =>
+  Future<Result<OrchestratorCommandResult>> refreshMulticastAddresses() =>
       _send('thread.multicast_addresses_get');
 
   @override
-  Future<Result<void>> initBorderRouter() => _send('thread.br_init');
+  Future<Result<OrchestratorCommandResult>> initBorderRouter() =>
+      _send('thread.br_init');
 
   @override
-  Future<Result<void>> deinitBorderRouter() => _send('thread.br_deinit');
+  Future<Result<OrchestratorCommandResult>> deinitBorderRouter() =>
+      _send('thread.br_deinit');
 
   @override
-  Future<Result<void>> initDataset(ThreadDatasetInitRequest request) {
+  Future<Result<OrchestratorCommandResult>> initDataset(
+    ThreadDatasetInitRequest request,
+  ) {
     return _send(
       'thread.dataset.init',
       payload: {
@@ -60,15 +67,10 @@ final class ThreadCommandRepositoryImpl implements ThreadCommandRepository {
     );
   }
 
-  Future<Result<void>> _send(
+  Future<Result<OrchestratorCommandResult>> _send(
     String action, {
-    Map<String, Object?>? payload,
+    Map<String, Object?> payload = const <String, Object?>{},
   }) {
-    return _connectionRepository.sendRaw(
-      OutboundOrchestratorCommandDto(
-        action: action,
-        payload: payload,
-      ).toJsonString(),
-    );
+    return _client.sendCommand(action, payload: payload);
   }
 }

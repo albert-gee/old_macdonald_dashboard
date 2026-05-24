@@ -8,7 +8,7 @@ final class OrchestratorUrlRepositoryImpl implements OrchestratorUrlRepository {
   final PreferencesStore _store;
 
   OrchestratorUrlRepositoryImpl({required PreferencesStore store})
-      : _store = store;
+    : _store = store;
 
   @override
   Future<Result<String?>> readUrl() => _store.readString(_urlKey);

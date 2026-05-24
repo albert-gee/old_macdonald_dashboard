@@ -29,9 +29,9 @@ class _WifiStaConnectFormState extends ConsumerState<WifiStaConnectForm> {
   Widget build(BuildContext context) {
     ref.listen(wifiStaConnectControllerProvider, (previous, next) {
       if (next.message != null && next.message != previous?.message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.message!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.message!)));
         if (next.success) _clearFields();
       }
     });
@@ -88,7 +88,9 @@ class _WifiStaConnectFormState extends ConsumerState<WifiStaConnectForm> {
 
   void _submit() {
     if (_formKey.currentState?.validate() != true) return;
-    ref.read(wifiStaConnectControllerProvider.notifier).connect(
+    ref
+        .read(wifiStaConnectControllerProvider.notifier)
+        .connect(
           WifiStaCredentials(
             ssid: _ssidController.text.trim(),
             password: _passwordController.text,

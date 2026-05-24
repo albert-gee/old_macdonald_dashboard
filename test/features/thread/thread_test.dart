@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
 import 'package:dashboard/src/features/thread/data/repositories/thread_command_repository_impl.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_dataset_init_request.dart';
@@ -10,9 +8,8 @@ import '../../fakes.dart';
 
 void main() {
   test('command repository encodes every Thread action', () async {
-    final connection = RecordingConnectionRepository();
-    final repository =
-        ThreadCommandRepositoryImpl(connectionRepository: connection);
+    final client = RecordingCommandClient();
+    final repository = ThreadCommandRepositoryImpl(client: client);
 
     await repository.enable();
     await repository.disable();
@@ -25,68 +22,23 @@ void main() {
     await repository.initBorderRouter();
     await repository.deinitBorderRouter();
 
-    final bodies = connection.sent
-        .map((message) => jsonDecode(message) as Map<String, Object?>)
-        .toList();
-
-    expect(bodies, [
-      {
-        'type': 'command',
-        'action': 'thread.enable',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.disable',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.status_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.attached_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.role_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.active_dataset_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.unicast_addresses_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.multicast_addresses_get',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.br_init',
-        'payload': <String, Object?>{},
-      },
-      {
-        'type': 'command',
-        'action': 'thread.br_deinit',
-        'payload': <String, Object?>{},
-      },
+    expect(client.commands.map((command) => command.action), [
+      'thread.enable',
+      'thread.disable',
+      'thread.status_get',
+      'thread.attached_get',
+      'thread.role_get',
+      'thread.active_dataset_get',
+      'thread.unicast_addresses_get',
+      'thread.multicast_addresses_get',
+      'thread.br_init',
+      'thread.br_deinit',
     ]);
   });
 
   test('dataset init encodes master_key', () async {
-    final connection = RecordingConnectionRepository();
-    final repository =
-        ThreadCommandRepositoryImpl(connectionRepository: connection);
+    final client = RecordingCommandClient();
+    final repository = ThreadCommandRepositoryImpl(client: client);
 
     await repository.initDataset(
       const ThreadDatasetInitRequest(
@@ -100,10 +52,9 @@ void main() {
       ),
     );
 
-    final body = jsonDecode(connection.sent.single) as Map<String, Object?>;
-    final payload = body['payload'] as Map<String, Object?>;
-    expect(body['type'], 'command');
-    expect(body['action'], 'thread.dataset.init');
+    final command = client.commands.single;
+    final payload = command.payload;
+    expect(command.action, 'thread.dataset.init');
     expect(payload, {
       'channel': 15,
       'pan_id': 1,

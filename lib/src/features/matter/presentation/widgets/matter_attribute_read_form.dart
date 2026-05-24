@@ -110,7 +110,9 @@ class _MatterAttributeReadFormState
         _attribute == null) {
       return;
     }
-    ref.read(matterCommandControllerProvider.notifier).readAttribute(
+    ref
+        .read(matterCommandControllerProvider.notifier)
+        .readAttribute(
           MatterAttributeReadRequest(
             nodeId: _nodeId.text.trim(),
             endpointId: int.parse(_endpointId.text.trim()),
