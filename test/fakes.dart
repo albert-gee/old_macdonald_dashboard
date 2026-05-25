@@ -20,6 +20,9 @@ final class RecordingConnectionRepository
   Stream<WebSocketConnectionStatus> get status => const Stream.empty();
 
   @override
+  Stream<String> get observedCertificateFingerprints => const Stream.empty();
+
+  @override
   Future<Result<void>> connect(WebSocketConnectionSettings settings) async =>
       const Success(null);
 

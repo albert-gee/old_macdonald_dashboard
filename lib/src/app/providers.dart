@@ -233,6 +233,10 @@ final chamberControllerProvider =
     StateNotifierProvider<ChamberController, ChamberState>((ref) {
       return ChamberController(
         repository: ref.watch(chamberRepositoryProvider),
+        deviceRepository: ref.watch(deviceRepositoryProvider),
+        messages: ref
+            .watch(orchestratorMessageRepositoryProvider)
+            .watchMessages(),
       );
     });
 

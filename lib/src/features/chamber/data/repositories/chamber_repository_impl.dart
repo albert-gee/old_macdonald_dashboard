@@ -1,4 +1,3 @@
-import 'package:dashboard/src/core/errors/app_failure.dart';
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/features/chamber/domain/entities/chamber_status.dart';
 import 'package:dashboard/src/features/chamber/domain/repositories/chamber_repository.dart';
@@ -20,25 +19,27 @@ final class ChamberRepositoryImpl implements ChamberRepository {
   }
 
   @override
-  Future<Result<double>> readTemperature(String deviceId) async {
+  Future<Result<SensorReadResult>> readTemperature(String deviceId) async {
     final result = await _client.sendCommand(
       'device.temperature.read',
       payload: {'device_id': deviceId},
     );
     return result.when(
-      success: (value) => _doubleResult(value.payload['temperature_celsius']),
+      success: (value) =>
+          Success(_readResult(value.payload, valueKey: 'temperature_celsius')),
       failure: FailureResult.new,
     );
   }
 
   @override
-  Future<Result<double>> readPressure(String deviceId) async {
+  Future<Result<SensorReadResult>> readPressure(String deviceId) async {
     final result = await _client.sendCommand(
       'device.pressure.read',
       payload: {'device_id': deviceId},
     );
     return result.when(
-      success: (value) => _doubleResult(value.payload['pressure_kpa']),
+      success: (value) =>
+          Success(_readResult(value.payload, valueKey: 'pressure_kpa')),
       failure: FailureResult.new,
     );
   }
@@ -55,15 +56,33 @@ final class ChamberRepositoryImpl implements ChamberRepository {
     );
   }
 
-  Result<double> _doubleResult(Object? value) {
+  SensorReadResult _readResult(
+    Map<String, Object?> payload, {
+    required String valueKey,
+  }) {
+    return SensorReadResult(
+      value: _double(payload[valueKey]),
+      rawMeasuredValue: _int(payload['raw_measured_value']),
+      accepted: payload['accepted'] is bool
+          ? payload['accepted'] as bool
+          : false,
+      resultDelivery: payload['result_delivery']?.toString(),
+    );
+  }
+
+  double? _double(Object? value) {
     final parsed = value is num
         ? value.toDouble()
         : value is String
         ? double.tryParse(value)
         : null;
-    if (parsed == null) {
-      return const FailureResult(UnknownFailure('Missing numeric value.'));
-    }
-    return Success(parsed);
+    return parsed;
+  }
+
+  int? _int(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/errors/result.dart';
+import 'package:dashboard/src/core/security/certificate_fingerprint.dart';
 import 'package:dashboard/src/core/security/certificate_trust_store.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_settings.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
@@ -18,6 +19,7 @@ final class OrchestratorConnectionController
   final CertificateTrustStore? _trustStore;
   final OrchestratorConnectionRepository _connectionRepository;
   late final StreamSubscription<WebSocketConnectionStatus> _statusSubscription;
+  late final StreamSubscription<String> _certificateSubscription;
 
   OrchestratorConnectionController({
     required AppConfig config,
@@ -36,6 +38,15 @@ final class OrchestratorConnectionController
         clearMessage: true,
       );
     });
+    _certificateSubscription = _connectionRepository
+        .observedCertificateFingerprints
+        .listen((fingerprint) {
+          state = state.copyWith(
+            observedFingerprint: CertificateFingerprint.parse(
+              fingerprint,
+            ).compact,
+          );
+        });
     loadInitialUrl();
   }
 
@@ -49,20 +60,51 @@ final class OrchestratorConnectionController
         message: failure.message,
       ),
     };
+    await loadTrustForCurrentHost();
   }
 
   void updateUrl(String url) {
-    state = state.copyWith(url: url, success: false, clearMessage: true);
+    final uri = Uri.tryParse(url.trim());
+    state = state.copyWith(
+      url: url,
+      host: uri?.host,
+      success: false,
+      clearMessage: true,
+      clearTrustedFingerprint: true,
+      clearObservedFingerprint: true,
+    );
+    loadTrustForCurrentHost();
   }
 
   Future<void> connect([String? url]) async {
     final targetUrl = (url ?? state.url).trim();
-    state = state.copyWith(url: targetUrl, loading: true, clearMessage: true);
+    final trustedFingerprint = await _trustedFingerprint(targetUrl);
+    final uri = Uri.tryParse(targetUrl);
+    if (uri?.scheme == 'wss' && trustedFingerprint == null) {
+      state = state.copyWith(
+        url: targetUrl,
+        host: uri?.host,
+        loading: false,
+        message: 'No trusted Orchestrator fingerprint. Pair before connecting.',
+        success: false,
+        clearObservedFingerprint: true,
+      );
+      return;
+    }
+    state = state.copyWith(
+      url: targetUrl,
+      host: uri?.host,
+      trustedFingerprint: trustedFingerprint,
+      loading: true,
+      pairing: false,
+      clearMessage: true,
+      clearObservedFingerprint: true,
+    );
 
     final settings = WebSocketConnectionSettings.fromInput(
       targetUrl,
       rootCaAssetPath: _config.rootCaAssetPath,
-      trustedFingerprint: await _trustedFingerprint(targetUrl),
+      trustedFingerprint: trustedFingerprint,
     );
     switch (settings) {
       case FailureResult(failure: final failure):
@@ -109,6 +151,126 @@ final class OrchestratorConnectionController
     };
   }
 
+  Future<void> loadTrustForCurrentHost() async {
+    final uri = Uri.tryParse(state.url);
+    final host = uri?.host;
+    if (host == null || host.isEmpty) {
+      state = state.copyWith(
+        clearTrustedFingerprint: true,
+        clearObservedFingerprint: true,
+      );
+      return;
+    }
+    final trusted = await _trustedFingerprint(state.url);
+    state = state.copyWith(host: host, trustedFingerprint: trusted);
+  }
+
+  Future<void> pairAndCapture([String? url]) async {
+    final targetUrl = (url ?? state.url).trim();
+    final uri = Uri.tryParse(targetUrl);
+    state = state.copyWith(
+      url: targetUrl,
+      host: uri?.host,
+      loading: true,
+      pairing: true,
+      clearMessage: true,
+      clearObservedFingerprint: true,
+    );
+
+    final settings = WebSocketConnectionSettings.fromInput(
+      targetUrl,
+      rootCaAssetPath: null,
+      allowUntrustedForPairing: true,
+    );
+    switch (settings) {
+      case FailureResult(failure: final failure):
+        state = state.copyWith(
+          loading: false,
+          pairing: false,
+          message: failure.message,
+          success: false,
+        );
+      case Success(value: final value):
+        if (_connectionRepository.isConnected) {
+          await _connectionRepository.disconnect();
+        }
+        final result = await _connectionRepository.connect(value);
+        state = switch (result) {
+          Success() => state.copyWith(
+            loading: false,
+            status: WebSocketConnectionStatus.connected,
+            message: state.observedFingerprint == null
+                ? 'Connected in pairing mode. No certificate fingerprint was captured.'
+                : 'Connected in pairing mode. Confirm trust to pin this Orchestrator.',
+            success: true,
+          ),
+          FailureResult(failure: final failure) => state.copyWith(
+            loading: false,
+            pairing: false,
+            status: WebSocketConnectionStatus.disconnected,
+            message: failure.message,
+            success: false,
+          ),
+        };
+    }
+  }
+
+  Future<void> trustObservedFingerprint() async {
+    final host = state.host;
+    final observed = state.observedFingerprint;
+    final store = _trustStore;
+    if (host == null || host.isEmpty || observed == null || store == null) {
+      state = state.copyWith(
+        message: 'No observed certificate fingerprint to trust.',
+        success: false,
+      );
+      return;
+    }
+    final result = await store.saveTrustedFingerprint(host, observed);
+    state = switch (result) {
+      Success() => state.copyWith(
+        trustedFingerprint: CertificateFingerprint.parse(observed).compact,
+        pairing: false,
+        message: 'Trusted fingerprint saved.',
+        success: true,
+      ),
+      FailureResult(failure: final failure) => state.copyWith(
+        message: failure.message,
+        success: false,
+      ),
+    };
+  }
+
+  Future<void> saveTrustedFingerprint(String fingerprint) async {
+    final host = state.host;
+    final store = _trustStore;
+    if (host == null || host.isEmpty || store == null) return;
+    final result = await store.saveTrustedFingerprint(host, fingerprint);
+    state = switch (result) {
+      Success() => state.copyWith(
+        trustedFingerprint: CertificateFingerprint.parse(fingerprint).compact,
+        message: 'Trusted fingerprint saved.',
+        success: true,
+      ),
+      FailureResult(failure: final failure) => state.copyWith(
+        message: failure.message,
+        success: false,
+      ),
+    };
+  }
+
+  Future<void> clearTrustedFingerprint() async {
+    final host = state.host;
+    final store = _trustStore;
+    if (host == null || host.isEmpty || store == null) return;
+    await store.clearTrustedFingerprint(host);
+    state = state.copyWith(
+      clearTrustedFingerprint: true,
+      message: 'Trusted fingerprint cleared.',
+      success: true,
+    );
+  }
+
   Future<void> reconnect() async {
     await disconnect();
     await connect();
@@ -132,6 +294,7 @@ final class OrchestratorConnectionController
   @override
   void dispose() {
     _statusSubscription.cancel();
+    _certificateSubscription.cancel();
     super.dispose();
   }
 }

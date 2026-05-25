@@ -19,6 +19,10 @@ final class OrchestratorConnectionRepositoryImpl
   Stream<WebSocketConnectionStatus> get status => _webSocketClient.status;
 
   @override
+  Stream<String> get observedCertificateFingerprints =>
+      _webSocketClient.observedCertificateFingerprints;
+
+  @override
   Future<Result<void>> connect(WebSocketConnectionSettings settings) {
     return _webSocketClient.connect(settings);
   }

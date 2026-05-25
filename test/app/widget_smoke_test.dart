@@ -2,10 +2,17 @@ import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/errors/result.dart';
+import 'package:dashboard/src/features/chamber/domain/entities/chamber_status.dart';
+import 'package:dashboard/src/features/chamber/domain/repositories/chamber_repository.dart';
+import 'package:dashboard/src/features/chamber/presentation/screens/chamber_screen.dart';
 import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
+import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
+import 'package:dashboard/src/features/devices/domain/repositories/device_repository.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_attribute.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_cluster.dart';
 import 'package:dashboard/src/features/matter/domain/repositories/matter_cluster_repository.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
+import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_message_repository.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_controller_init_form.dart';
 import 'package:dashboard/src/features/thread/presentation/widgets/thread_dataset_form.dart';
 import 'package:dashboard/src/features/thread/presentation/screens/thread_screen.dart';
@@ -130,6 +137,31 @@ void main() {
     expect(find.text('Read Attribute'), findsWidgets);
     expect(find.text('Subscribe Attribute'), findsWidgets);
   });
+
+  testWidgets('chamber screen uses capability selectors, not typed IDs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deviceRepositoryProvider.overrideWithValue(_DeviceRepo()),
+          chamberRepositoryProvider.overrideWithValue(_ChamberRepo()),
+          orchestratorMessageRepositoryProvider.overrideWithValue(
+            _MessageRepo(),
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: ChamberScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('BMP280 Sensor - Temperature'), findsOneWidget);
+    expect(find.text('BMP280 Sensor - Pressure'), findsOneWidget);
+    expect(find.text('Mist Relay - On/Off'), findsOneWidget);
+    expect(find.text('Temperature device ID'), findsNothing);
+    expect(find.text('Pressure device ID'), findsNothing);
+    expect(find.text('Relay device ID'), findsNothing);
+  });
 }
 
 final class _ClusterRepo implements MatterClusterRepository {
@@ -143,4 +175,91 @@ final class _ClusterRepo implements MatterClusterRepository {
       ),
     ]);
   }
+}
+
+final class _DeviceRepo implements DeviceRepository {
+  @override
+  Future<Result<List<DeviceRecord>>> listDevices() async {
+    return const Success([
+      DeviceRecord(
+        deviceId: 'bmp280-1',
+        nodeId: '123',
+        label: 'BMP280 Sensor',
+        reachable: true,
+        capabilities: [
+          DeviceCapability(
+            capabilityId: 'bmp280-1-temperature',
+            semanticType: DeviceCapabilitySemanticType.temperature,
+            endpointId: 1,
+            clusterId: 1026,
+            attributeId: 0,
+            label: 'Temperature',
+          ),
+          DeviceCapability(
+            capabilityId: 'bmp280-1-pressure',
+            semanticType: DeviceCapabilitySemanticType.pressure,
+            endpointId: 2,
+            clusterId: 1027,
+            attributeId: 0,
+            label: 'Pressure',
+          ),
+        ],
+      ),
+      DeviceRecord(
+        deviceId: 'relay-1',
+        nodeId: '987',
+        label: 'Mist Relay',
+        reachable: true,
+        capabilities: [
+          DeviceCapability(
+            capabilityId: 'relay-1-onoff',
+            semanticType: DeviceCapabilitySemanticType.relay,
+            endpointId: 1,
+            clusterId: 6,
+            commandId: 1,
+            label: 'On/Off',
+          ),
+        ],
+      ),
+    ]);
+  }
+
+  @override
+  Future<Result<DeviceRecord>> getDevice(String deviceId) async {
+    final result = await listDevices() as Success<List<DeviceRecord>>;
+    return Success(
+      result.value.firstWhere((device) => device.deviceId == deviceId),
+    );
+  }
+
+  @override
+  Future<Result<DeviceRecord>> renameDevice(String deviceId, String label) =>
+      getDevice(deviceId);
+
+  @override
+  Future<Result<void>> removeDevice(String deviceId) async =>
+      const Success(null);
+}
+
+final class _ChamberRepo implements ChamberRepository {
+  @override
+  Future<Result<ChamberStatus>> getStatus() async =>
+      const Success(ChamberStatus());
+
+  @override
+  Future<Result<SensorReadResult>> readPressure(String deviceId) async =>
+      const Success(SensorReadResult(value: 101.3));
+
+  @override
+  Future<Result<SensorReadResult>> readTemperature(String deviceId) async =>
+      const Success(SensorReadResult(value: 23.4));
+
+  @override
+  Future<Result<void>> setRelay(String deviceId, bool on) async =>
+      const Success(null);
+}
+
+final class _MessageRepo implements OrchestratorMessageRepository {
+  @override
+  Stream<OrchestratorMessage> watchMessages() => const Stream.empty();
 }

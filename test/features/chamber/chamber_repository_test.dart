@@ -19,8 +19,30 @@ void main() {
     final result = await ChamberRepositoryImpl(
       client: client,
     ).readTemperature('temp-1');
-    expect((result as Success).value, 23.4);
+    expect((result as Success).value.value, 23.4);
     expect(client.commands.single.action, 'device.temperature.read');
+  });
+
+  test('temperature command accepts async report delivery', () async {
+    final client = RecordingCommandClient()
+      ..nextResult = const Success(
+        OrchestratorCommandResult(
+          requestId: 'req-1',
+          action: 'device.temperature.read',
+          ok: true,
+          payload: {
+            'device_id': 'bmp280-1',
+            'accepted': true,
+            'result_delivery': 'matter.attribute_report',
+          },
+        ),
+      );
+    final result = await ChamberRepositoryImpl(
+      client: client,
+    ).readTemperature('bmp280-1');
+    final read = (result as Success).value;
+    expect(read.value, isNull);
+    expect(read.waitingForReport, true);
   });
 
   test('pressure and relay commands use semantic actions', () async {
@@ -35,7 +57,7 @@ void main() {
       );
     final repository = ChamberRepositoryImpl(client: client);
     expect(
-      (await repository.readPressure('pressure-1') as Success).value,
+      (await repository.readPressure('pressure-1') as Success).value.value,
       101.3,
     );
     client.nextResult = const Success(

@@ -3,58 +3,82 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_state.dart';
 
-class ChamberRelayControlsCard extends ConsumerStatefulWidget {
+class ChamberRelayControlsCard extends ConsumerWidget {
   const ChamberRelayControlsCard({super.key});
 
   @override
-  ConsumerState<ChamberRelayControlsCard> createState() =>
-      _ChamberRelayControlsCardState();
-}
-
-class _ChamberRelayControlsCardState
-    extends ConsumerState<ChamberRelayControlsCard> {
-  final _relayDevice = TextEditingController();
-
-  @override
-  void dispose() {
-    _relayDevice.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(chamberControllerProvider);
     final controller = ref.read(chamberControllerProvider.notifier);
+    final selected = state.relayOptions.contains(state.selectedRelay)
+        ? state.selectedRelay
+        : null;
+
     return AppCard(
       title: 'Relay Controls',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            controller: _relayDevice,
-            decoration: const InputDecoration(labelText: 'Relay device ID'),
-          ),
+          if (state.relayOptions.isEmpty)
+            const Text('No relay capabilities registered.')
+          else
+            DropdownButtonFormField<DeviceSelection>(
+              initialValue: selected,
+              decoration: const InputDecoration(
+                labelText: 'Relay capability',
+                prefixIcon: Icon(Icons.power),
+              ),
+              items: [
+                for (final option in state.relayOptions)
+                  DropdownMenuItem(
+                    value: option,
+                    child: Text(
+                      '${option.label}${option.reachable ? '' : ' (offline)'}',
+                    ),
+                  ),
+              ],
+              onChanged: controller.selectRelay,
+            ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               FilledButton.icon(
-                onPressed: state.loading
+                onPressed: selected == null || state.relay.commandPending
                     ? null
-                    : () => controller.setRelay(_relayDevice.text.trim(), true),
+                    : () => controller.setRelay(true),
                 icon: const Icon(Icons.power),
                 label: const Text('On'),
               ),
               OutlinedButton.icon(
-                onPressed: state.loading
+                onPressed: selected == null || state.relay.commandPending
                     ? null
-                    : () =>
-                          controller.setRelay(_relayDevice.text.trim(), false),
+                    : () => controller.setRelay(false),
                 icon: const Icon(Icons.power_off),
                 label: const Text('Off'),
               ),
+              if (state.relay.commandPending)
+                const Text('Command pending')
+              else if (state.relay.lastCommandedOn != null)
+                Text(
+                  state.relay.lastCommandedOn!
+                      ? 'Last command: on'
+                      : 'Last command: off',
+                ),
             ],
           ),
+          if (state.relay.error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                state.relay.error!,
+                style: TextStyle(color: Colors.red.shade700),
+              ),
+            ),
         ],
       ),
     );

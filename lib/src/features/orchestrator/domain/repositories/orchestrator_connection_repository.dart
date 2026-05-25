@@ -5,6 +5,7 @@ import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 abstract interface class OrchestratorConnectionRepository {
   bool get isConnected;
   Stream<WebSocketConnectionStatus> get status;
+  Stream<String> get observedCertificateFingerprints;
 
   Future<Result<void>> connect(WebSocketConnectionSettings settings);
 

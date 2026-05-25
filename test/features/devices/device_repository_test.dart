@@ -1,5 +1,6 @@
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/features/devices/data/repositories/device_repository_impl.dart';
+import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_command_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -16,12 +17,20 @@ void main() {
           payload: {
             'devices': [
               {
-                'device_id': 'temp-1',
+                'device_id': 'bmp280-1',
                 'node_id': '123',
-                'endpoint_id': 1,
-                'device_type_id': '0x0302',
-                'label': 'Temperature',
+                'label': 'BMP280 Sensor',
                 'reachable': true,
+                'capabilities': [
+                  {
+                    'capability_id': 'bmp280-1-temperature',
+                    'semantic_type': 'temperature',
+                    'endpoint_id': 1,
+                    'cluster_id': 1026,
+                    'attribute_id': 0,
+                    'label': 'Temperature',
+                  },
+                ],
               },
             ],
           },
@@ -31,7 +40,12 @@ void main() {
 
     final result = await repository.listDevices();
     expect(result, isA<Success>());
-    expect((result as Success).value.single.label, 'Temperature');
+    final device = (result as Success).value.single;
+    expect(device.label, 'BMP280 Sensor');
+    expect(
+      device.capabilities.single.semanticType,
+      DeviceCapabilitySemanticType.temperature,
+    );
     expect(client.commands.single.action, 'device.list');
   });
 }

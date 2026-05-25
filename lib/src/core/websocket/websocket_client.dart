@@ -17,6 +17,7 @@ abstract interface class WebSocketClient {
   bool get isConnecting;
   Stream<String> get messages;
   Stream<WebSocketConnectionStatus> get status;
+  Stream<String> get observedCertificateFingerprints;
 
   Future<Result<void>> connect(WebSocketConnectionSettings settings);
 
@@ -39,11 +40,14 @@ final class IoWebSocketClient implements WebSocketClient {
       StreamController<String>.broadcast();
   final StreamController<WebSocketConnectionStatus> _statusController =
       StreamController<WebSocketConnectionStatus>.broadcast();
+  final StreamController<String> _certificateController =
+      StreamController<String>.broadcast();
 
   WebSocket? _socket;
   StreamSubscription<dynamic>? _subscription;
   bool _connecting = false;
   String? _currentUrl;
+  String? _certificateFailureMessage;
 
   IoWebSocketClient({Logger? logger}) : _logger = logger ?? Logger();
 
@@ -61,6 +65,10 @@ final class IoWebSocketClient implements WebSocketClient {
   Stream<WebSocketConnectionStatus> get status => _statusController.stream;
 
   @override
+  Stream<String> get observedCertificateFingerprints =>
+      _certificateController.stream;
+
+  @override
   Future<Result<void>> connect(WebSocketConnectionSettings settings) async {
     if (_connecting) return const Success(null);
     if (isConnected) {
@@ -69,11 +77,14 @@ final class IoWebSocketClient implements WebSocketClient {
     }
 
     _connecting = true;
+    _certificateFailureMessage = null;
     _statusController.add(WebSocketConnectionStatus.connecting);
 
     try {
       SecurityContext? context;
-      if (settings.rootCAAsset != null) {
+      if (settings.rootCAAsset != null &&
+          settings.trustedFingerprint == null &&
+          !settings.allowUntrustedForPairing) {
         final certData = await rootBundle.loadString(settings.rootCAAsset!);
         context = SecurityContext()
           ..setTrustedCertificatesBytes(utf8.encode(certData));
@@ -86,16 +97,26 @@ final class IoWebSocketClient implements WebSocketClient {
               settings.allowUntrustedForPairing)) {
         client = HttpClient();
         client.badCertificateCallback = (cert, host, port) {
-          final fingerprint = sha256.convert(cert.der).toString();
+          final fingerprint = CertificateFingerprint.parse(
+            sha256.convert(cert.der).toString(),
+          );
+          _certificateController.add(fingerprint.compact);
           final trusted = settings.trustedFingerprint;
           if (trusted == null) {
             _logger.w(
               'Rejected untrusted certificate for $host. SHA-256: '
-              '${CertificateFingerprint.parse(fingerprint).display}',
+              '${fingerprint.display}',
             );
             return settings.allowUntrustedForPairing;
           }
-          return fingerprint == CertificateFingerprint.parse(trusted).compact;
+          final matches =
+              fingerprint.compact ==
+              CertificateFingerprint.parse(trusted).compact;
+          if (!matches) {
+            _certificateFailureMessage =
+                'Certificate fingerprint does not match trusted Orchestrator.';
+          }
+          return matches;
         };
       }
 
@@ -139,7 +160,9 @@ final class IoWebSocketClient implements WebSocketClient {
       _currentUrl = null;
       _statusController.add(WebSocketConnectionStatus.disconnected);
       return FailureResult(
-        WebSocketConnectionFailure('Unable to connect to WebSocket.'),
+        WebSocketConnectionFailure(
+          _certificateFailureMessage ?? 'Unable to connect to WebSocket.',
+        ),
       );
     } finally {
       _connecting = false;
@@ -179,5 +202,6 @@ final class IoWebSocketClient implements WebSocketClient {
     await disconnect();
     await _messagesController.close();
     await _statusController.close();
+    await _certificateController.close();
   }
 }

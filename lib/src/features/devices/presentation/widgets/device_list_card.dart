@@ -51,40 +51,108 @@ class _DeviceTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(deviceListControllerProvider.notifier);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    device.reachable ? Icons.sensors : Icons.sensors_off,
+                    color: device.reachable ? Colors.green : Colors.grey,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          device.label,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          '${device.deviceId} | node ${device.nodeId} | '
+                          '${device.reachable ? 'reachable' : 'offline'}',
+                        ),
+                        if (device.productName != null)
+                          Text('Product: ${device.productName}'),
+                        if (device.location != null)
+                          Text('Location: ${device.location}'),
+                      ],
+                    ),
+                  ),
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      IconButton(
+                        tooltip: 'Rename',
+                        icon: const Icon(Icons.edit),
+                        onPressed: () async {
+                          final label = await showDialog<String>(
+                            context: context,
+                            builder: (_) =>
+                                DeviceRenameDialog(initialLabel: device.label),
+                          );
+                          if (label != null && label.isNotEmpty) {
+                            await controller.rename(device.deviceId, label);
+                          }
+                        },
+                      ),
+                      IconButton(
+                        tooltip: 'Remove',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => controller.remove(device.deviceId),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (device.capabilities.isEmpty)
+                const Text('No capabilities registered.')
+              else
+                Column(
+                  children: [
+                    for (final capability in device.capabilities)
+                      _CapabilityRow(capability: capability),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CapabilityRow extends StatelessWidget {
+  final DeviceCapability capability;
+
+  const _CapabilityRow({required this.capability});
+
+  @override
+  Widget build(BuildContext context) {
+    final technical = [
+      'endpoint ${capability.endpointId}',
+      'cluster ${capability.clusterId}',
+      if (capability.attributeId != null) 'attribute ${capability.attributeId}',
+      if (capability.commandId != null) 'command ${capability.commandId}',
+    ].join(' | ');
     return ListTile(
+      dense: true,
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        device.reachable ? Icons.sensors : Icons.sensors_off,
-        color: device.reachable ? Colors.green : Colors.grey,
-      ),
-      title: Text(device.label),
-      subtitle: Text(
-        '${device.deviceId} | node ${device.nodeId} | endpoint '
-        '${device.endpointId} | ${device.deviceTypeId}',
-      ),
-      trailing: Wrap(
-        spacing: 4,
-        children: [
-          IconButton(
-            tooltip: 'Rename',
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              final label = await showDialog<String>(
-                context: context,
-                builder: (_) => DeviceRenameDialog(initialLabel: device.label),
-              );
-              if (label != null && label.isNotEmpty) {
-                await controller.rename(device.deviceId, label);
-              }
-            },
-          ),
-          IconButton(
-            tooltip: 'Remove',
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () => controller.remove(device.deviceId),
-          ),
-        ],
-      ),
+      leading: const Icon(Icons.extension),
+      title: Text('${capability.label} (${capability.semanticLabel})'),
+      subtitle: Text(technical),
     );
   }
 }
