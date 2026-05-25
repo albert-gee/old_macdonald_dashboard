@@ -33,15 +33,15 @@ final class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   @override
-  Future<Result<DeviceRecord>> renameDevice(
-    String deviceId,
-    String label,
-  ) async {
+  Future<Result<void>> renameDevice(String deviceId, String label) async {
     final result = await _client.sendCommand(
       'device.rename',
       payload: {'device_id': deviceId, 'label': label},
     );
-    return _single(result);
+    return result.when(
+      success: (_) => const Success(null),
+      failure: FailureResult.new,
+    );
   }
 
   @override

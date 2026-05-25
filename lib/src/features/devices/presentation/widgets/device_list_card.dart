@@ -142,17 +142,25 @@ class _CapabilityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final technical = [
-      'endpoint ${capability.endpointId}',
-      'cluster ${capability.clusterId}',
+      'endpoint ${capability.endpointId ?? 'missing'}',
+      'cluster ${capability.clusterId ?? 'missing'}',
       if (capability.attributeId != null) 'attribute ${capability.attributeId}',
       if (capability.commandId != null) 'command ${capability.commandId}',
     ].join(' | ');
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.extension),
+      leading: Icon(
+        capability.isValid ? Icons.extension : Icons.warning_amber,
+        color: capability.isValid ? null : Colors.orange.shade800,
+      ),
       title: Text('${capability.label} (${capability.semanticLabel})'),
-      subtitle: Text(technical),
+      subtitle: Text(
+        capability.isValid
+            ? technical
+            : '$technical\nRegistry warning: '
+                  '${capability.validationWarnings.join(' ')}',
+      ),
     );
   }
 }

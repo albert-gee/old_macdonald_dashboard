@@ -233,8 +233,8 @@ final class _DeviceRepo implements DeviceRepository {
   }
 
   @override
-  Future<Result<DeviceRecord>> renameDevice(String deviceId, String label) =>
-      getDevice(deviceId);
+  Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
 
   @override
   Future<Result<void>> removeDevice(String deviceId) async =>

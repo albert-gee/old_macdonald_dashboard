@@ -78,5 +78,40 @@ void main() {
       record.capabilities[3].semanticType,
       DeviceCapabilitySemanticType.unknown,
     );
+    expect(
+      record.capabilities.take(3).every((capability) => capability.isValid),
+      true,
+    );
+  });
+
+  test('known capability with missing technical IDs is marked invalid', () {
+    final record = DeviceRecord.fromJson({
+      'device_id': 'bmp280-1',
+      'capabilities': [
+        {
+          'capability_id': 'bad-temperature',
+          'semantic_type': 'temperature',
+          'cluster_id': 'not-an-int',
+          'label': 'Temperature',
+        },
+      ],
+    });
+
+    final capability = record.capabilities.single;
+    expect(capability.endpointId, isNull);
+    expect(capability.clusterId, isNull);
+    expect(capability.isValid, false);
+    expect(
+      capability.validationWarnings,
+      contains('Missing or invalid endpoint_id.'),
+    );
+    expect(
+      capability.validationWarnings,
+      contains('Missing or invalid cluster_id.'),
+    );
+    expect(
+      capability.validationWarnings,
+      contains('Missing or invalid attribute_id.'),
+    );
   });
 }

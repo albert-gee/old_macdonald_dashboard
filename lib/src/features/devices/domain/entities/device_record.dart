@@ -42,20 +42,22 @@ final class DeviceRecord {
 final class DeviceCapability {
   final String capabilityId;
   final DeviceCapabilitySemanticType semanticType;
-  final int endpointId;
-  final int clusterId;
+  final int? endpointId;
+  final int? clusterId;
   final int? attributeId;
   final int? commandId;
   final String label;
+  final List<String> validationWarnings;
 
   const DeviceCapability({
     required this.capabilityId,
     required this.semanticType,
-    required this.endpointId,
-    required this.clusterId,
+    this.endpointId,
+    this.clusterId,
     this.attributeId,
     this.commandId,
     required this.label,
+    this.validationWarnings = const [],
   });
 
   factory DeviceCapability.fromJson(Map<String, Object?> json) {
@@ -63,20 +65,33 @@ final class DeviceCapability {
     final semanticType = DeviceCapabilitySemanticType.fromWireValue(
       json['semantic_type']?.toString(),
     );
+    final endpointId = _nullableInt(json['endpoint_id']);
+    final clusterId = _nullableInt(json['cluster_id']);
+    final attributeId = _nullableInt(json['attribute_id']);
+    final commandId = _nullableInt(json['command_id']);
     return DeviceCapability(
       capabilityId: capabilityId,
       semanticType: semanticType,
-      endpointId: _int(json['endpoint_id']),
-      clusterId: _int(json['cluster_id']),
-      attributeId: _nullableInt(json['attribute_id']),
-      commandId: _nullableInt(json['command_id']),
+      endpointId: endpointId,
+      clusterId: clusterId,
+      attributeId: attributeId,
+      commandId: commandId,
       label: (json['label']?.toString().trim().isNotEmpty ?? false)
           ? json['label'].toString()
           : capabilityId,
+      validationWarnings: _validationWarnings(
+        semanticType: semanticType,
+        endpointId: endpointId,
+        clusterId: clusterId,
+        attributeId: attributeId,
+        commandId: commandId,
+      ),
     );
   }
 
   String get semanticLabel => semanticType.label;
+
+  bool get isValid => validationWarnings.isEmpty;
 }
 
 enum DeviceCapabilitySemanticType {
@@ -121,13 +136,44 @@ enum DeviceCapabilitySemanticType {
   }
 }
 
-int _int(Object? value) => _nullableInt(value) ?? 0;
-
 int? _nullableInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value);
   return null;
+}
+
+List<String> _validationWarnings({
+  required DeviceCapabilitySemanticType semanticType,
+  required int? endpointId,
+  required int? clusterId,
+  required int? attributeId,
+  required int? commandId,
+}) {
+  final warnings = <String>[];
+  switch (semanticType) {
+    case DeviceCapabilitySemanticType.temperature:
+    case DeviceCapabilitySemanticType.pressure:
+    case DeviceCapabilitySemanticType.relay:
+    case DeviceCapabilitySemanticType.rawAttribute:
+    case DeviceCapabilitySemanticType.rawCommand:
+      if (endpointId == null) warnings.add('Missing or invalid endpoint_id.');
+      if (clusterId == null) warnings.add('Missing or invalid cluster_id.');
+    case DeviceCapabilitySemanticType.unknown:
+      break;
+  }
+  switch (semanticType) {
+    case DeviceCapabilitySemanticType.temperature:
+    case DeviceCapabilitySemanticType.pressure:
+    case DeviceCapabilitySemanticType.rawAttribute:
+      if (attributeId == null) warnings.add('Missing or invalid attribute_id.');
+    case DeviceCapabilitySemanticType.relay:
+    case DeviceCapabilitySemanticType.rawCommand:
+      if (commandId == null) warnings.add('Missing or invalid command_id.');
+    case DeviceCapabilitySemanticType.unknown:
+      break;
+  }
+  return warnings;
 }
 
 List<DeviceCapability> _capabilities(Object? value) {

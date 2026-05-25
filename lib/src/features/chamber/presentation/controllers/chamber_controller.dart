@@ -293,14 +293,6 @@ final class ChamberController extends StateNotifier<ChamberState> {
     switch (message) {
       case OrchestratorEventReceived(event: 'matter.attribute_report'):
         _onAttributeReport(message.payload);
-      case MatterAttributeReportReceived(report: final report):
-        _onAttributeReport({
-          'node_id': report.nodeId,
-          'endpoint_id': report.endpointId,
-          'cluster_id': report.clusterId,
-          'attribute_id': report.attributeId,
-          'value': report.value,
-        });
       default:
         break;
     }

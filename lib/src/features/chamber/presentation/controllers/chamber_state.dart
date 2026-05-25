@@ -91,12 +91,13 @@ final class ChamberState {
       for (final device in devices)
         for (final capability in device.capabilities)
           if (capability.semanticType == semanticType)
-            DeviceSelection(
-              deviceId: device.deviceId,
-              deviceLabel: device.label,
-              reachable: device.reachable,
-              capability: capability,
-            ),
+            if (capability.isValid)
+              DeviceSelection(
+                deviceId: device.deviceId,
+                deviceLabel: device.label,
+                reachable: device.reachable,
+                capability: capability,
+              ),
     ];
   }
 }

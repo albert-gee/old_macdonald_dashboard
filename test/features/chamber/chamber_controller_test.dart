@@ -224,8 +224,8 @@ final class FakeDeviceRepository implements DeviceRepository {
       Success(devices.firstWhere((device) => device.deviceId == deviceId));
 
   @override
-  Future<Result<DeviceRecord>> renameDevice(String deviceId, String label) =>
-      getDevice(deviceId);
+  Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
 
   @override
   Future<Result<void>> removeDevice(String deviceId) async =>

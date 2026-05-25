@@ -48,4 +48,26 @@ void main() {
     );
     expect(client.commands.single.action, 'device.list');
   });
+
+  test('device.rename does not require updated device payload', () async {
+    final client = RecordingCommandClient()
+      ..nextResult = const Success(
+        OrchestratorCommandResult(
+          requestId: 'req-1',
+          action: 'device.rename',
+          ok: true,
+          payload: {'accepted': true},
+        ),
+      );
+    final repository = DeviceRepositoryImpl(client: client);
+
+    final result = await repository.renameDevice('relay-1', 'Mist Relay');
+
+    expect(result, isA<Success<void>>());
+    expect(client.commands.single.action, 'device.rename');
+    expect(client.commands.single.payload, {
+      'device_id': 'relay-1',
+      'label': 'Mist Relay',
+    });
+  });
 }
