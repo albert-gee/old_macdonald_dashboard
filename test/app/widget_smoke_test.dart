@@ -52,9 +52,9 @@ void main() {
         child: MaterialApp(home: Scaffold(body: ThreadScreen())),
       ),
     );
-    expect(find.text('Thread Status'), findsOneWidget);
-    expect(find.text('Thread Commands'), findsOneWidget);
-    expect(find.text('Thread Dataset'), findsOneWidget);
+    expect(find.text('Thread Network Readiness'), findsOneWidget);
+    expect(find.text('Network State'), findsOneWidget);
+    expect(find.text('Operator Actions'), findsOneWidget);
   });
 
   testWidgets('dataset form validation prevents invalid fields', (
@@ -113,7 +113,7 @@ void main() {
 
     await tester.tap(find.text('Thread Network').first);
     await tester.pumpAndSettle();
-    expect(find.text('Thread Commands'), findsOneWidget);
+    expect(find.text('Thread Network Readiness'), findsOneWidget);
 
     await tester.tap(find.text('Matter Network').first);
     await tester.pumpAndSettle();

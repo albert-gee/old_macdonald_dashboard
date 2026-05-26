@@ -42,7 +42,7 @@ final class ThreadStatusController extends StateNotifier<ThreadStatusState> {
     };
 
     if (!identical(next, current)) {
-      state = ThreadStatusState(status: next);
+      state = ThreadStatusState(status: next, hasData: true);
     }
   }
 

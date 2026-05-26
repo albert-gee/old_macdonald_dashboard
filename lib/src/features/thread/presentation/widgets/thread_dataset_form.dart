@@ -8,7 +8,14 @@ import 'package:dashboard/src/core/widgets/app_labeled_text_field.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_dataset_init_request.dart';
 
 class ThreadDatasetForm extends ConsumerStatefulWidget {
-  const ThreadDatasetForm({super.key});
+  final String title;
+  final String? warning;
+
+  const ThreadDatasetForm({
+    super.key,
+    this.title = 'Thread Dataset',
+    this.warning,
+  });
 
   @override
   ConsumerState<ThreadDatasetForm> createState() => _ThreadDatasetFormState();
@@ -48,12 +55,16 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
     final state = ref.watch(threadDatasetInitControllerProvider);
 
     return AppCard(
-      title: 'Thread Dataset',
+      title: widget.title,
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.warning != null) ...[
+              Text(widget.warning!),
+              const SizedBox(height: AppDimensions.spacingL),
+            ],
             Wrap(
               spacing: AppDimensions.spacingM,
               runSpacing: AppDimensions.spacingM,

@@ -27,6 +27,29 @@ final class ThreadCommandController extends StateNotifier<ThreadCommandState> {
     _repository.refreshActiveDataset,
     'Thread active dataset refreshed.',
   );
+  Future<void> refreshThreadState() async {
+    state = const ThreadCommandState(submitting: true);
+    final results = [
+      await _repository.refreshStatus(),
+      await _repository.refreshAttachment(),
+      await _repository.refreshRole(),
+      await _repository.refreshActiveDataset(),
+    ];
+    FailureResult? failure;
+    for (final result in results) {
+      if (result case FailureResult()) {
+        failure = result;
+        break;
+      }
+    }
+    state = failure == null
+        ? const ThreadCommandState(
+            message: 'Thread state refresh requested.',
+            success: true,
+          )
+        : ThreadCommandState(message: failure.failure.message);
+  }
+
   Future<void> refreshUnicastAddresses() => _run(
     _repository.refreshUnicastAddresses,
     'Thread unicast addresses refreshed.',
