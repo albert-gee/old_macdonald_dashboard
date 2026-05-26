@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/src/core/widgets/app_card.dart';
@@ -80,7 +81,7 @@ class ThreadDeviceImpactCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Relay and BMP280-style sensor devices depend on this chamber device network when they use Matter-over-Thread.',
+            'Thread-based chamber sensors and actuators depend on this chamber device network when they use Matter-over-Thread.',
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
@@ -277,10 +278,10 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
             onPressed: submitting || !readiness.isReady
                 ? null
                 : () {
-                    ref
-                            .read(selectedDashboardDestinationProvider.notifier)
-                            .state =
-                        5;
+                    selectDashboardDestination(
+                      ref,
+                      DashboardDestinationKey.matter,
+                    );
                   },
             child: const Text('Continue to Matter pairing'),
           ),

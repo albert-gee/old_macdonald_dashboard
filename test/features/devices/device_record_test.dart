@@ -22,12 +22,12 @@ void main() {
 
   test('parses temperature pressure relay and unknown capabilities', () {
     final record = DeviceRecord.fromJson({
-      'device_id': 'bmp280-1',
+      'device_id': 'sensor-1',
       'node_id': '123456789',
-      'label': 'BMP280 Sensor',
+      'label': 'Environmental sensor',
       'capabilities': [
         {
-          'capability_id': 'bmp280-1-temperature',
+          'capability_id': 'capability-1',
           'semantic_type': 'temperature',
           'endpoint_id': 1,
           'cluster_id': 1026,
@@ -35,7 +35,7 @@ void main() {
           'label': 'Temperature',
         },
         {
-          'capability_id': 'bmp280-1-pressure',
+          'capability_id': 'capability-2',
           'semantic_type': 'pressure',
           'endpoint_id': 2,
           'cluster_id': 1027,
@@ -43,7 +43,7 @@ void main() {
           'label': 'Pressure',
         },
         {
-          'capability_id': 'relay-1-onoff',
+          'capability_id': 'capability-3',
           'semantic_type': 'relay',
           'endpoint_id': 1,
           'cluster_id': 6,
@@ -86,7 +86,7 @@ void main() {
 
   test('known capability with missing technical IDs is marked invalid', () {
     final record = DeviceRecord.fromJson({
-      'device_id': 'bmp280-1',
+      'device_id': 'sensor-1',
       'capabilities': [
         {
           'capability_id': 'bad-temperature',

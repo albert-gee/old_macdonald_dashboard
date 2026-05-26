@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
+import 'package:dashboard/src/core/theme/app_colors.dart';
 import 'package:dashboard/src/core/widgets/app_card.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'device_rename_dialog.dart';
@@ -31,11 +32,16 @@ class DeviceListCard extends ConsumerWidget {
           ),
           if (state.message != null) ...[
             const SizedBox(height: 12),
-            Text(state.message!, style: TextStyle(color: Colors.red.shade700)),
+            Text(
+              state.message!,
+              style: const TextStyle(color: AppColors.warning),
+            ),
           ],
           const SizedBox(height: 16),
           if (state.devices.isEmpty && !state.loading)
-            const Text('No devices reported by the Orchestrator.'),
+            const Text(
+              'No chamber devices are registered. Devices appear after commissioning and registration.',
+            ),
           for (final device in state.devices) _DeviceTile(device: device),
         ],
       ),
@@ -155,11 +161,25 @@ class _CapabilityRow extends StatelessWidget {
         color: capability.isValid ? null : Colors.orange.shade800,
       ),
       title: Text('${capability.label} (${capability.semanticLabel})'),
-      subtitle: Text(
-        capability.isValid
-            ? technical
-            : '$technical\nRegistry warning: '
-                  '${capability.validationWarnings.join(' ')}',
+      subtitle: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        title: Text(
+          capability.isValid
+              ? 'Device capability ready.'
+              : 'Capability needs registry details before use.',
+        ),
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              capability.isValid
+                  ? technical
+                  : '$technical\nRegistry warning: '
+                        '${capability.validationWarnings.join(' ')}',
+            ),
+          ),
+        ],
       ),
     );
   }

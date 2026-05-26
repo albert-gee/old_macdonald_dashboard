@@ -17,13 +17,13 @@ void main() {
           payload: {
             'devices': [
               {
-                'device_id': 'bmp280-1',
+                'device_id': 'sensor-1',
                 'node_id': '123',
-                'label': 'BMP280 Sensor',
+                'label': 'Environmental sensor',
                 'reachable': true,
                 'capabilities': [
                   {
-                    'capability_id': 'bmp280-1-temperature',
+                    'capability_id': 'capability-1',
                     'semantic_type': 'temperature',
                     'endpoint_id': 1,
                     'cluster_id': 1026,
@@ -41,7 +41,7 @@ void main() {
     final result = await repository.listDevices();
     expect(result, isA<Success>());
     final device = (result as Success).value.single;
-    expect(device.label, 'BMP280 Sensor');
+    expect(device.label, 'Environmental sensor');
     expect(
       device.capabilities.single.semanticType,
       DeviceCapabilitySemanticType.temperature,
@@ -61,13 +61,16 @@ void main() {
       );
     final repository = DeviceRepositoryImpl(client: client);
 
-    final result = await repository.renameDevice('relay-1', 'Mist Relay');
+    final result = await repository.renameDevice(
+      'actuator-1',
+      'Switchable actuator',
+    );
 
     expect(result, isA<Success<void>>());
     expect(client.commands.single.action, 'device.rename');
     expect(client.commands.single.payload, {
-      'device_id': 'relay-1',
-      'label': 'Mist Relay',
+      'device_id': 'actuator-1',
+      'label': 'Switchable actuator',
     });
   });
 }

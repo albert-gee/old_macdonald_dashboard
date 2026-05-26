@@ -31,7 +31,7 @@ void main() {
           action: 'device.temperature.read',
           ok: true,
           payload: {
-            'device_id': 'bmp280-1',
+            'device_id': 'sensor-1',
             'accepted': true,
             'result_delivery': 'matter.attribute_report',
           },
@@ -39,7 +39,7 @@ void main() {
       );
     final result = await ChamberRepositoryImpl(
       client: client,
-    ).readTemperature('bmp280-1');
+    ).readTemperature('sensor-1');
     final read = (result as Success).value;
     expect(read.value, isNull);
     expect(read.waitingForReport, true);
@@ -68,7 +68,7 @@ void main() {
         payload: {'on': true},
       ),
     );
-    await repository.setRelay('relay-1', true);
+    await repository.setRelay('actuator-1', true);
     expect(client.commands.map((command) => command.action), [
       'device.pressure.read',
       'device.relay.set',

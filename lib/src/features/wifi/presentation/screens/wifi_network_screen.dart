@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
-import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/layout/app_page_scaffold.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 import 'package:dashboard/src/features/wifi/domain/entities/wifi_network_readiness.dart';
 import 'package:dashboard/src/features/wifi/presentation/widgets/wifi_network_cards.dart';
@@ -28,29 +28,21 @@ class WifiNetworkScreen extends ConsumerWidget {
       rssi: wifi?.rssi,
     );
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          WifiReadinessCard(readiness: readiness),
-          const SizedBox(height: AppDimensions.spacingL),
-          WifiLocalAccessCard(
-            wifi: wifi,
-            websocketClients: snapshot?.websocket.clients ?? 0,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          WifiUplinkCard(wifi: wifi, signalQuality: readiness.signalQuality),
-          const SizedBox(height: AppDimensions.spacingL),
-          const WifiConnectCard(),
-          const SizedBox(height: AppDimensions.spacingL),
-          WifiRecentActivityCard(events: runtime.recentEvents),
-          const SizedBox(height: AppDimensions.spacingL),
-          WifiAdvancedDiagnosticsCard(
-            wifi: wifi,
-            websocket: snapshot?.websocket,
-          ),
-        ],
-      ),
+    return AppPageScaffold(
+      title: 'Wi-Fi Network',
+      description:
+          'Local Dashboard access and optional uplink connectivity for the Orchestrator.',
+      children: [
+        WifiReadinessCard(readiness: readiness),
+        WifiLocalAccessCard(
+          wifi: wifi,
+          websocketClients: snapshot?.websocket.clients ?? 0,
+        ),
+        WifiUplinkCard(wifi: wifi, signalQuality: readiness.signalQuality),
+        const WifiConnectCard(),
+        WifiRecentActivityCard(events: runtime.recentEvents),
+        WifiAdvancedDiagnosticsCard(wifi: wifi, websocket: snapshot?.websocket),
+      ],
     );
   }
 }

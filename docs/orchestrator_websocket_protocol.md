@@ -1,5 +1,10 @@
 # Orchestrator WebSocket Protocol
 
+This document describes the current Dashboard/Orchestrator protocol. Operator
+pages should present product readiness and device capability status first.
+Developer-only screens may expose raw command payloads, Matter IDs, Thread
+diagnostics, and event payloads.
+
 ## Command
 
 ```json
@@ -89,7 +94,7 @@ Semantic Matter reads can be asynchronous. `device.temperature.read` and
   "action": "device.temperature.read",
   "ok": true,
   "payload": {
-    "device_id": "bmp280-1",
+    "device_id": "sensor-1",
     "accepted": true,
     "result_delivery": "matter.attribute_report"
   }
@@ -103,7 +108,7 @@ The value then arrives as an event:
   "type": "event",
   "event": "matter.attribute_report",
   "payload": {
-    "device_id": "bmp280-1",
+    "device_id": "sensor-1",
     "semantic_type": "temperature",
     "temperature_celsius": 23.41,
     "raw_measured_value": 2341,
@@ -126,15 +131,15 @@ Pressure reports use `semantic_type=pressure` and `pressure_kpa`.
 {
   "devices": [
     {
-      "device_id": "bmp280-1",
+      "device_id": "sensor-1",
       "node_id": "123456789",
-      "label": "BMP280 Sensor",
+      "label": "Environmental sensor",
       "reachable": true,
-      "product_name": "BMP280",
-      "location": "Root chamber",
+      "product_name": "environmental sensor",
+      "location": "chamber",
       "capabilities": [
         {
-          "capability_id": "bmp280-1-temperature",
+          "capability_id": "capability-1",
           "semantic_type": "temperature",
           "endpoint_id": 1,
           "cluster_id": 1026,
@@ -149,6 +154,22 @@ Pressure reports use `semantic_type=pressure` and `pressure_kpa`.
 
 The Dashboard uses `temperature`, `pressure`, and `relay` capabilities for
 normal Chamber workflows. Raw Matter IDs remain available in Developer tools.
+
+Pairing or commissioning is not the final operator step. A commissioned device
+must be represented in the device registry with usable capabilities before it
+can participate in Chamber workflows.
+
+## Dashboard Page Ownership
+
+- Operator pages: Chamber, Devices, Wi-Fi Network, Thread Network, Matter
+  Network, and Orchestrator readiness.
+- Maintainer tasks: certificate trust, Wi-Fi/Thread/Matter setup, device
+  registry and capability verification.
+- Developer tools: raw Matter cluster workflows, raw Thread diagnostics, raw
+  command/event inspection, and manual recovery actions.
+
+Live WSS verification requires the Dashboard machine to be connected to the
+Orchestrator local access point or another reachable Orchestrator IP.
 
 ## Protocol Error
 

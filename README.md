@@ -2,6 +2,10 @@
 
 Flutter dashboard for the Old MacDonald Orchestrator.
 
+The Dashboard is structured as an operator console, not a raw protocol panel.
+Primary pages explain operational state first, with low-level diagnostics kept
+in Developer or collapsed Advanced diagnostics sections.
+
 ## Run
 
 ```sh
@@ -15,11 +19,25 @@ The default Orchestrator URL is:
 wss://192.168.4.1/ws
 ```
 
-Normal workflow: connect to the Orchestrator, receive a `state_snapshot`, list
-registered devices, then use Devices and Chamber controls. The Dashboard is an
-operator UI: Chamber controls are built from registered device labels and
-capabilities, not raw Matter node, endpoint, cluster, or attribute IDs.
-Developer workflow: use the Developer screen for raw Matter and Thread tools.
+## Product Structure
+
+- **Orchestrator**: system connection, certificate trust, runtime state, and
+  setup checklist.
+- **Chamber**: day-to-day readings and actuator controls built from registered
+  device capabilities.
+- **Devices**: device registry status, reachability, and capability readiness.
+- **Wi-Fi Network**: local Dashboard access and optional uplink Wi-Fi.
+- **Thread Network**: Thread mesh readiness for chamber sensors and actuators.
+- **Matter Network**: commissioned devices and chamber device onboarding.
+- **Developer**: raw Matter, Thread, command, and event diagnostics.
+
+Operator workflow: connect to the Orchestrator, trust the certificate, receive a
+`state_snapshot`, onboard or verify devices, then use Chamber controls.
+Installer/maintainer workflow: use Wi-Fi, Thread, Matter, and Devices pages to
+verify setup. Developer workflow: use Developer for raw protocol diagnostics.
+
+Chamber controls are built from registered device labels and capabilities, not
+raw Matter node, endpoint, cluster, or attribute IDs.
 
 ## WebSocket Protocol
 
@@ -63,13 +81,13 @@ operator labels, reachability, optional product/location metadata, and a
 - `raw_command`
 
 The Devices page shows the registry and capability technical details for
-administration. The Chamber page filters capabilities into temperature,
-pressure, and relay selectors such as:
+administration. The Chamber page filters capabilities into environmental reading
+and switchable actuator selectors such as:
 
 ```text
-BMP280 Sensor - Temperature
-BMP280 Sensor - Pressure
-Mist Relay - On/Off
+Environmental sensor - Temperature
+Environmental sensor - Pressure
+Switchable actuator - On/Off
 ```
 
 Semantic sensor reads may complete asynchronously. A successful
@@ -82,7 +100,7 @@ shows a waiting state until the value arrives in an event:
   "type": "event",
   "event": "matter.attribute_report",
   "payload": {
-    "device_id": "bmp280-1",
+    "device_id": "sensor-1",
     "semantic_type": "temperature",
     "temperature_celsius": 23.41,
     "raw_measured_value": 2341
@@ -105,3 +123,10 @@ Manual fingerprint entry remains available only as a developer fallback.
 `assets/rootCA.example.pem` is only a development example. Do not commit real
 generated certificates, private keys, or device CA files. The app no longer
 requires `assets/rootCA.pem` for WSS startup.
+
+## Verification Notes
+
+Automated tests validate Dashboard-side command encoding, readiness models,
+page rendering, certificate trust storage, and widget smoke coverage. Live WSS
+verification requires the computer running the Dashboard to have a real network
+path to the Orchestrator access point or a reachable uplink IP.

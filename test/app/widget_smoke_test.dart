@@ -1,16 +1,22 @@
 import 'package:dashboard/src/app/dashboard_app.dart';
+import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/app/providers.dart';
+import 'package:dashboard/src/core/errors/app_failure.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/errors/result.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_status_card.dart';
 import 'package:dashboard/src/features/chamber/domain/entities/chamber_status.dart';
 import 'package:dashboard/src/features/chamber/domain/repositories/chamber_repository.dart';
 import 'package:dashboard/src/features/chamber/presentation/screens/chamber_screen.dart';
 import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'package:dashboard/src/features/devices/domain/repositories/device_repository.dart';
+import 'package:dashboard/src/features/devices/presentation/screens/devices_screen.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_attribute.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_cluster.dart';
 import 'package:dashboard/src/features/matter/domain/repositories/matter_cluster_repository.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_screen.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
 import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_message_repository.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_controller_init_form.dart';
@@ -127,6 +133,71 @@ void main() {
     expect(find.text('Pair BLE Thread'), findsNothing);
   });
 
+  testWidgets('navigation uses destination keys and shows disconnected banner', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+        ],
+        child: const DashboardApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Dashboard is not connected to the Orchestrator. Connect before using live controls.',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Matter Network').first);
+    await tester.pumpAndSettle();
+    final scope = tester.element(find.byType(DashboardApp));
+    final selected = ProviderScope.containerOf(
+      scope,
+    ).read(selectedDashboardDestinationProvider);
+    expect(selected, DashboardDestinationKey.matter);
+  });
+
+  testWidgets('orchestrator page shows setup checklist before URL editor', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: OrchestratorScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('System Connection & Trust'), findsOneWidget);
+    expect(find.text('Setup checklist'), findsOneWidget);
+    expect(find.text('WebSocket URL editor'), findsOneWidget);
+  });
+
+  testWidgets(
+    'devices page shows registry overview and onboarding empty state',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            deviceRepositoryProvider.overrideWithValue(_EmptyDeviceRepo()),
+          ],
+          child: const MaterialApp(home: Scaffold(body: DevicesScreen())),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Registry overview'), findsOneWidget);
+      expect(find.text('No chamber devices are registered.'), findsWidgets);
+      expect(find.text('Go to Matter Network'), findsOneWidget);
+    },
+  );
+
   testWidgets('developer screen contains raw Matter tools', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -141,7 +212,49 @@ void main() {
     expect(find.text('Cluster Command'), findsOneWidget);
     expect(find.text('Read Attribute'), findsWidgets);
     expect(find.text('Subscribe Attribute'), findsWidgets);
+    expect(
+      find.text(
+        'Developer tools bypass normal operator workflows. Use for diagnostics and recovery.',
+      ),
+      findsOneWidget,
+    );
   });
+
+  testWidgets(
+    'status and metric tiles support neutral warning and critical tones',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                AppStatusCard(
+                  title: 'Neutral',
+                  value: 'Unavailable',
+                  active: false,
+                ),
+                AppStatusCard(
+                  title: 'Critical',
+                  value: 'Fault',
+                  active: false,
+                  tone: AppStatusTone.critical,
+                ),
+                AppMetricTile(
+                  label: 'Warning metric',
+                  value: 'Missing',
+                  tone: AppMetricTone.warning,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Unavailable'), findsOneWidget);
+      expect(find.text('Fault'), findsOneWidget);
+      expect(find.text('Missing'), findsOneWidget);
+    },
+  );
 
   testWidgets('chamber screen uses capability selectors, not typed IDs', (
     tester,
@@ -160,9 +273,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('BMP280 Sensor - Temperature'), findsOneWidget);
-    expect(find.text('BMP280 Sensor - Pressure'), findsOneWidget);
-    expect(find.text('Mist Relay - On/Off'), findsOneWidget);
+    expect(find.text('Environmental sensor - Temperature'), findsOneWidget);
+    expect(find.text('Environmental sensor - Pressure'), findsOneWidget);
+    expect(find.text('Switchable actuator - On/Off'), findsOneWidget);
     expect(find.text('Temperature device ID'), findsNothing);
     expect(find.text('Pressure device ID'), findsNothing);
     expect(find.text('Relay device ID'), findsNothing);
@@ -187,13 +300,13 @@ final class _DeviceRepo implements DeviceRepository {
   Future<Result<List<DeviceRecord>>> listDevices() async {
     return const Success([
       DeviceRecord(
-        deviceId: 'bmp280-1',
+        deviceId: 'sensor-1',
         nodeId: '123',
-        label: 'BMP280 Sensor',
+        label: 'Environmental sensor',
         reachable: true,
         capabilities: [
           DeviceCapability(
-            capabilityId: 'bmp280-1-temperature',
+            capabilityId: 'capability-1',
             semanticType: DeviceCapabilitySemanticType.temperature,
             endpointId: 1,
             clusterId: 1026,
@@ -201,7 +314,7 @@ final class _DeviceRepo implements DeviceRepository {
             label: 'Temperature',
           ),
           DeviceCapability(
-            capabilityId: 'bmp280-1-pressure',
+            capabilityId: 'capability-2',
             semanticType: DeviceCapabilitySemanticType.pressure,
             endpointId: 2,
             clusterId: 1027,
@@ -211,13 +324,13 @@ final class _DeviceRepo implements DeviceRepository {
         ],
       ),
       DeviceRecord(
-        deviceId: 'relay-1',
+        deviceId: 'actuator-1',
         nodeId: '987',
-        label: 'Mist Relay',
+        label: 'Switchable actuator',
         reachable: true,
         capabilities: [
           DeviceCapability(
-            capabilityId: 'relay-1-onoff',
+            capabilityId: 'capability-3',
             semanticType: DeviceCapabilitySemanticType.relay,
             endpointId: 1,
             clusterId: 6,
@@ -236,6 +349,23 @@ final class _DeviceRepo implements DeviceRepository {
       result.value.firstWhere((device) => device.deviceId == deviceId),
     );
   }
+
+  @override
+  Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void>> removeDevice(String deviceId) async =>
+      const Success(null);
+}
+
+final class _EmptyDeviceRepo implements DeviceRepository {
+  @override
+  Future<Result<List<DeviceRecord>>> listDevices() async => const Success([]);
+
+  @override
+  Future<Result<DeviceRecord>> getDevice(String deviceId) async =>
+      const FailureResult(UnknownFailure('No device.'));
 
   @override
   Future<Result<void>> renameDevice(String deviceId, String label) async =>

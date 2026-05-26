@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
+import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/core/config/app_config.dart';
 import 'package:dashboard/src/core/security/certificate_trust_store.dart';
 import 'package:dashboard/src/core/storage/preferences_store.dart';
@@ -271,6 +272,16 @@ final matterEventControllerProvider =
       );
     });
 
-final selectedDashboardDestinationProvider = StateProvider<int>((ref) => 0);
+final selectedDashboardDestinationProvider =
+    StateProvider<DashboardDestinationKey>(
+      (ref) => DashboardDestinationKey.orchestrator,
+    );
+
+void selectDashboardDestination(
+  WidgetRef ref,
+  DashboardDestinationKey destination,
+) {
+  ref.read(selectedDashboardDestinationProvider.notifier).state = destination;
+}
 
 final sidebarCollapsedProvider = StateProvider<bool>((ref) => false);

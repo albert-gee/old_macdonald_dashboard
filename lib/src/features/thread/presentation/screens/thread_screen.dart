@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
-import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/layout/app_page_scaffold.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_readiness.dart';
 import 'package:dashboard/src/features/thread/presentation/widgets/thread_network_cards.dart';
@@ -46,42 +46,36 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
       attached: hasThreadData ? status.attached : null,
     );
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ThreadReadinessCard(readiness: readiness),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadDeviceImpactCard(readiness: readiness),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadNetworkStateCard(status: status, readiness: readiness),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadDatasetSummaryCard(
-            datasetPresent: status.meshcopPublished,
-            dataset: status.activeDataset,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadOperatorActionsCard(
-            status: status,
-            readiness: readiness,
-            onInitializeNetwork: _openManualDatasetSetup,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadRecentEventsCard(events: runtime.recentEvents),
-          const SizedBox(height: AppDimensions.spacingL),
-          ThreadAdvancedDiagnosticsCard(
-            addresses: status.addresses,
-            expanded: _advancedExpanded,
-            manualDatasetExpanded: _manualDatasetExpanded,
-            onExpandedChanged: (expanded) {
-              setState(() => _advancedExpanded = expanded);
-            },
-            onManualDatasetExpandedChanged: (expanded) {
-              setState(() => _manualDatasetExpanded = expanded);
-            },
-          ),
-        ],
-      ),
+    return AppPageScaffold(
+      title: 'Thread Network',
+      description:
+          'Thread mesh network readiness for chamber sensors and actuators.',
+      children: [
+        ThreadReadinessCard(readiness: readiness),
+        ThreadDeviceImpactCard(readiness: readiness),
+        ThreadNetworkStateCard(status: status, readiness: readiness),
+        ThreadDatasetSummaryCard(
+          datasetPresent: status.meshcopPublished,
+          dataset: status.activeDataset,
+        ),
+        ThreadOperatorActionsCard(
+          status: status,
+          readiness: readiness,
+          onInitializeNetwork: _openManualDatasetSetup,
+        ),
+        ThreadRecentEventsCard(events: runtime.recentEvents),
+        ThreadAdvancedDiagnosticsCard(
+          addresses: status.addresses,
+          expanded: _advancedExpanded,
+          manualDatasetExpanded: _manualDatasetExpanded,
+          onExpandedChanged: (expanded) {
+            setState(() => _advancedExpanded = expanded);
+          },
+          onManualDatasetExpandedChanged: (expanded) {
+            setState(() => _manualDatasetExpanded = expanded);
+          },
+        ),
+      ],
     );
   }
 

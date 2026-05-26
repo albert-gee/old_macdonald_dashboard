@@ -21,13 +21,16 @@ void main() {
 
     expect(
       controller.state.temperatureOptions.single.label,
-      'BMP280 Sensor - Temperature',
+      'Environmental sensor - Temperature',
     );
     expect(
       controller.state.pressureOptions.single.label,
-      'BMP280 Sensor - Pressure',
+      'Environmental sensor - Pressure',
     );
-    expect(controller.state.relayOptions.single.label, 'Mist Relay - On/Off');
+    expect(
+      controller.state.relayOptions.single.label,
+      'Switchable actuator - On/Off',
+    );
 
     controller.dispose();
     await messages.close();
@@ -90,7 +93,7 @@ void main() {
         OrchestratorEventReceived(
           event: 'matter.attribute_report',
           payload: {
-            'device_id': 'bmp280-1',
+            'device_id': 'sensor-1',
             'semantic_type': 'temperature',
             'temperature_celsius': 24.1,
             'raw_measured_value': 2410,
@@ -102,7 +105,7 @@ void main() {
         OrchestratorEventReceived(
           event: 'matter.attribute_report',
           payload: {
-            'device_id': 'bmp280-1',
+            'device_id': 'sensor-1',
             'semantic_type': 'pressure',
             'pressure_kpa': 101.3,
             'raw_measured_value': 1013,
@@ -169,13 +172,13 @@ void main() {
 List<DeviceRecord> _devices() {
   return const [
     DeviceRecord(
-      deviceId: 'bmp280-1',
+      deviceId: 'sensor-1',
       nodeId: '123',
-      label: 'BMP280 Sensor',
+      label: 'Environmental sensor',
       reachable: true,
       capabilities: [
         DeviceCapability(
-          capabilityId: 'bmp280-1-temperature',
+          capabilityId: 'capability-1',
           semanticType: DeviceCapabilitySemanticType.temperature,
           endpointId: 1,
           clusterId: 1026,
@@ -183,7 +186,7 @@ List<DeviceRecord> _devices() {
           label: 'Temperature',
         ),
         DeviceCapability(
-          capabilityId: 'bmp280-1-pressure',
+          capabilityId: 'capability-2',
           semanticType: DeviceCapabilitySemanticType.pressure,
           endpointId: 2,
           clusterId: 1027,
@@ -193,13 +196,13 @@ List<DeviceRecord> _devices() {
       ],
     ),
     DeviceRecord(
-      deviceId: 'relay-1',
+      deviceId: 'actuator-1',
       nodeId: '987',
-      label: 'Mist Relay',
+      label: 'Switchable actuator',
       reachable: true,
       capabilities: [
         DeviceCapability(
-          capabilityId: 'relay-1-onoff',
+          capabilityId: 'capability-3',
           semanticType: DeviceCapabilitySemanticType.relay,
           endpointId: 1,
           clusterId: 6,

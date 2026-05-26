@@ -13,6 +13,7 @@ class AppTheme {
       error: AppColors.error,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
+      surfaceContainerHighest: AppColors.surfaceMuted,
     ),
     textTheme: TextTheme(
       headlineLarge: AppTextStyles.headlineLarge,
@@ -21,6 +22,8 @@ class AppTheme {
       labelLarge: AppTextStyles.labelLarge,
       titleMedium: AppTextStyles.sidebarTitle,
       bodySmall: AppTextStyles.sidebarSubtitle,
+      titleLarge: AppTextStyles.sectionTitle,
+      titleSmall: AppTextStyles.label,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.surface,
@@ -33,7 +36,11 @@ class AppTheme {
       fillColor: AppColors.inputFill,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       hintStyle: AppTextStyles.bodyMedium,
     ),

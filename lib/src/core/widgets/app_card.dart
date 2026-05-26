@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:dashboard/src/core/theme/app_colors.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/theme/app_shadows.dart';
+import 'package:dashboard/src/core/theme/app_text_styles.dart';
 
 class AppCard extends StatelessWidget {
   final String title;
@@ -13,16 +13,18 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.cardPadding),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        boxShadow: AppShadows.card,
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          Text(title, style: AppTextStyles.cardTitle),
           const SizedBox(height: AppDimensions.spacingL),
           child,
         ],

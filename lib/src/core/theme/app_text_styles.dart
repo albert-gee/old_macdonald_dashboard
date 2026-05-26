@@ -9,6 +9,21 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
   );
+  static const TextStyle pageTitle = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle pageSubtitle = TextStyle(
+    fontSize: 15,
+    color: AppColors.textSecondary,
+    height: 1.35,
+  );
+  static const TextStyle sectionTitle = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
   static const TextStyle sidebarTitle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.bold,
@@ -42,5 +57,20 @@ class AppTextStyles {
     fontSize: 18,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
+  );
+  static const TextStyle mutedBody = TextStyle(
+    fontSize: 14,
+    color: AppColors.textSecondary,
+    height: 1.35,
+  );
+  static const TextStyle metricValue = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+  );
+  static const TextStyle label = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textSecondary,
   );
 }

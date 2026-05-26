@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
-import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/layout/app_page_scaffold.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_readiness.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_network_cards.dart';
@@ -59,37 +59,32 @@ class _MatterScreenState extends ConsumerState<MatterScreen> {
     final devices = deviceListState.devices;
     final matterEvents = ref.watch(matterEventControllerProvider).recentEvents;
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MatterReadinessCard(
-            readiness: readiness,
-            controllerInitialized: matter?.controllerInitialized ?? false,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          MatterPairChamberDeviceCard(readiness: readiness),
-          const SizedBox(height: AppDimensions.spacingL),
-          MatterCommissionedDevicesCard(
-            nodes: matter?.commissionedNodes ?? const [],
-            registryDevices: devices,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          MatterRegistryMappingCard(
-            nodes: matter?.commissionedNodes ?? const [],
-            registryDevices: devices,
-            registryLoading: deviceListState.loading,
-            registryMessage: deviceListState.message,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          MatterRecentActivityCard(
-            events: matterEvents,
-            runtimeEvents: runtime.recentEvents,
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-          const MatterAdvancedDiagnosticsCard(),
-        ],
-      ),
+    return AppPageScaffold(
+      title: 'Matter Network',
+      description:
+          'Matter Device Network for pairing and managing chamber sensors and actuators.',
+      children: [
+        MatterReadinessCard(
+          readiness: readiness,
+          controllerInitialized: matter?.controllerInitialized ?? false,
+        ),
+        MatterPairChamberDeviceCard(readiness: readiness),
+        MatterCommissionedDevicesCard(
+          nodes: matter?.commissionedNodes ?? const [],
+          registryDevices: devices,
+        ),
+        MatterRegistryMappingCard(
+          nodes: matter?.commissionedNodes ?? const [],
+          registryDevices: devices,
+          registryLoading: deviceListState.loading,
+          registryMessage: deviceListState.message,
+        ),
+        MatterRecentActivityCard(
+          events: matterEvents,
+          runtimeEvents: runtime.recentEvents,
+        ),
+        const MatterAdvancedDiagnosticsCard(),
+      ],
     );
   }
 }
