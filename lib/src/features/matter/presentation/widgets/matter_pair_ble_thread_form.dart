@@ -8,7 +8,14 @@ import 'package:dashboard/src/features/matter/domain/entities/matter_pair_ble_th
 import 'matter_form_validators.dart';
 
 class MatterPairBleThreadForm extends ConsumerStatefulWidget {
-  const MatterPairBleThreadForm({super.key});
+  final bool enabled;
+  final String submitLabel;
+
+  const MatterPairBleThreadForm({
+    super.key,
+    this.enabled = true,
+    this.submitLabel = 'Pair BLE Thread',
+  });
 
   @override
   ConsumerState<MatterPairBleThreadForm> createState() =>
@@ -33,6 +40,7 @@ class _MatterPairBleThreadFormState
   @override
   Widget build(BuildContext context) {
     final submitting = ref.watch(matterCommandControllerProvider).submitting;
+    final enabled = widget.enabled && !submitting;
     return Form(
       key: _formKey,
       child: Wrap(
@@ -40,12 +48,12 @@ class _MatterPairBleThreadFormState
         runSpacing: AppDimensions.spacingM,
         crossAxisAlignment: WrapCrossAlignment.end,
         children: [
-          _field(_nodeId, 'Node ID'),
+          _field(_nodeId, 'Device node ID'),
           _field(_setupCode, 'Setup code'),
           _field(_discriminator, 'Discriminator'),
           ElevatedButton(
-            onPressed: submitting ? null : _submit,
-            child: const Text('Pair BLE Thread'),
+            onPressed: enabled ? _submit : null,
+            child: Text(widget.submitLabel),
           ),
         ],
       ),

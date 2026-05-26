@@ -122,8 +122,9 @@ void main() {
     await tester.tap(find.text('Matter Network').first);
     await tester.pumpAndSettle();
     expect(find.text('Matter Network'), findsWidgets);
-    expect(find.text('Controller Init'), findsOneWidget);
-    expect(find.text('Pair BLE Thread'), findsWidgets);
+    expect(find.text('Matter Device Network readiness'), findsOneWidget);
+    expect(find.text('Pair chamber device'), findsWidgets);
+    expect(find.text('Pair BLE Thread'), findsNothing);
   });
 
   testWidgets('developer screen contains raw Matter tools', (tester) async {
