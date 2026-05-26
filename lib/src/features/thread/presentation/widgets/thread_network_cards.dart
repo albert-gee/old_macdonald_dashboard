@@ -23,19 +23,27 @@ class ThreadReadinessCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AppCard(
-      title: 'Thread Network Readiness',
+      title: 'Thread Mesh Network readiness',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text(
+            'Thread is the local mesh network used by chamber sensors and relays.',
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
           Text(readiness.title, style: theme.textTheme.headlineSmall),
           const SizedBox(height: AppDimensions.spacingS),
-          Text(readiness.explanation),
+          Text(readiness.meaning),
           if (readiness.commissioningReadinessInferred) ...[
             const SizedBox(height: AppDimensions.spacingS),
             const Text(
               'Commissioning readiness is inferred from Thread attachment and dataset presence. Border Router readiness is not separately reported yet.',
             ),
           ],
+          const SizedBox(height: AppDimensions.spacingL),
+          Text('Chamber impact', style: theme.textTheme.titleSmall),
+          const SizedBox(height: AppDimensions.spacingS),
+          Text(readiness.impact),
           const SizedBox(height: AppDimensions.spacingL),
           Text('Missing requirements', style: theme.textTheme.titleSmall),
           const SizedBox(height: AppDimensions.spacingS),
@@ -59,6 +67,33 @@ class ThreadReadinessCard extends StatelessWidget {
   }
 }
 
+class ThreadDeviceImpactCard extends StatelessWidget {
+  final ThreadReadiness readiness;
+
+  const ThreadDeviceImpactCard({super.key, required this.readiness});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      title: 'Chamber device connectivity',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Relay and BMP280-style sensor devices depend on this chamber device network when they use Matter-over-Thread.',
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          Text(
+            readiness.isReady
+                ? 'Thread is ready for Matter-over-Thread chamber devices.'
+                : 'Complete Thread setup before pairing or troubleshooting Thread sensors and relays.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ThreadNetworkStateCard extends StatelessWidget {
   final ThreadStatus status;
   final ThreadReadiness readiness;
@@ -73,7 +108,7 @@ class ThreadNetworkStateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final role = _roleLabel(status.role, status.stackRunning, status.attached);
     return AppCard(
-      title: 'Network State',
+      title: 'Network state',
       child: Wrap(
         spacing: AppDimensions.spacingM,
         runSpacing: AppDimensions.spacingM,
@@ -84,22 +119,22 @@ class ThreadNetworkStateCard extends StatelessWidget {
             active: status.stackRunning,
           ),
           AppStatusCard(
-            title: 'Attachment',
+            title: 'Network configuration',
+            value: status.meshcopPublished ? 'Dataset present' : 'Missing',
+            active: status.meshcopPublished,
+          ),
+          AppStatusCard(
+            title: 'Mesh attachment',
             value: status.attached ? 'Attached' : 'Detached',
             active: status.attached,
           ),
           AppStatusCard(
-            title: 'Role',
+            title: 'Device role',
             value: role,
             active: role != 'Unknown' && role != 'Disabled',
           ),
           AppStatusCard(
-            title: 'Dataset',
-            value: status.meshcopPublished ? 'Present' : 'Missing',
-            active: status.meshcopPublished,
-          ),
-          AppStatusCard(
-            title: 'Commissioning',
+            title: 'Pairing readiness',
             value: readiness.isReady ? 'Inferred ready' : 'Not ready',
             active: readiness.isReady,
           ),
@@ -136,17 +171,17 @@ class ThreadDatasetSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      title: 'Dataset Summary',
+      title: 'Dataset / network configuration summary',
       child: !datasetPresent
-          ? const Text('No active dataset.')
+          ? const Text('No Thread network is configured.')
           : dataset.isEmpty
           ? const Text(
-              'Dataset is present. Detailed safe dataset summary is not available yet.',
+              'Thread network is configured, but safe dataset details are not currently available.',
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Dataset is present.'),
+                const Text('Configured: Yes'),
                 const SizedBox(height: AppDimensions.spacingM),
                 _row('Network name', dataset.networkName),
                 _row(
@@ -169,8 +204,15 @@ class ThreadDatasetSummaryCard extends StatelessWidget {
 
 class ThreadOperatorActionsCard extends ConsumerWidget {
   final ThreadStatus status;
+  final ThreadReadiness readiness;
+  final VoidCallback onInitializeNetwork;
 
-  const ThreadOperatorActionsCard({super.key, required this.status});
+  const ThreadOperatorActionsCard({
+    super.key,
+    required this.status,
+    required this.readiness,
+    required this.onInitializeNetwork,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -185,26 +227,26 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
     final controller = ref.read(threadCommandControllerProvider.notifier);
     final submitting = state.submitting;
     return AppCard(
-      title: 'Operator Actions',
+      title: 'Recommended action',
       child: Wrap(
         spacing: AppDimensions.spacingM,
         runSpacing: AppDimensions.spacingM,
         children: [
           ElevatedButton(
             onPressed: submitting ? null : controller.refreshThreadState,
-            child: const Text('Refresh Thread state'),
+            child: const Text('Refresh network state'),
           ),
           ElevatedButton(
             onPressed: submitting || status.stackRunning
                 ? null
                 : controller.enable,
-            child: const Text('Start Thread'),
+            child: const Text('Start Thread network'),
           ),
           ElevatedButton(
             onPressed: submitting || !status.stackRunning
                 ? null
                 : controller.disable,
-            child: const Text('Stop Thread'),
+            child: const Text('Stop Thread network'),
           ),
           ElevatedButton(
             onPressed: submitting || !status.stackRunning
@@ -219,14 +261,28 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
           OutlinedButton(
             onPressed: submitting || status.meshcopPublished
                 ? null
-                : () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Use Advanced Diagnostics to initialize a Thread dataset with credentials.',
+                : () {
+                    onInitializeNetwork();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Automatic dataset generation is not available yet. Use advanced manual setup.',
+                        ),
                       ),
-                    ),
-                  ),
-            child: const Text('Create / Initialize Thread Network'),
+                    );
+                  },
+            child: const Text('Initialize Thread network'),
+          ),
+          ElevatedButton(
+            onPressed: submitting || !readiness.isReady
+                ? null
+                : () {
+                    ref
+                            .read(selectedDashboardDestinationProvider.notifier)
+                            .state =
+                        6;
+                  },
+            child: const Text('Continue to Matter pairing'),
           ),
         ],
       ),
@@ -243,9 +299,9 @@ class ThreadRecentEventsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final threadEvents = events.where(_isThreadEvent).take(8).toList();
     return AppCard(
-      title: 'Recent Thread Events',
+      title: 'Recent Thread activity',
       child: threadEvents.isEmpty
-          ? const Text('No Thread events received yet.')
+          ? const Text('No Thread activity received yet.')
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: threadEvents
@@ -254,7 +310,9 @@ class ThreadRecentEventsCard extends StatelessWidget {
                       padding: const EdgeInsets.only(
                         bottom: AppDimensions.spacingM,
                       ),
-                      child: Text('${_label(event.type)} - ${event.type}'),
+                      child: Text(
+                        '${_label(event.type)} - ${_time(event.receivedAt)}',
+                      ),
                     ),
                   )
                   .toList(),
@@ -274,39 +332,67 @@ class ThreadRecentEventsCard extends StatelessWidget {
       'thread.disabled' => 'Thread stopped',
       'thread.attached' => 'Thread attached',
       'thread.detached' => 'Thread detached',
+      'thread.role' => 'Thread role changed',
       'thread.dataset_updated' => 'Thread dataset updated',
       _ when type.startsWith('command_failed.') => 'Thread command failed',
       _ => 'Thread event',
     };
   }
+
+  String _time(DateTime value) {
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    final second = value.second.toString().padLeft(2, '0');
+    return '$hour:$minute:$second';
+  }
 }
 
 class ThreadAdvancedDiagnosticsCard extends StatelessWidget {
   final ThreadAddressState addresses;
+  final bool expanded;
+  final bool manualDatasetExpanded;
+  final ValueChanged<bool> onExpandedChanged;
+  final ValueChanged<bool> onManualDatasetExpandedChanged;
 
-  const ThreadAdvancedDiagnosticsCard({super.key, required this.addresses});
+  const ThreadAdvancedDiagnosticsCard({
+    super.key,
+    required this.addresses,
+    required this.expanded,
+    required this.manualDatasetExpanded,
+    required this.onExpandedChanged,
+    required this.onManualDatasetExpandedChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      title: 'Advanced Diagnostics',
-      child: Column(
+      title: 'Advanced diagnostics',
+      child: ExpansionTile(
+        key: ValueKey('advanced-$expanded'),
+        initiallyExpanded: expanded,
+        onExpansionChanged: onExpandedChanged,
+        title: const Text(
+          'For development, recovery, and low-level Thread troubleshooting.',
+        ),
         children: [
           const ExpansionTile(
-            title: Text('Raw Thread command buttons'),
+            title: Text('Thread command diagnostics'),
             children: [ThreadCommandsCard()],
           ),
           ExpansionTile(
             title: const Text('Thread address lists'),
             children: [ThreadAddressCard(addresses: addresses)],
           ),
-          const ExpansionTile(
-            title: Text('Advanced manual dataset initialization'),
-            children: [
+          ExpansionTile(
+            key: ValueKey('manual-dataset-$manualDatasetExpanded'),
+            initiallyExpanded: manualDatasetExpanded,
+            onExpansionChanged: onManualDatasetExpandedChanged,
+            title: const Text('Advanced manual dataset initialization'),
+            children: const [
               ThreadDatasetForm(
                 title: 'Advanced manual dataset initialization',
                 warning:
-                    'This form is for development and recovery. It exposes low-level Thread network credentials.',
+                    'This form is for development and recovery. It includes low-level Thread credentials. Do not use it during normal operation unless you know what you are doing.',
               ),
             ],
           ),

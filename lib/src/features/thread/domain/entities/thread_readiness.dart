@@ -16,7 +16,7 @@ final class ThreadReadiness {
   const ThreadReadiness({
     required this.state,
     required this.missingRequirements,
-    this.commissioningReadinessInferred = true,
+    this.commissioningReadinessInferred = false,
   });
 
   factory ThreadReadiness.derive({
@@ -59,6 +59,7 @@ final class ThreadReadiness {
     return const ThreadReadiness(
       state: ThreadReadinessState.readyForCommissioning,
       missingRequirements: [],
+      commissioningReadinessInferred: true,
     );
   }
 
@@ -67,40 +68,53 @@ final class ThreadReadiness {
       state == ThreadReadinessState.readyForCommissioning;
 
   String get title => switch (state) {
-    ThreadReadinessState.unavailable => 'Thread state is unavailable.',
-    ThreadReadinessState.stopped => 'Thread is stopped.',
-    ThreadReadinessState.missingDataset => 'No active Thread dataset.',
-    ThreadReadinessState.detached => 'Thread is running but detached.',
-    ThreadReadinessState.attached => 'Thread network is attached.',
+    ThreadReadinessState.unavailable => 'Thread network status unavailable',
+    ThreadReadinessState.stopped => 'Thread network is stopped',
+    ThreadReadinessState.missingDataset => 'Thread network is not configured',
+    ThreadReadinessState.detached => 'Thread network is running but detached',
+    ThreadReadinessState.attached => 'Thread network is ready',
     ThreadReadinessState.readyForCommissioning => 'Thread network is ready.',
-    ThreadReadinessState.unknown => 'Thread readiness is unknown.',
+    ThreadReadinessState.unknown => 'Thread network status unavailable',
   };
 
-  String get explanation => switch (state) {
+  String get meaning => switch (state) {
     ThreadReadinessState.unavailable =>
-      'Connect to the Orchestrator and refresh Thread state.',
-    ThreadReadinessState.stopped =>
-      'Start Thread before pairing Matter-over-Thread devices.',
-    ThreadReadinessState.missingDataset =>
-      'Create or initialize a Thread network before pairing devices.',
-    ThreadReadinessState.detached => 'Wait for attachment or restart Thread.',
+      'Dashboard is not connected or has not received Thread state.',
+    ThreadReadinessState.stopped => 'The Thread stack is not running.',
+    ThreadReadinessState.missingDataset => 'No active Thread dataset exists.',
+    ThreadReadinessState.detached =>
+      'Thread is running, but the Orchestrator is not attached to a Thread mesh.',
     ThreadReadinessState.attached =>
-      'Commissioning readiness is inferred from Thread attachment and dataset presence.',
+      'Thread is running, configured, and attached.',
     ThreadReadinessState.readyForCommissioning =>
-      'You can proceed to Matter pairing.',
+      'Thread is running, configured, and attached.',
+    ThreadReadinessState.unknown => 'Dashboard has incomplete Thread state.',
+  };
+
+  String get impact => switch (state) {
+    ThreadReadinessState.unavailable =>
+      'Cannot confirm whether chamber Thread devices can communicate.',
+    ThreadReadinessState.stopped =>
+      'Thread sensors and relays cannot communicate through the Orchestrator.',
+    ThreadReadinessState.missingDataset => 'New Thread devices cannot join.',
+    ThreadReadinessState.detached => 'Devices may be unreachable.',
+    ThreadReadinessState.attached =>
+      'Chamber Thread devices can be paired or operated, subject to Matter commissioning.',
+    ThreadReadinessState.readyForCommissioning =>
+      'Chamber Thread devices can be paired or operated, subject to Matter commissioning.',
     ThreadReadinessState.unknown =>
-      'The Dashboard does not have enough Thread data yet.',
+      'Cannot confirm whether chamber Thread devices can communicate.',
   };
 
   String get nextAction => switch (state) {
-    ThreadReadinessState.unavailable => 'Connect and refresh Thread state.',
-    ThreadReadinessState.stopped => 'Start Thread.',
-    ThreadReadinessState.missingDataset =>
-      'Initialize a Thread dataset from Advanced Diagnostics.',
+    ThreadReadinessState.unavailable =>
+      'Connect to Orchestrator and refresh state.',
+    ThreadReadinessState.stopped => 'Start Thread network.',
+    ThreadReadinessState.missingDataset => 'Initialize Thread network.',
     ThreadReadinessState.detached =>
-      'Refresh state, then restart Thread if needed.',
+      'Refresh state, wait briefly, or restart Thread.',
     ThreadReadinessState.attached => 'Continue to Matter pairing.',
     ThreadReadinessState.readyForCommissioning => 'Continue to Matter pairing.',
-    ThreadReadinessState.unknown => 'Refresh Thread state.',
+    ThreadReadinessState.unknown => 'Refresh network state.',
   };
 }
