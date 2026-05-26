@@ -7,7 +7,16 @@ import 'package:dashboard/src/core/widgets/app_labeled_text_field.dart';
 import 'package:dashboard/src/features/wifi/domain/entities/wifi_sta_credentials.dart';
 
 class WifiStaConnectForm extends ConsumerStatefulWidget {
-  const WifiStaConnectForm({super.key});
+  final String ssidLabel;
+  final String submitLabel;
+  final String submittingLabel;
+
+  const WifiStaConnectForm({
+    super.key,
+    this.ssidLabel = 'SSID',
+    this.submitLabel = 'Connect',
+    this.submittingLabel = 'Connecting...',
+  });
 
   @override
   ConsumerState<WifiStaConnectForm> createState() => _WifiStaConnectFormState();
@@ -45,10 +54,11 @@ class _WifiStaConnectFormState extends ConsumerState<WifiStaConnectForm> {
         children: [
           AppLabeledTextField(
             controller: _ssidController,
-            label: 'SSID',
+            label: widget.ssidLabel,
             enabled: !state.submitting,
-            validator: (value) =>
-                (value?.trim().isEmpty ?? true) ? 'SSID is required.' : null,
+            validator: (value) => (value?.trim().isEmpty ?? true)
+                ? 'Network name / SSID is required.'
+                : null,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           AppLabeledTextField(
@@ -73,7 +83,11 @@ class _WifiStaConnectFormState extends ConsumerState<WifiStaConnectForm> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.wifi),
-                label: Text(state.submitting ? 'Connecting...' : 'Connect'),
+                label: Text(
+                  state.submitting
+                      ? widget.submittingLabel
+                      : widget.submitLabel,
+                ),
               ),
               OutlinedButton(
                 onPressed: state.submitting ? null : _clearFields,

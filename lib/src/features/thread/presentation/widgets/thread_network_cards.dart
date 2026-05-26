@@ -280,7 +280,7 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
                     ref
                             .read(selectedDashboardDestinationProvider.notifier)
                             .state =
-                        6;
+                        5;
                   },
             child: const Text('Continue to Matter pairing'),
           ),

@@ -16,7 +16,7 @@ import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestr
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_controller_init_form.dart';
 import 'package:dashboard/src/features/thread/presentation/widgets/thread_dataset_form.dart';
 import 'package:dashboard/src/features/thread/presentation/screens/thread_screen.dart';
-import 'package:dashboard/src/features/wifi/presentation/screens/wifi_sta_screen.dart';
+import 'package:dashboard/src/features/wifi/presentation/screens/wifi_network_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,14 +35,16 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: MaterialApp(home: Scaffold(body: WifiStaScreen())),
+        child: MaterialApp(home: Scaffold(body: WifiNetworkScreen())),
       ),
     );
 
-    await tester.tap(find.text('Connect'));
+    await tester.ensureVisible(find.text('Connect uplink Wi-Fi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Connect uplink Wi-Fi'));
     await tester.pump();
 
-    expect(find.text('SSID is required.'), findsOneWidget);
+    expect(find.text('Network name / SSID is required.'), findsOneWidget);
     expect(find.text('Password is required.'), findsOneWidget);
   });
 
@@ -107,9 +109,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Orchestrator'), findsWidgets);
-    await tester.tap(find.text('Wi-Fi STA').first);
+    await tester.tap(find.text('Wi-Fi Network').first);
     await tester.pumpAndSettle();
-    expect(find.text('Wi-Fi STA Connection'), findsOneWidget);
+    expect(find.text('Wi-Fi Network readiness'), findsOneWidget);
+    expect(find.text('Wi-Fi STA'), findsNothing);
+    expect(find.text('Wi-Fi AP'), findsNothing);
 
     await tester.tap(find.text('Thread Network').first);
     await tester.pumpAndSettle();

@@ -19,7 +19,7 @@ final class WifiStaConnectController
     state = switch (result) {
       Success() => state.copyWith(
         submitting: false,
-        message: 'Wi-Fi STA connected.',
+        message: 'Uplink Wi-Fi connection command accepted.',
         success: true,
       ),
       FailureResult(failure: final failure) => state.copyWith(

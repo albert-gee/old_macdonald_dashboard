@@ -14,8 +14,7 @@ import 'package:dashboard/src/features/matter/presentation/screens/matter_screen
 import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_screen.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/widgets/websocket_connection_indicator.dart';
 import 'package:dashboard/src/features/thread/presentation/screens/thread_screen.dart';
-import 'package:dashboard/src/features/wifi/presentation/screens/wifi_ap_screen.dart';
-import 'package:dashboard/src/features/wifi/presentation/screens/wifi_sta_screen.dart';
+import 'package:dashboard/src/features/wifi/presentation/screens/wifi_network_screen.dart';
 
 class DashboardShell extends ConsumerWidget {
   const DashboardShell({super.key});
@@ -37,14 +36,9 @@ class DashboardShell extends ConsumerWidget {
       builder: (_) => const DevicesScreen(),
     ),
     DashboardDestination(
-      title: 'Wi-Fi STA',
+      title: 'Wi-Fi Network',
       icon: Icons.network_wifi,
-      builder: (_) => const WifiStaScreen(),
-    ),
-    DashboardDestination(
-      title: 'Wi-Fi AP',
-      icon: Icons.wifi_tethering,
-      builder: (_) => const WifiApScreen(),
+      builder: (_) => const WifiNetworkScreen(),
     ),
     DashboardDestination(
       title: 'Thread Network',
