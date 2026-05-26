@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dashboard/src/app/dashboard_app.dart';
 import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/app/providers.dart';
@@ -198,6 +200,102 @@ void main() {
     },
   );
 
+  testWidgets('chamber does not render raw empty reading strings', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          deviceRepositoryProvider.overrideWithValue(_EmptyDeviceRepo()),
+          chamberRepositoryProvider.overrideWithValue(_ChamberRepo()),
+          orchestratorMessageRepositoryProvider.overrideWithValue(
+            _MessageRepo(),
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: ChamberScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Temperature: - C'), findsNothing);
+    expect(find.text('Pressure: - kPa'), findsNothing);
+    expect(find.text('No reading'), findsWidgets);
+  });
+
+  testWidgets('devices list shows product-first rows and hides technical IDs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [deviceRepositoryProvider.overrideWithValue(_DeviceRepo())],
+        child: const MaterialApp(home: Scaffold(body: DevicesScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Environmental sensor'), findsOneWidget);
+    expect(find.text('Reachable'), findsWidgets);
+    expect(find.text('Device ID: sensor-1\nNode ID: 123'), findsNothing);
+
+    await tester.ensureVisible(find.text('Technical details').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Technical details').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Device ID: sensor-1\nNode ID: 123'), findsOneWidget);
+  });
+
+  testWidgets('device remove requires confirmation', (tester) async {
+    final repository = _DeviceRepo();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [deviceRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: Scaffold(body: DevicesScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Remove device?'), findsOneWidget);
+    expect(repository.removeCount, 0);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(repository.removeCount, 0);
+
+    await tester.ensureVisible(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove').last);
+    await tester.pumpAndSettle();
+    expect(repository.removeCount, 1);
+  });
+
+  testWidgets('orchestrator raw diagnostics are not primary content', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: OrchestratorScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Setup checklist'), findsOneWidget);
+    expect(find.text('Pending Commands'), findsNothing);
+    expect(find.text('Runtime Snapshot'), findsNothing);
+
+    await tester.ensureVisible(find.text('Show Orchestrator diagnostics'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Show Orchestrator diagnostics'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pending Commands'), findsOneWidget);
+    expect(find.text('Runtime Snapshot'), findsOneWidget);
+  });
+
   testWidgets('developer screen contains raw Matter tools', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -256,6 +354,72 @@ void main() {
     },
   );
 
+  testWidgets('primary pages do not render AppStatusCard', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+        ],
+        child: const DashboardApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final label in [
+      'Orchestrator',
+      'Chamber',
+      'Devices',
+      'Wi-Fi Network',
+      'Thread Network',
+      'Matter Network',
+    ]) {
+      await tester.tap(find.text(label).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(AppStatusCard), findsNothing);
+    }
+  });
+
+  test('no concrete example device names remain in Dashboard sources', () {
+    final files = Directory.current
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (file) => file.path.endsWith('.dart') || file.path.endsWith('.md'),
+        );
+    final forbiddenTerms = [
+      'BM'
+          'P',
+      'BM'
+          'P280',
+      'Mi'
+          'st',
+      'Root Chamber '
+          'Temperature',
+      'bm'
+          'p280',
+      'mi'
+          'st',
+      'BM'
+          'P280-style',
+    ];
+    final forbidden = RegExp(forbiddenTerms.map(RegExp.escape).join('|'));
+    for (final file in files) {
+      final normalized = file.path.replaceAll('\\', '/');
+      if (normalized.contains('/build/') ||
+          normalized.contains('/.dart_tool/') ||
+          normalized.endsWith('/test/app/widget_smoke_test.dart')) {
+        continue;
+      }
+      expect(
+        forbidden.hasMatch(file.readAsStringSync()),
+        isFalse,
+        reason: 'Concrete example name found in ${file.path}',
+      );
+    }
+  });
+
   testWidgets('chamber screen uses capability selectors, not typed IDs', (
     tester,
   ) async {
@@ -296,6 +460,8 @@ final class _ClusterRepo implements MatterClusterRepository {
 }
 
 final class _DeviceRepo implements DeviceRepository {
+  int removeCount = 0;
+
   @override
   Future<Result<List<DeviceRecord>>> listDevices() async {
     return const Success([
@@ -355,8 +521,10 @@ final class _DeviceRepo implements DeviceRepository {
       const Success(null);
 
   @override
-  Future<Result<void>> removeDevice(String deviceId) async =>
-      const Success(null);
+  Future<Result<void>> removeDevice(String deviceId) async {
+    removeCount += 1;
+    return Future.value(const Success(null));
+  }
 }
 
 final class _EmptyDeviceRepo implements DeviceRepository {

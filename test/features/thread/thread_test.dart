@@ -208,7 +208,7 @@ void main() {
     expect(find.text('Thread network is stopped'), findsOneWidget);
     expect(
       find.text(
-        'Thread sensors and relays cannot communicate through the Orchestrator.',
+        'Thread sensors and actuators cannot communicate through the Orchestrator.',
       ),
       findsOneWidget,
     );

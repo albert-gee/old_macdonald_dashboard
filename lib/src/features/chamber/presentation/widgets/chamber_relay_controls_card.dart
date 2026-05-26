@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/core/theme/app_colors.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/theme/app_text_styles.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_state.dart';
 
 class ChamberRelayControlsCard extends ConsumerWidget {
@@ -16,18 +20,35 @@ class ChamberRelayControlsCard extends ConsumerWidget {
         ? state.selectedRelay
         : null;
 
-    return AppCard(
-      title: 'Relay Controls',
+    return AppPanel(
+      title: 'Actuator controls',
+      subtitle:
+          'Operate registered switchable actuator capabilities for chamber control.',
+      tone: state.relayOptions.isEmpty
+          ? AppPanelTone.warning
+          : AppPanelTone.info,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AppMetricTile(
+            label: 'Switchable actuator',
+            value: _value(state, selected),
+            detail: _detail(selected),
+            icon: Icons.power_settings_new,
+            tone: _tone(state, selected),
+          ),
+          const SizedBox(height: AppDimensions.spacingL),
           if (state.relayOptions.isEmpty)
-            const Text('No relay capabilities registered.')
+            const Text(
+              'No switchable actuator capability is registered.',
+              style: AppTextStyles.mutedBody,
+            )
           else
             DropdownButtonFormField<DeviceSelection>(
+              isExpanded: true,
               initialValue: selected,
               decoration: const InputDecoration(
-                labelText: 'Relay capability',
+                labelText: 'Actuator device function',
                 prefixIcon: Icon(Icons.power),
               ),
               items: [
@@ -36,18 +57,19 @@ class ChamberRelayControlsCard extends ConsumerWidget {
                     value: option,
                     child: Text(
                       '${option.label}${option.reachable ? '' : ' (offline)'}',
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
               ],
               onChanged: controller.selectRelay,
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingM),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: AppDimensions.spacingS,
+            runSpacing: AppDimensions.spacingS,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              FilledButton.icon(
+              OutlinedButton.icon(
                 onPressed: selected == null || state.relay.commandPending
                     ? null
                     : () => controller.setRelay(true),
@@ -62,7 +84,7 @@ class ChamberRelayControlsCard extends ConsumerWidget {
                 label: const Text('Off'),
               ),
               if (state.relay.commandPending)
-                const Text('Command pending')
+                const Text('Command accepted')
               else if (state.relay.lastCommandedOn != null)
                 Text(
                   state.relay.lastCommandedOn!
@@ -73,14 +95,34 @@ class ChamberRelayControlsCard extends ConsumerWidget {
           ),
           if (state.relay.error != null)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: AppDimensions.spacingS),
               child: Text(
                 state.relay.error!,
-                style: TextStyle(color: Colors.red.shade700),
+                style: const TextStyle(color: AppColors.warning),
               ),
             ),
         ],
       ),
     );
+  }
+
+  String _value(ChamberState state, DeviceSelection? selected) {
+    if (selected == null) return 'Unavailable';
+    if (state.relay.commandPending) return 'Pending';
+    if (state.relay.lastCommandedOn == null) return 'Ready';
+    return state.relay.lastCommandedOn! ? 'Last on' : 'Last off';
+  }
+
+  String _detail(DeviceSelection? selected) {
+    if (selected == null) return 'Select a device function before operating.';
+    if (!selected.reachable) return 'Selected device is reported offline.';
+    return 'Selected function: ${selected.label}';
+  }
+
+  AppMetricTone _tone(ChamberState state, DeviceSelection? selected) {
+    if (selected == null) return AppMetricTone.neutral;
+    if (state.relay.error != null) return AppMetricTone.warning;
+    if (state.relay.commandPending) return AppMetricTone.pending;
+    return AppMetricTone.good;
   }
 }

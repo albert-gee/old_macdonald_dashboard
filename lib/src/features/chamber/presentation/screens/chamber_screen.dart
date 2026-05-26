@@ -11,7 +11,6 @@ import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
 import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/chamber/presentation/widgets/chamber_relay_controls_card.dart';
 import 'package:dashboard/src/features/chamber/presentation/widgets/chamber_sensor_cards.dart';
-import 'package:dashboard/src/features/chamber/presentation/widgets/chamber_status_card.dart';
 
 class ChamberScreen extends ConsumerStatefulWidget {
   const ChamberScreen({super.key});
@@ -45,7 +44,7 @@ class _ChamberScreenState extends ConsumerState<ChamberScreen> {
       children: [
         AppPanel(
           title: ready
-              ? 'Chamber device functions are available'
+              ? 'Chamber is ready for operation'
               : 'Chamber setup is incomplete',
           subtitle: ready
               ? 'Use the sections below for readings and actuator control.'
@@ -125,7 +124,6 @@ class _ChamberScreenState extends ConsumerState<ChamberScreen> {
               child: const Text('Go to Devices'),
             ),
           ),
-        const ChamberStatusCard(),
         const ChamberSensorCards(),
         const ChamberRelayControlsCard(),
       ],

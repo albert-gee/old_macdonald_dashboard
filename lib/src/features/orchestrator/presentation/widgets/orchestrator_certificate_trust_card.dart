@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/security/certificate_fingerprint.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/core/theme/app_colors.dart';
+import 'package:dashboard/src/core/theme/app_dimensions.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 
 class OrchestratorCertificateTrustCard extends ConsumerStatefulWidget {
   const OrchestratorCertificateTrustCard({super.key});
@@ -36,39 +39,40 @@ class _OrchestratorCertificateTrustCardState
     final trusted = _display(state.trustedFingerprint);
     final observed = _display(state.observedFingerprint);
 
-    return AppCard(
-      title: 'Certificate / Trust',
+    return AppPanel(
+      title: 'Secure trust',
+      subtitle: secure
+          ? 'WSS connections use pinned SHA-256 certificate fingerprints.'
+          : 'Plain ws:// does not use TLS certificate pinning.',
+      tone: trusted == null && secure
+          ? AppPanelTone.warning
+          : AppPanelTone.success,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(host.isEmpty ? 'No host selected.' : 'Host: $host'),
-          const SizedBox(height: 8),
-          Text(
-            secure
-                ? 'WSS uses pinned SHA-256 certificate fingerprints.'
-                : 'Plain ws:// does not use TLS certificate pinning.',
-          ),
-          const SizedBox(height: 8),
-          Text(
-            trusted == null
-                ? 'No trusted fingerprint for this host.'
-                : 'Trusted: $trusted',
+          AppMetricTile(
+            label: 'Trusted certificate',
+            value: trusted == null ? 'Not trusted' : 'Trusted',
+            detail: host.isEmpty
+                ? 'No host selected.'
+                : trusted ?? 'Host: $host',
+            tone: trusted == null ? AppMetricTone.warning : AppMetricTone.good,
           ),
           if (trusted == null && secure) ...[
-            const SizedBox(height: 4),
-            Text(
+            const SizedBox(height: AppDimensions.spacingS),
+            const Text(
               'Pair before normal WSS connection.',
-              style: TextStyle(color: Colors.orange.shade800),
+              style: TextStyle(color: AppColors.warning),
             ),
           ],
           if (observed != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingS),
             Text('Observed during pairing: $observed'),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingL),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: AppDimensions.spacingS,
+            runSpacing: AppDimensions.spacingS,
             children: [
               FilledButton.icon(
                 onPressed: secure && host.isNotEmpty && !state.loading
@@ -93,24 +97,37 @@ class _OrchestratorCertificateTrustCardState
               ),
             ],
           ),
-          const Divider(height: 24),
-          TextField(
-            controller: _fingerprint,
-            decoration: const InputDecoration(
-              labelText: 'Developer fallback fingerprint',
-              hintText: 'AA:BB:CC...',
-            ),
+          const SizedBox(height: AppDimensions.spacingL),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Advanced manual fingerprint fallback'),
+            children: [
+              TextField(
+                controller: _fingerprint,
+                decoration: const InputDecoration(
+                  labelText: 'Developer fallback fingerprint',
+                  hintText: 'AA:BB:CC...',
+                ),
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: host.isEmpty ? null : _saveManual,
+                  icon: const Icon(Icons.build),
+                  label: const Text('Save Manual Fingerprint'),
+                ),
+              ),
+              if (_manualMessage != null) ...[
+                const SizedBox(height: AppDimensions.spacingS),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(_manualMessage!),
+                ),
+              ],
+              const SizedBox(height: AppDimensions.spacingS),
+            ],
           ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: host.isEmpty ? null : _saveManual,
-            icon: const Icon(Icons.build),
-            label: const Text('Save Manual Fingerprint'),
-          ),
-          if (_manualMessage != null) ...[
-            const SizedBox(height: 8),
-            Text(_manualMessage!),
-          ],
         ],
       ),
     );

@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/layout/app_page_scaffold.dart';
+import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
 import 'package:dashboard/src/core/layout/app_section.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
 import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
 import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/widgets/orchestrator_certificate_trust_card.dart';
@@ -22,8 +22,19 @@ class OrchestratorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final connection = ref.watch(orchestratorConnectionControllerProvider);
     final runtime = ref.watch(orchestratorRuntimeControllerProvider);
+    final devices = ref.watch(deviceListControllerProvider).devices;
     final connected = connection.status == WebSocketConnectionStatus.connected;
     final snapshotReceived = runtime.snapshot != null;
+    final snapshot = runtime.snapshot;
+    final trusted = connection.trustedFingerprint != null;
+    final wifiAvailable =
+        snapshot?.wifi.apRunning == true || snapshot?.wifi.staConnected == true;
+    final threadReady =
+        snapshot?.thread.enabled == true &&
+        snapshot?.thread.datasetPresent == true &&
+        snapshot?.thread.attached == true;
+    final matterReady = snapshot?.matter.controllerInitialized == true;
+    final devicesAvailable = devices.isNotEmpty;
 
     return AppPageScaffold(
       title: 'System Connection & Trust',
@@ -38,35 +49,29 @@ class OrchestratorScreen extends ConsumerWidget {
               ? 'Live chamber controls can use the active Orchestrator connection.'
               : 'Connect and trust the Orchestrator before using live controls.',
           tone: connected ? AppPanelTone.success : AppPanelTone.neutral,
-          child: Wrap(
-            spacing: AppDimensions.gridGap,
-            runSpacing: AppDimensions.gridGap,
+          child: AppResponsiveGrid(
             children: [
-              SizedBox(
-                width: 240,
-                child: AppMetricTile(
-                  label: 'Connection',
-                  value: connection.status.name,
-                  tone: connected ? AppMetricTone.good : AppMetricTone.neutral,
-                ),
+              AppMetricTile(
+                label: 'Connection',
+                value: connection.status.name,
+                tone: connected ? AppMetricTone.good : AppMetricTone.neutral,
               ),
-              SizedBox(
-                width: 320,
-                child: AppMetricTile(
-                  label: 'Connection URL',
-                  value: connection.url,
-                  tone: AppMetricTone.info,
-                ),
+              AppMetricTile(
+                label: 'Certificate trust',
+                value: trusted ? 'Trusted' : 'Not trusted',
+                tone: trusted ? AppMetricTone.good : AppMetricTone.warning,
               ),
-              SizedBox(
-                width: 240,
-                child: AppMetricTile(
-                  label: 'Runtime state',
-                  value: snapshotReceived ? 'Snapshot received' : 'Waiting',
-                  tone: snapshotReceived
-                      ? AppMetricTone.good
-                      : AppMetricTone.pending,
-                ),
+              AppMetricTile(
+                label: 'Runtime state',
+                value: snapshotReceived ? 'Snapshot received' : 'Waiting',
+                tone: snapshotReceived
+                    ? AppMetricTone.good
+                    : AppMetricTone.pending,
+              ),
+              AppMetricTile(
+                label: 'Connection URL',
+                value: connection.url,
+                tone: AppMetricTone.info,
               ),
             ],
           ),
@@ -76,8 +81,11 @@ class OrchestratorScreen extends ConsumerWidget {
           description:
               'Use this to understand what is required before normal chamber operation.',
           children: [
-            AppCard(
+            AppPanel(
               title: 'Operator readiness',
+              tone: connected && trusted && snapshotReceived
+                  ? AppPanelTone.success
+                  : AppPanelTone.warning,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -87,16 +95,31 @@ class OrchestratorScreen extends ConsumerWidget {
                   ),
                   _ChecklistRow(
                     label: 'Trust Orchestrator certificate',
-                    complete: connection.trustedFingerprint != null,
+                    complete: trusted,
                   ),
                   _ChecklistRow(
                     label: 'Receive runtime snapshot',
                     complete: snapshotReceived,
                   ),
-                  const _ChecklistRow(
-                    label: 'Confirm Wi-Fi, Thread, Matter, and device registry',
-                    complete: false,
-                    neutral: true,
+                  _ChecklistRow(
+                    label: 'Confirm Wi-Fi access path',
+                    complete: wifiAvailable,
+                    unavailable: !snapshotReceived,
+                  ),
+                  _ChecklistRow(
+                    label: 'Confirm Thread mesh readiness',
+                    complete: threadReady,
+                    unavailable: !snapshotReceived,
+                  ),
+                  _ChecklistRow(
+                    label: 'Confirm Matter controller readiness',
+                    complete: matterReady,
+                    unavailable: !snapshotReceived,
+                  ),
+                  _ChecklistRow(
+                    label: 'Load device registry',
+                    complete: devicesAvailable,
+                    unavailable: !snapshotReceived,
                   ),
                 ],
               ),
@@ -104,7 +127,7 @@ class OrchestratorScreen extends ConsumerWidget {
           ],
         ),
         const OrchestratorCertificateTrustCard(),
-        AppCard(
+        AppPanel(
           title: 'Connection settings',
           child: ExpansionTile(
             tilePadding: EdgeInsets.zero,
@@ -118,9 +141,23 @@ class OrchestratorScreen extends ConsumerWidget {
             ],
           ),
         ),
-        const OrchestratorRuntimeSnapshotCard(),
-        const OrchestratorPendingCommandsCard(),
-        const OrchestratorRecentEventsCard(),
+        const AppPanel(
+          title: 'Advanced diagnostics',
+          subtitle:
+              'Raw runtime state, pending command IDs, and event payloads for troubleshooting.',
+          tone: AppPanelTone.neutral,
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: Text('Show Orchestrator diagnostics'),
+            children: [
+              OrchestratorPendingCommandsCard(),
+              SizedBox(height: AppDimensions.spacingL),
+              OrchestratorRecentEventsCard(),
+              SizedBox(height: AppDimensions.spacingL),
+              OrchestratorRuntimeSnapshotCard(),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -129,19 +166,19 @@ class OrchestratorScreen extends ConsumerWidget {
 class _ChecklistRow extends StatelessWidget {
   final String label;
   final bool complete;
-  final bool neutral;
+  final bool unavailable;
 
   const _ChecklistRow({
     required this.label,
     required this.complete,
-    this.neutral = false,
+    this.unavailable = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final icon = complete
         ? Icons.check_circle
-        : neutral
+        : unavailable
         ? Icons.radio_button_unchecked
         : Icons.pending;
     final color = complete

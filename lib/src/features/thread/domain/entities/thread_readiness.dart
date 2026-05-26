@@ -95,7 +95,7 @@ final class ThreadReadiness {
     ThreadReadinessState.unavailable =>
       'Cannot confirm whether chamber Thread devices can communicate.',
     ThreadReadinessState.stopped =>
-      'Thread sensors and relays cannot communicate through the Orchestrator.',
+      'Thread sensors and actuators cannot communicate through the Orchestrator.',
     ThreadReadinessState.missingDataset => 'New Thread devices cannot join.',
     ThreadReadinessState.detached => 'Devices may be unreachable.',
     ThreadReadinessState.attached =>

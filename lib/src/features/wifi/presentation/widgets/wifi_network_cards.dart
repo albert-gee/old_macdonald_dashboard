@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
-import 'package:dashboard/src/core/widgets/app_status_card.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_snapshot.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/controllers/orchestrator_runtime_state.dart';
 import 'package:dashboard/src/features/wifi/domain/entities/wifi_network_readiness.dart';
@@ -16,8 +17,13 @@ class WifiReadinessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppCard(
+    return AppPanel(
       title: 'Wi-Fi Network readiness',
+      tone:
+          readiness.state == WifiReadinessState.uplinkConnected ||
+              readiness.state == WifiReadinessState.localOnly
+          ? AppPanelTone.success
+          : AppPanelTone.warning,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,34 +61,34 @@ class WifiLocalAccessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apRunning = wifi?.apRunning ?? false;
-    return AppCard(
+    return AppPanel(
       title: 'Local Dashboard access',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: AppDimensions.spacingM,
-            runSpacing: AppDimensions.spacingM,
+          AppResponsiveGrid(
             children: [
-              AppStatusCard(
-                title: 'Access point',
+              AppMetricTile(
+                label: 'Access point',
                 value: apRunning ? 'Running' : 'Stopped',
-                active: apRunning,
+                tone: apRunning ? AppMetricTone.good : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'Local control path',
+              AppMetricTile(
+                label: 'Local control path',
                 value: apRunning ? 'Available' : 'Not available',
-                active: apRunning,
+                tone: apRunning ? AppMetricTone.good : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'Default local address',
+              AppMetricTile(
+                label: 'Default local address',
                 value: apRunning ? '192.168.4.1' : 'Unavailable',
-                active: apRunning,
+                tone: apRunning ? AppMetricTone.info : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'WebSocket clients',
+              AppMetricTile(
+                label: 'WebSocket clients',
                 value: '$websocketClients',
-                active: websocketClients > 0,
+                tone: websocketClients > 0
+                    ? AppMetricTone.good
+                    : AppMetricTone.neutral,
               ),
             ],
           ),
@@ -116,43 +122,51 @@ class WifiUplinkCard extends StatelessWidget {
     final connected = wifi?.staConnected ?? false;
     final ipAddress = wifi?.staIp;
     final rssi = wifi?.rssi;
-    return AppCard(
+    return AppPanel(
       title: 'Uplink Wi-Fi',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: AppDimensions.spacingM,
-            runSpacing: AppDimensions.spacingM,
+          AppResponsiveGrid(
             children: [
-              AppStatusCard(
-                title: 'Configured',
+              AppMetricTile(
+                label: 'Configured',
                 value: configured ? 'Yes' : 'No',
-                active: configured,
+                tone: configured ? AppMetricTone.info : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'Connected',
+              AppMetricTile(
+                label: 'Connected',
                 value: connected ? 'Yes' : 'No',
-                active: connected,
+                tone: connected ? AppMetricTone.good : AppMetricTone.warning,
               ),
-              AppStatusCard(
-                title: 'IP address',
+              AppMetricTile(
+                label: 'IP address',
                 value: ipAddress?.isNotEmpty == true
                     ? ipAddress!
                     : 'Not assigned',
-                active: ipAddress?.isNotEmpty == true,
+                tone: ipAddress?.isNotEmpty == true
+                    ? AppMetricTone.info
+                    : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'RSSI',
+              AppMetricTile(
+                label: 'RSSI',
                 value: rssi == null ? 'Unknown' : '$rssi dBm',
-                active: rssi != null && rssi >= -75,
+                tone: rssi == null
+                    ? AppMetricTone.neutral
+                    : rssi >= -75
+                    ? AppMetricTone.good
+                    : AppMetricTone.warning,
               ),
-              AppStatusCard(
-                title: 'Signal quality',
+              AppMetricTile(
+                label: 'Signal quality',
                 value: signalQuality.label,
-                active:
+                tone:
                     signalQuality == WifiSignalQuality.excellent ||
-                    signalQuality == WifiSignalQuality.good,
+                        signalQuality == WifiSignalQuality.good
+                    ? AppMetricTone.good
+                    : signalQuality == WifiSignalQuality.unknown
+                    ? AppMetricTone.neutral
+                    : AppMetricTone.warning,
               ),
             ],
           ),
@@ -187,7 +201,7 @@ class WifiConnectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppCard(
+    return const AppPanel(
       title: 'Connect Orchestrator to Wi-Fi',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +229,7 @@ class WifiRecentActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wifiEvents = events.where(_isWifiEvent).take(8).toList();
-    return AppCard(
+    return AppPanel(
       title: 'Recent Wi-Fi activity',
       child: wifiEvents.isEmpty
           ? const Text('No Wi-Fi activity received yet.')
@@ -276,8 +290,9 @@ class WifiAdvancedDiagnosticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Advanced diagnostics',
+      tone: AppPanelTone.neutral,
       child: ExpansionTile(
         title: const Text('For network troubleshooting and development.'),
         children: [

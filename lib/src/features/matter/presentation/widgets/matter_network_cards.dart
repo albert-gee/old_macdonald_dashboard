@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
-import 'package:dashboard/src/core/widgets/app_status_card.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_readiness.dart';
 import 'package:dashboard/src/features/matter/presentation/controllers/matter_event_state.dart';
@@ -24,8 +25,9 @@ class MatterReadinessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppCard(
+    return AppPanel(
       title: 'Matter Device Network readiness',
+      tone: readiness.canPair ? AppPanelTone.success : AppPanelTone.warning,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,19 +35,21 @@ class MatterReadinessCard extends StatelessWidget {
             'Matter is used to commission and manage chamber sensors and actuators.',
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          Wrap(
-            spacing: AppDimensions.spacingM,
-            runSpacing: AppDimensions.spacingM,
+          AppResponsiveGrid(
             children: [
-              AppStatusCard(
-                title: 'Matter controller',
+              AppMetricTile(
+                label: 'Matter controller',
                 value: controllerInitialized ? 'Ready' : 'Not initialized',
-                active: controllerInitialized,
+                tone: controllerInitialized
+                    ? AppMetricTone.good
+                    : AppMetricTone.warning,
               ),
-              AppStatusCard(
-                title: 'Pairing',
+              AppMetricTile(
+                label: 'Pairing',
                 value: readiness.canPair ? 'Available' : 'Not ready',
-                active: readiness.canPair,
+                tone: readiness.canPair
+                    ? AppMetricTone.good
+                    : AppMetricTone.warning,
               ),
             ],
           ),
@@ -80,7 +84,7 @@ class MatterPairChamberDeviceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Pair chamber device',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,15 +133,17 @@ class MatterControllerSetupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Matter controller setup',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppStatusCard(
-            title: 'Matter controller',
+          AppMetricTile(
+            label: 'Matter controller',
             value: controllerInitialized ? 'Ready' : 'Not initialized',
-            active: controllerInitialized,
+            tone: controllerInitialized
+                ? AppMetricTone.good
+                : AppMetricTone.warning,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           const Text(
@@ -166,7 +172,7 @@ class MatterCommissionedDevicesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Commissioned devices',
       child: nodes.isEmpty
           ? const Text('No commissioned Matter devices reported yet.')
@@ -248,39 +254,47 @@ class MatterRegistryMappingCard extends StatelessWidget {
         .length;
     final devicesWithoutCapabilities =
         registryDevices.length - devicesWithCapabilities;
-    return AppCard(
+    return AppPanel(
       title: 'Registry mapping status',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: AppDimensions.spacingM,
-            runSpacing: AppDimensions.spacingM,
+          AppResponsiveGrid(
             children: [
-              AppStatusCard(
-                title: 'Commissioned nodes',
+              AppMetricTile(
+                label: 'Commissioned nodes',
                 value: '${nodes.length}',
-                active: nodes.isNotEmpty,
+                tone: nodes.isNotEmpty
+                    ? AppMetricTone.good
+                    : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'Registry devices',
+              AppMetricTile(
+                label: 'Registry devices',
                 value: '${registryDevices.length}',
-                active: registryDevices.isNotEmpty,
+                tone: registryDevices.isNotEmpty
+                    ? AppMetricTone.good
+                    : AppMetricTone.neutral,
               ),
-              AppStatusCard(
-                title: 'Unmapped nodes',
+              AppMetricTile(
+                label: 'Unmapped nodes',
                 value: '$unmappedCount',
-                active: unmappedCount == 0 && nodes.isNotEmpty,
+                tone: unmappedCount == 0 && nodes.isNotEmpty
+                    ? AppMetricTone.good
+                    : AppMetricTone.warning,
               ),
-              AppStatusCard(
-                title: 'With capabilities',
+              AppMetricTile(
+                label: 'With capabilities',
                 value: '$devicesWithCapabilities',
-                active: devicesWithCapabilities > 0,
+                tone: devicesWithCapabilities > 0
+                    ? AppMetricTone.good
+                    : AppMetricTone.warning,
               ),
-              AppStatusCard(
-                title: 'Without capabilities',
+              AppMetricTile(
+                label: 'Without capabilities',
                 value: '$devicesWithoutCapabilities',
-                active: devicesWithoutCapabilities == 0,
+                tone: devicesWithoutCapabilities == 0
+                    ? AppMetricTone.neutral
+                    : AppMetricTone.warning,
               ),
             ],
           ),
@@ -332,7 +346,7 @@ class MatterRecentActivityCard extends StatelessWidget {
       ...runtimeMatterEvents,
       ...events.map(_eventLabel),
     ].take(8).toList();
-    return AppCard(
+    return AppPanel(
       title: 'Recent Matter activity',
       child: labels.isEmpty
           ? const Text('No Matter activity received yet.')
@@ -361,8 +375,9 @@ class MatterAdvancedDiagnosticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppCard(
+    return const AppPanel(
       title: 'Advanced diagnostics',
+      tone: AppPanelTone.neutral,
       child: ExpansionTile(
         title: Text('For low-level Matter setup and troubleshooting.'),
         children: [

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
-import 'package:dashboard/src/core/widgets/app_status_card.dart';
+import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_status.dart';
 
 class ThreadStatusCard extends StatelessWidget {
@@ -14,36 +14,40 @@ class ThreadStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final roleActive =
         status.role.isNotEmpty && status.role.toLowerCase() != 'unknown';
-    return AppCard(
-      title: 'Thread Status',
-      child: Wrap(
-        spacing: AppDimensions.spacingM,
-        runSpacing: AppDimensions.spacingM,
+    return AppPanel(
+      title: 'Thread status diagnostics',
+      child: AppResponsiveGrid(
         children: [
-          AppStatusCard(
-            title: 'Stack',
+          AppMetricTile(
+            label: 'Stack',
             value: status.stackRunning ? 'Running' : 'Stopped',
-            active: status.stackRunning,
+            tone: status.stackRunning
+                ? AppMetricTone.good
+                : AppMetricTone.neutral,
           ),
-          AppStatusCard(
-            title: 'Interface',
+          AppMetricTile(
+            label: 'Interface',
             value: status.interfaceUp ? 'Up' : 'Down',
-            active: status.interfaceUp,
+            tone: status.interfaceUp
+                ? AppMetricTone.good
+                : AppMetricTone.neutral,
           ),
-          AppStatusCard(
-            title: 'Attachment',
+          AppMetricTile(
+            label: 'Attachment',
             value: status.attached ? 'Attached' : 'Detached',
-            active: status.attached,
+            tone: status.attached ? AppMetricTone.good : AppMetricTone.warning,
           ),
-          AppStatusCard(
-            title: 'Role',
+          AppMetricTile(
+            label: 'Role',
             value: roleActive ? status.role : 'Unknown',
-            active: roleActive,
+            tone: roleActive ? AppMetricTone.info : AppMetricTone.neutral,
           ),
-          AppStatusCard(
-            title: 'MeshCoP service',
+          AppMetricTile(
+            label: 'Dataset service',
             value: status.meshcopPublished ? 'Published' : 'Not published',
-            active: status.meshcopPublished,
+            tone: status.meshcopPublished
+                ? AppMetricTone.good
+                : AppMetricTone.warning,
           ),
         ],
       ),

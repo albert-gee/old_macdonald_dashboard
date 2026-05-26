@@ -17,13 +17,18 @@ class AppResponsiveGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final columns = width >= 1000
+        final preferredColumns = width >= 1000
             ? 4
             : width >= 720
             ? 3
             : width >= 460
             ? 2
             : 1;
+        final maxColumnsForTileWidth = (width / minTileWidth).floor().clamp(
+          1,
+          4,
+        );
+        final columns = preferredColumns.clamp(1, maxColumnsForTileWidth);
         final tileWidth =
             (width - (AppDimensions.gridGap * (columns - 1))) / columns;
         return Wrap(

@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/dashboard_destination.dart';
 import 'package:dashboard/src/app/providers.dart';
+import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
-import 'package:dashboard/src/core/widgets/app_status_card.dart';
+import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/controllers/orchestrator_runtime_state.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_active_dataset.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_address_state.dart';
@@ -23,13 +24,14 @@ class ThreadReadinessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppCard(
+    return AppPanel(
       title: 'Thread Mesh Network readiness',
+      tone: readiness.isReady ? AppPanelTone.success : AppPanelTone.warning,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Thread is the local mesh network used by chamber sensors and relays.',
+            'Thread is the local mesh network used by chamber sensors and actuators.',
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(readiness.title, style: theme.textTheme.headlineSmall),
@@ -60,7 +62,7 @@ class ThreadReadinessCard extends StatelessWidget {
           Text(
             readiness.isReady
                 ? 'Thread is ready for Matter-over-Thread devices. Continue to Matter pairing.'
-                : 'Complete Thread setup before pairing relay or sensor devices.',
+                : 'Complete Thread setup before pairing sensor or actuator devices.',
           ),
         ],
       ),
@@ -75,7 +77,7 @@ class ThreadDeviceImpactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Chamber device connectivity',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +89,7 @@ class ThreadDeviceImpactCard extends StatelessWidget {
           Text(
             readiness.isReady
                 ? 'Thread is ready for Matter-over-Thread chamber devices.'
-                : 'Complete Thread setup before pairing or troubleshooting Thread sensors and relays.',
+                : 'Complete Thread setup before pairing or troubleshooting Thread sensors and actuators.',
           ),
         ],
       ),
@@ -108,36 +110,42 @@ class ThreadNetworkStateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final role = _roleLabel(status.role, status.stackRunning, status.attached);
-    return AppCard(
+    return AppPanel(
       title: 'Network state',
-      child: Wrap(
-        spacing: AppDimensions.spacingM,
-        runSpacing: AppDimensions.spacingM,
+      child: AppResponsiveGrid(
         children: [
-          AppStatusCard(
-            title: 'Thread stack',
+          AppMetricTile(
+            label: 'Thread stack',
             value: status.stackRunning ? 'Running' : 'Stopped',
-            active: status.stackRunning,
+            tone: status.stackRunning
+                ? AppMetricTone.good
+                : AppMetricTone.neutral,
           ),
-          AppStatusCard(
-            title: 'Network configuration',
+          AppMetricTile(
+            label: 'Network configuration',
             value: status.meshcopPublished ? 'Dataset present' : 'Missing',
-            active: status.meshcopPublished,
+            tone: status.meshcopPublished
+                ? AppMetricTone.good
+                : AppMetricTone.warning,
           ),
-          AppStatusCard(
-            title: 'Mesh attachment',
+          AppMetricTile(
+            label: 'Mesh attachment',
             value: status.attached ? 'Attached' : 'Detached',
-            active: status.attached,
+            tone: status.attached ? AppMetricTone.good : AppMetricTone.warning,
           ),
-          AppStatusCard(
-            title: 'Device role',
+          AppMetricTile(
+            label: 'Device role',
             value: role,
-            active: role != 'Unknown' && role != 'Disabled',
+            tone: role != 'Unknown' && role != 'Disabled'
+                ? AppMetricTone.info
+                : AppMetricTone.neutral,
           ),
-          AppStatusCard(
-            title: 'Pairing readiness',
+          AppMetricTile(
+            label: 'Pairing readiness',
             value: readiness.isReady ? 'Inferred ready' : 'Not ready',
-            active: readiness.isReady,
+            tone: readiness.isReady
+                ? AppMetricTone.good
+                : AppMetricTone.warning,
           ),
         ],
       ),
@@ -171,7 +179,7 @@ class ThreadDatasetSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Dataset / network configuration summary',
       child: !datasetPresent
           ? const Text('No Thread network is configured.')
@@ -227,7 +235,7 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
     final state = ref.watch(threadCommandControllerProvider);
     final controller = ref.read(threadCommandControllerProvider.notifier);
     final submitting = state.submitting;
-    return AppCard(
+    return AppPanel(
       title: 'Recommended action',
       child: Wrap(
         spacing: AppDimensions.spacingM,
@@ -299,7 +307,7 @@ class ThreadRecentEventsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final threadEvents = events.where(_isThreadEvent).take(8).toList();
-    return AppCard(
+    return AppPanel(
       title: 'Recent Thread activity',
       child: threadEvents.isEmpty
           ? const Text('No Thread activity received yet.')
@@ -366,8 +374,9 @@ class ThreadAdvancedDiagnosticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Advanced diagnostics',
+      tone: AppPanelTone.neutral,
       child: ExpansionTile(
         key: ValueKey('advanced-$expanded'),
         initiallyExpanded: expanded,
