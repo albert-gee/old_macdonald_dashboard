@@ -224,11 +224,15 @@ class MatterCommissionedDevicesCard extends StatelessWidget {
 class MatterRegistryMappingCard extends StatelessWidget {
   final List<CommissionedMatterNodeSnapshot> nodes;
   final List<DeviceRecord> registryDevices;
+  final bool registryLoading;
+  final String? registryMessage;
 
   const MatterRegistryMappingCard({
     super.key,
     required this.nodes,
     required this.registryDevices,
+    this.registryLoading = false,
+    this.registryMessage,
   });
 
   @override
@@ -280,6 +284,24 @@ class MatterRegistryMappingCard extends StatelessWidget {
               ),
             ],
           ),
+          if (registryLoading) ...[
+            const SizedBox(height: AppDimensions.spacingL),
+            const Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: AppDimensions.spacingM),
+                Text('Refreshing device registry...'),
+              ],
+            ),
+          ],
+          if (registryMessage != null) ...[
+            const SizedBox(height: AppDimensions.spacingL),
+            Text(registryMessage!),
+          ],
           const SizedBox(height: AppDimensions.spacingL),
           const Text(
             'Pairing is not the final step. Add or verify device capabilities before using this device in Chamber controls.',

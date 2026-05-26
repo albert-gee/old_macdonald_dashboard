@@ -1,6 +1,7 @@
 import 'package:dashboard/src/core/errors/result.dart';
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
+import 'package:dashboard/src/features/devices/domain/repositories/device_repository.dart';
 import 'package:dashboard/src/features/matter/domain/entities/matter_readiness.dart';
 import 'package:dashboard/src/features/matter/data/datasources/matter_cluster_asset_data_source.dart';
 import 'package:dashboard/src/features/matter/data/repositories/matter_command_repository_impl.dart';
@@ -381,6 +382,41 @@ void main() {
     expect(find.text('Capabilities: 1'), findsOneWidget);
   });
 
+  testWidgets('MatterScreen refreshes registry and renders refreshed mapping', (
+    tester,
+  ) async {
+    final repository = _DeviceRepo([
+      const DeviceRecord(
+        deviceId: 'device-1',
+        nodeId: '123',
+        label: 'Device',
+        reachable: true,
+        capabilities: [
+          DeviceCapability(
+            capabilityId: 'cap-1',
+            semanticType: DeviceCapabilitySemanticType.relay,
+            label: 'Relay',
+          ),
+        ],
+      ),
+    ]);
+
+    await _pumpMatterScreen(
+      tester,
+      snapshot: _snapshot(
+        matter: const MatterRuntimeSnapshot(
+          controllerInitialized: true,
+          commissionedNodes: [CommissionedMatterNodeSnapshot(nodeId: '123')],
+        ),
+      ),
+      deviceRepository: repository,
+    );
+
+    expect(repository.listCalls, 1);
+    expect(find.text('Mapped to device registry.'), findsOneWidget);
+    expect(find.text('Capabilities: 1'), findsOneWidget);
+  });
+
   testWidgets('Recent Matter activity renders readable labels', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
@@ -491,7 +527,9 @@ ThreadReadiness _readyThread() {
 Future<void> _pumpMatterScreen(
   WidgetTester tester, {
   OrchestratorSnapshot? snapshot,
+  DeviceRepository? deviceRepository,
 }) async {
+  final repository = deviceRepository ?? _DeviceRepo();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -500,6 +538,7 @@ Future<void> _pumpMatterScreen(
             snapshot == null ? const [] : [StateSnapshotReceived(snapshot)],
           ),
         ),
+        deviceRepositoryProvider.overrideWithValue(repository),
       ],
       child: const MaterialApp(home: Scaffold(body: MatterScreen())),
     ),
@@ -513,6 +552,25 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.tap(finder);
 }
 
+OrchestratorSnapshot _snapshot({
+  ThreadRuntimeSnapshot thread = const ThreadRuntimeSnapshot(
+    enabled: true,
+    attached: true,
+    role: 'leader',
+    datasetPresent: true,
+  ),
+  MatterRuntimeSnapshot matter = const MatterRuntimeSnapshot(
+    controllerInitialized: true,
+  ),
+}) {
+  return OrchestratorSnapshot(
+    wifi: const WifiRuntimeSnapshot(),
+    thread: thread,
+    matter: matter,
+    websocket: const WebSocketRuntimeSnapshot(),
+  );
+}
+
 final class _MessageRepo implements OrchestratorMessageRepository {
   final List<OrchestratorMessage> messages;
 
@@ -520,4 +578,30 @@ final class _MessageRepo implements OrchestratorMessageRepository {
 
   @override
   Stream<OrchestratorMessage> watchMessages() => Stream.fromIterable(messages);
+}
+
+final class _DeviceRepo implements DeviceRepository {
+  final List<DeviceRecord> devices;
+  int listCalls = 0;
+
+  _DeviceRepo([this.devices = const []]);
+
+  @override
+  Future<Result<List<DeviceRecord>>> listDevices() async {
+    listCalls += 1;
+    return Success(devices);
+  }
+
+  @override
+  Future<Result<DeviceRecord>> getDevice(String deviceId) async {
+    return Success(devices.firstWhere((device) => device.deviceId == deviceId));
+  }
+
+  @override
+  Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void>> removeDevice(String deviceId) async =>
+      const Success(null);
 }

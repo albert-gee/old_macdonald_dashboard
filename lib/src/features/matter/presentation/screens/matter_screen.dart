@@ -8,11 +8,24 @@ import 'package:dashboard/src/features/matter/domain/entities/matter_readiness.d
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_network_cards.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_readiness.dart';
 
-class MatterScreen extends ConsumerWidget {
+class MatterScreen extends ConsumerStatefulWidget {
   const MatterScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MatterScreen> createState() => _MatterScreenState();
+}
+
+class _MatterScreenState extends ConsumerState<MatterScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(deviceListControllerProvider.notifier).refresh(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(matterCommandControllerProvider, (previous, next) {
       if (next.message != null && next.message != previous?.message) {
         ScaffoldMessenger.of(
@@ -42,7 +55,8 @@ class MatterScreen extends ConsumerWidget {
       controllerInitialized: matter?.controllerInitialized,
       commissionedNodeCount: matter?.commissionedNodes.length,
     );
-    final devices = ref.watch(deviceListControllerProvider).devices;
+    final deviceListState = ref.watch(deviceListControllerProvider);
+    final devices = deviceListState.devices;
     final matterEvents = ref.watch(matterEventControllerProvider).recentEvents;
 
     return SingleChildScrollView(
@@ -64,6 +78,8 @@ class MatterScreen extends ConsumerWidget {
           MatterRegistryMappingCard(
             nodes: matter?.commissionedNodes ?? const [],
             registryDevices: devices,
+            registryLoading: deviceListState.loading,
+            registryMessage: deviceListState.message,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           MatterRecentActivityCard(
