@@ -65,7 +65,7 @@ class _MatterAttributeSubscribeFormState
           _attributePicker(),
           _field(_minInterval, 'Min interval', matterIntValidator),
           _field(_maxInterval, 'Max interval', matterIntValidator),
-          ElevatedButton(
+          OutlinedButton(
             onPressed: submitting ? null : _submit,
             child: const Text('Subscribe Attribute'),
           ),

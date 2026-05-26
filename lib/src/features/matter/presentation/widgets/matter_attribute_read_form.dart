@@ -59,7 +59,7 @@ class _MatterAttributeReadFormState
             ),
           ),
           _attributePicker(),
-          ElevatedButton(
+          OutlinedButton(
             onPressed: submitting ? null : _submit,
             child: const Text('Read Attribute'),
           ),

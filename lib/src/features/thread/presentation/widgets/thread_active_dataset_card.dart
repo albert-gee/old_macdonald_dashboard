@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_active_dataset.dart';
 
 class ThreadActiveDatasetCard extends StatelessWidget {
@@ -11,8 +11,9 @@ class ThreadActiveDatasetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return AppPanel(
       title: 'Active Dataset',
+      tone: AppPanelTone.neutral,
       child: dataset.isEmpty
           ? const Text('No active dataset received yet.')
           : Column(

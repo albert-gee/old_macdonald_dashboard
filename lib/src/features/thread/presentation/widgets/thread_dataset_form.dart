@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
 import 'package:dashboard/src/core/widgets/app_labeled_text_field.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_dataset_init_request.dart';
 
 class ThreadDatasetForm extends ConsumerStatefulWidget {
@@ -54,8 +54,9 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
     });
     final state = ref.watch(threadDatasetInitControllerProvider);
 
-    return AppCard(
+    return AppPanel(
       title: widget.title,
+      tone: AppPanelTone.warning,
       child: Form(
         key: _formKey,
         child: Column(
@@ -107,7 +108,7 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            ElevatedButton.icon(
+            OutlinedButton.icon(
               onPressed: state.submitting ? null : _submit,
               icon: state.submitting
                   ? const SizedBox(

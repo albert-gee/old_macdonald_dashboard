@@ -70,7 +70,7 @@ class _MatterClusterCommandFormState
             validator: matterRequiredValidator('Command data'),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          ElevatedButton(
+          OutlinedButton(
             onPressed: submitting ? null : _submit,
             child: const Text('Invoke Cluster Command'),
           ),

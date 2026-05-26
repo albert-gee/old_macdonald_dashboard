@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dashboard/src/app/providers.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/matter/presentation/controllers/matter_event_state.dart';
 
 class MatterRecentEventsCard extends ConsumerWidget {
@@ -11,8 +11,9 @@ class MatterRecentEventsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final events = ref.watch(matterEventControllerProvider).recentEvents;
-    return AppCard(
+    return AppPanel(
       title: 'Recent Events',
+      tone: AppPanelTone.neutral,
       child: events.isEmpty
           ? const Text('No Matter events received yet.')
           : Column(

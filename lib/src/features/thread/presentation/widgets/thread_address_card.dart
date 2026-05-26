@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
-import 'package:dashboard/src/core/widgets/app_card.dart';
+import 'package:dashboard/src/core/widgets/app_panel.dart';
 import 'package:dashboard/src/features/thread/domain/entities/thread_address_state.dart';
 
 class ThreadAddressCard extends StatelessWidget {
@@ -14,8 +14,9 @@ class ThreadAddressCard extends StatelessWidget {
     final hasAddresses =
         addresses.unicastAddresses.isNotEmpty ||
         addresses.multicastAddresses.isNotEmpty;
-    return AppCard(
+    return AppPanel(
       title: 'IP Addresses',
+      tone: AppPanelTone.neutral,
       child: hasAddresses
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
