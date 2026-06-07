@@ -18,9 +18,13 @@ void main() {
       );
     final result = await ChamberRepositoryImpl(
       client: client,
-    ).readTemperature('temp-1');
+    ).readTemperature('temp-1', 'temp-cap-1');
     expect((result as Success).value.value, 23.4);
     expect(client.commands.single.action, 'device.temperature.read');
+    expect(client.commands.single.payload, {
+      'device_id': 'temp-1',
+      'capability_id': 'temp-cap-1',
+    });
   });
 
   test('temperature command accepts async report delivery', () async {
@@ -39,7 +43,7 @@ void main() {
       );
     final result = await ChamberRepositoryImpl(
       client: client,
-    ).readTemperature('sensor-1');
+    ).readTemperature('sensor-1', 'sensor-temp');
     final read = (result as Success).value;
     expect(read.value, isNull);
     expect(read.waitingForReport, true);
@@ -57,7 +61,9 @@ void main() {
       );
     final repository = ChamberRepositoryImpl(client: client);
     expect(
-      (await repository.readPressure('pressure-1') as Success).value.value,
+      (await repository.readPressure('pressure-1', 'pressure-cap') as Success)
+          .value
+          .value,
       101.3,
     );
     client.nextResult = const Success(
@@ -73,5 +79,55 @@ void main() {
       'device.pressure.read',
       'device.relay.set',
     ]);
+    expect(client.commands.first.payload, {
+      'device_id': 'pressure-1',
+      'capability_id': 'pressure-cap',
+    });
+    expect(client.commands.last.payload, {
+      'device_id': 'actuator-1',
+      'capability_id': 'actuator-1-onoff',
+      'on': true,
+    });
+  });
+
+  test('temperature control rule upsert sends capability references', () async {
+    final client = RecordingCommandClient()
+      ..nextResult = const Success(
+        OrchestratorCommandResult(
+          requestId: 'req-1',
+          action: 'control.temperature.upsert',
+          ok: true,
+          payload: {
+            'configured': true,
+            'enabled': true,
+            'min_celsius': 21.5,
+            'max_celsius': 26.5,
+            'state': 'idle',
+          },
+        ),
+      );
+    final repository = ChamberRepositoryImpl(client: client);
+
+    await repository.saveTemperatureRule(
+      sensorDeviceId: 'sensor-1',
+      sensorCapabilityId: 'temperature-cap',
+      actuatorDeviceId: 'actuator-1',
+      actuatorCapabilityId: 'relay-cap',
+      minCelsius: 21.5,
+      maxCelsius: 26.5,
+      enabled: true,
+    );
+
+    expect(client.commands.single.action, 'control.temperature.upsert');
+    expect(client.commands.single.payload, {
+      'rule_id': 'main-air-temperature-fan',
+      'chamber_id': 'main',
+      'enabled': true,
+      'mode': 'cooling',
+      'sensor': {'device_id': 'sensor-1', 'capability_id': 'temperature-cap'},
+      'actuator': {'device_id': 'actuator-1', 'capability_id': 'relay-cap'},
+      'min_celsius': 21.5,
+      'max_celsius': 26.5,
+    });
   });
 }

@@ -9,6 +9,7 @@ import 'package:dashboard/src/core/layout/app_responsive_grid.dart';
 import 'package:dashboard/src/core/theme/app_dimensions.dart';
 import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
 import 'package:dashboard/src/core/widgets/app_panel.dart';
+import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_state.dart';
 import 'package:dashboard/src/features/chamber/presentation/widgets/chamber_relay_controls_card.dart';
 import 'package:dashboard/src/features/chamber/presentation/widgets/chamber_sensor_cards.dart';
 
@@ -73,9 +74,9 @@ class _ChamberScreenState extends ConsumerState<ChamberScreen> {
               ),
               AppMetricTile(
                 label: 'Automation state',
-                value: 'Unavailable',
-                detail: 'Not exposed by current firmware.',
-                tone: AppMetricTone.neutral,
+                value: _automationValue(state),
+                detail: _automationDetail(state),
+                tone: _automationTone(state),
               ),
             ],
           ),
@@ -128,5 +129,43 @@ class _ChamberScreenState extends ConsumerState<ChamberScreen> {
         const ChamberRelayControlsCard(),
       ],
     );
+  }
+
+  String _automationValue(ChamberState state) {
+    if (state.controlPending) return 'Saving';
+    if (state.controlError != null || state.controlState == 'error') {
+      return 'Error';
+    }
+    if (!state.controlEnabled) return 'Disabled';
+    return _titleCase(state.controlState);
+  }
+
+  String _automationDetail(ChamberState state) {
+    if (state.controlError != null) return state.controlError!;
+    if (state.controlPending) return 'Saving automation settings.';
+    if (!state.controlEnabled) return 'Temperature automation is disabled.';
+    return switch (state.controlState) {
+      'cooling' => 'Actuator is on for cooling.',
+      'idle' => 'Within configured range.',
+      'stale' => 'Waiting for fresh sensor data.',
+      'error' => 'Automation reported an error.',
+      _ => 'Temperature automation is enabled.',
+    };
+  }
+
+  AppMetricTone _automationTone(ChamberState state) {
+    if (state.controlPending) return AppMetricTone.pending;
+    if (state.controlError != null ||
+        state.controlState == 'error' ||
+        state.controlState == 'stale') {
+      return AppMetricTone.warning;
+    }
+    if (!state.controlEnabled) return AppMetricTone.neutral;
+    return AppMetricTone.good;
+  }
+
+  String _titleCase(String value) {
+    if (value.isEmpty) return 'Idle';
+    return '${value[0].toUpperCase()}${value.substring(1)}';
   }
 }

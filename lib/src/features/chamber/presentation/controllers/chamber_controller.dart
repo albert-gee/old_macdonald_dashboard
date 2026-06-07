@@ -113,7 +113,10 @@ final class ChamberController extends StateNotifier<ChamberState> {
       ),
       clearError: true,
     );
-    final result = await _repository.readTemperature(selection.deviceId);
+    final result = await _repository.readTemperature(
+      selection.deviceId,
+      selection.capability.capabilityId,
+    );
     state = switch (result) {
       Success(value: final value) => _stateWithTemperatureResult(value),
       FailureResult(failure: final failure) => state.copyWith(
@@ -142,7 +145,10 @@ final class ChamberController extends StateNotifier<ChamberState> {
       ),
       clearError: true,
     );
-    final result = await _repository.readPressure(selection.deviceId);
+    final result = await _repository.readPressure(
+      selection.deviceId,
+      selection.capability.capabilityId,
+    );
     state = switch (result) {
       Success(value: final value) => _stateWithPressureResult(value),
       FailureResult(failure: final failure) => state.copyWith(
@@ -390,12 +396,13 @@ final class ChamberController extends StateNotifier<ChamberState> {
     final devices = _devicesFromSnapshot(payload['devices']);
     var next = devices.isEmpty ? state : _stateWithDevices(devices);
     final chambers = payload['chambers'];
-    final chamber = chambers is List && chambers.isNotEmpty && chambers.first is Map
-        ? (chambers.first as Map).map((key, value) => MapEntry(key.toString(), value))
+    final chamber =
+        chambers is List && chambers.isNotEmpty && chambers.first is Map
+        ? (chambers.first as Map).map(
+            (key, value) => MapEntry(key.toString(), value),
+          )
         : const <String, Object?>{};
-    final control = chamber['control'] is Map
-        ? (chamber['control'] as Map).map((key, value) => MapEntry(key.toString(), value))
-        : const <String, Object?>{};
+    final control = _controlFromSnapshot(payload: payload, chamber: chamber);
     next = next.copyWith(
       temperature: _readingFromSnapshot(
         next.temperature,
@@ -418,7 +425,8 @@ final class ChamberController extends StateNotifier<ChamberState> {
     final actuator = _selectionForRef(next.relayOptions, control['actuator']);
     state = next.copyWith(
       selectedTemperature: sensor,
-      clearSelectedTemperature: sensor == null && next.selectedTemperature == null,
+      clearSelectedTemperature:
+          sensor == null && next.selectedTemperature == null,
       selectedRelay: actuator,
       clearSelectedRelay: actuator == null && next.selectedRelay == null,
     );
@@ -486,14 +494,12 @@ final class ChamberController extends StateNotifier<ChamberState> {
   }
 
   void _onAttributeReport(Map<String, Object?> payload) {
-    final deviceId = payload['device_id']?.toString();
     final semanticType = DeviceCapabilitySemanticType.fromWireValue(
       payload['semantic_type']?.toString(),
     );
     switch (semanticType) {
       case DeviceCapabilitySemanticType.temperature:
-        if (deviceId == null ||
-            deviceId != state.selectedTemperature?.deviceId) {
+        if (!_matchesSelection(payload, state.selectedTemperature)) {
           return;
         }
         final value = _double(payload['temperature_celsius']);
@@ -512,7 +518,7 @@ final class ChamberController extends StateNotifier<ChamberState> {
           clearError: true,
         );
       case DeviceCapabilitySemanticType.pressure:
-        if (deviceId == null || deviceId != state.selectedPressure?.deviceId) {
+        if (!_matchesSelection(payload, state.selectedPressure)) {
           return;
         }
         final value = _double(payload['pressure_kpa']);
@@ -533,6 +539,58 @@ final class ChamberController extends StateNotifier<ChamberState> {
       default:
         break;
     }
+  }
+
+  Map<String, Object?> _controlFromSnapshot({
+    required Map<String, Object?> payload,
+    required Map<String, Object?> chamber,
+  }) {
+    return {
+      ..._controlRuleFromSnapshot(
+        payload['control_rules'],
+        chamber['chamber_id']?.toString(),
+      ),
+      ..._map(chamber['control']),
+    };
+  }
+
+  Map<String, Object?> _controlRuleFromSnapshot(
+    Object? value,
+    String? chamberId,
+  ) {
+    final rules = switch (value) {
+      List() => [
+        for (final item in value)
+          if (item is Map) _map(item),
+      ],
+      Map() => [_map(value)],
+      _ => const <Map<String, Object?>>[],
+    };
+    if (rules.isEmpty) return const {};
+    for (final rule in rules) {
+      final ruleChamberId = rule['chamber_id']?.toString();
+      final ruleId = rule['rule_id']?.toString();
+      if ((chamberId != null && ruleChamberId == chamberId) ||
+          ruleId == 'main-air-temperature-fan') {
+        return rule;
+      }
+    }
+    return rules.first;
+  }
+
+  Map<String, Object?> _map(Object? value) {
+    if (value is! Map) return const {};
+    return value.map((key, value) => MapEntry(key.toString(), value));
+  }
+
+  bool _matchesSelection(
+    Map<String, Object?> payload,
+    DeviceSelection? selection,
+  ) {
+    return selection != null &&
+        payload['device_id']?.toString() == selection.deviceId &&
+        payload['capability_id']?.toString() ==
+            selection.capability.capabilityId;
   }
 
   double? _double(Object? value) {

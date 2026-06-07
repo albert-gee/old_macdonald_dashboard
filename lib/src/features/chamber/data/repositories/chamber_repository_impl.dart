@@ -19,10 +19,13 @@ final class ChamberRepositoryImpl implements ChamberRepository {
   }
 
   @override
-  Future<Result<SensorReadResult>> readTemperature(String deviceId) async {
+  Future<Result<SensorReadResult>> readTemperature(
+    String deviceId,
+    String capabilityId,
+  ) async {
     final result = await _client.sendCommand(
       'device.temperature.read',
-      payload: {'device_id': deviceId},
+      payload: {'device_id': deviceId, 'capability_id': capabilityId},
     );
     return result.when(
       success: (value) =>
@@ -32,10 +35,13 @@ final class ChamberRepositoryImpl implements ChamberRepository {
   }
 
   @override
-  Future<Result<SensorReadResult>> readPressure(String deviceId) async {
+  Future<Result<SensorReadResult>> readPressure(
+    String deviceId,
+    String capabilityId,
+  ) async {
     final result = await _client.sendCommand(
       'device.pressure.read',
-      payload: {'device_id': deviceId},
+      payload: {'device_id': deviceId, 'capability_id': capabilityId},
     );
     return result.when(
       success: (value) =>

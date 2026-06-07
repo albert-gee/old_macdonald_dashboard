@@ -3,8 +3,14 @@ import 'package:dashboard/src/features/chamber/domain/entities/chamber_status.da
 
 abstract interface class ChamberRepository {
   Future<Result<ChamberStatus>> getStatus();
-  Future<Result<SensorReadResult>> readTemperature(String deviceId);
-  Future<Result<SensorReadResult>> readPressure(String deviceId);
+  Future<Result<SensorReadResult>> readTemperature(
+    String deviceId,
+    String capabilityId,
+  );
+  Future<Result<SensorReadResult>> readPressure(
+    String deviceId,
+    String capabilityId,
+  );
   Future<Result<void>> setRelay(String deviceId, String capabilityId, bool on);
   Future<Result<ChamberControlRule>> saveTemperatureRule({
     required String sensorDeviceId,

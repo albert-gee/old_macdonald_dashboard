@@ -7,6 +7,7 @@ import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'package:dashboard/src/features/devices/domain/repositories/device_repository.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_snapshot.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -51,6 +52,8 @@ void main() {
 
     expect(controller.state.temperature.value, 23.4);
     expect(controller.state.temperature.waitingForReport, false);
+    expect(repository.temperatureReads.single.deviceId, 'sensor-1');
+    expect(repository.temperatureReads.single.capabilityId, 'capability-1');
 
     controller.dispose();
     await messages.close();
@@ -94,6 +97,7 @@ void main() {
           event: 'matter.attribute_report',
           payload: {
             'device_id': 'sensor-1',
+            'capability_id': 'capability-1',
             'semantic_type': 'temperature',
             'temperature_celsius': 24.1,
             'raw_measured_value': 2410,
@@ -106,6 +110,7 @@ void main() {
           event: 'matter.attribute_report',
           payload: {
             'device_id': 'sensor-1',
+            'capability_id': 'capability-2',
             'semantic_type': 'pressure',
             'pressure_kpa': 101.3,
             'raw_measured_value': 1013,
@@ -139,6 +144,7 @@ void main() {
           event: 'matter.attribute_report',
           payload: {
             'device_id': 'other',
+            'capability_id': 'capability-1',
             'semantic_type': 'temperature',
             'temperature_celsius': 99.0,
           },
@@ -167,6 +173,259 @@ void main() {
     controller.dispose();
     await messages.close();
   });
+
+  test(
+    'readTemperature and readPressure include selected capability IDs',
+    () async {
+      final messages = StreamController<OrchestratorMessage>();
+      final repository = FakeChamberRepository(
+        temperatureResult: const SensorReadResult(value: 23.4),
+        pressureResult: const SensorReadResult(value: 101.3),
+      );
+      final controller = ChamberController(
+        repository: repository,
+        deviceRepository: FakeDeviceRepository(devices: _devices()),
+        messages: messages.stream,
+      );
+      await controller.loadDevices();
+
+      await controller.readTemperature();
+      await controller.readPressure();
+
+      expect(
+        repository.temperatureReads.single,
+        const SensorReadCall('sensor-1', 'capability-1'),
+      );
+      expect(
+        repository.pressureReads.single,
+        const SensorReadCall('sensor-1', 'capability-2'),
+      );
+
+      controller.dispose();
+      await messages.close();
+    },
+  );
+
+  test('setControlEnabled(true) saves and enables when disabled', () async {
+    final messages = StreamController<OrchestratorMessage>();
+    final repository = FakeChamberRepository();
+    final controller = ChamberController(
+      repository: repository,
+      deviceRepository: FakeDeviceRepository(devices: _devices()),
+      messages: messages.stream,
+    );
+    await controller.loadDevices();
+
+    await controller.setControlEnabled(true);
+
+    expect(controller.state.controlEnabled, isTrue);
+    expect(controller.state.controlState, 'idle');
+    final savedRule = repository.savedRules.single;
+    expect(savedRule.sensorDeviceId, 'sensor-1');
+    expect(savedRule.sensorCapabilityId, 'capability-1');
+    expect(savedRule.actuatorDeviceId, 'actuator-1');
+    expect(savedRule.actuatorCapabilityId, 'capability-3');
+    expect(savedRule.enabled, isTrue);
+    expect(repository.enabledRequests, isEmpty);
+
+    controller.dispose();
+    await messages.close();
+  });
+
+  test(
+    'state_snapshot restores devices, selected capabilities, and control state',
+    () async {
+      final messages = StreamController<OrchestratorMessage>();
+      final controller = ChamberController(
+        repository: FakeChamberRepository(),
+        deviceRepository: FakeDeviceRepository(devices: const []),
+        messages: messages.stream,
+      );
+
+      messages.add(
+        StateSnapshotReceived(
+          OrchestratorSnapshot.fromPayload({
+            'devices': [
+              {
+                'device_id': 'sensor-1',
+                'node_id': '123',
+                'label': 'Environmental sensor',
+                'reachable': true,
+                'capabilities': [
+                  {
+                    'capability_id': 'temperature-a',
+                    'semantic_type': 'temperature',
+                    'endpoint_id': 1,
+                    'cluster_id': 1026,
+                    'attribute_id': 0,
+                    'label': 'Temperature A',
+                  },
+                  {
+                    'capability_id': 'temperature-b',
+                    'semantic_type': 'temperature',
+                    'endpoint_id': 2,
+                    'cluster_id': 1026,
+                    'attribute_id': 0,
+                    'label': 'Temperature B',
+                  },
+                  {
+                    'capability_id': 'pressure-a',
+                    'semantic_type': 'pressure',
+                    'endpoint_id': 3,
+                    'cluster_id': 1027,
+                    'attribute_id': 0,
+                    'label': 'Pressure A',
+                  },
+                ],
+              },
+              {
+                'device_id': 'actuator-1',
+                'node_id': '987',
+                'label': 'Switchable actuator',
+                'reachable': true,
+                'capabilities': [
+                  {
+                    'capability_id': 'relay-a',
+                    'semantic_type': 'relay',
+                    'endpoint_id': 1,
+                    'cluster_id': 6,
+                    'command_id': 1,
+                    'label': 'Relay A',
+                  },
+                  {
+                    'capability_id': 'relay-b',
+                    'semantic_type': 'relay',
+                    'endpoint_id': 2,
+                    'cluster_id': 6,
+                    'command_id': 1,
+                    'label': 'Relay B',
+                  },
+                ],
+              },
+            ],
+            'chambers': [
+              {
+                'chamber_id': 'main',
+                'temperature_celsius': 25.2,
+                'pressure_kpa': 100.9,
+                'relay_on': true,
+              },
+            ],
+            'control_rules': [
+              {
+                'rule_id': 'main-air-temperature-fan',
+                'chamber_id': 'main',
+                'enabled': true,
+                'state': 'cooling',
+                'min_celsius': 22.5,
+                'max_celsius': 27.5,
+                'sensor': {
+                  'device_id': 'sensor-1',
+                  'capability_id': 'temperature-b',
+                },
+                'actuator': {
+                  'device_id': 'actuator-1',
+                  'capability_id': 'relay-b',
+                },
+              },
+            ],
+          }),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.state.devices, hasLength(2));
+      expect(
+        controller.state.selectedTemperature?.capability.capabilityId,
+        'temperature-b',
+      );
+      expect(
+        controller.state.selectedRelay?.capability.capabilityId,
+        'relay-b',
+      );
+      expect(controller.state.temperature.value, 25.2);
+      expect(controller.state.pressure.value, 100.9);
+      expect(controller.state.relay.lastCommandedOn, isTrue);
+      expect(controller.state.minCelsius, 22.5);
+      expect(controller.state.maxCelsius, 27.5);
+      expect(controller.state.controlEnabled, isTrue);
+      expect(controller.state.controlState, 'cooling');
+
+      controller.dispose();
+      await messages.close();
+    },
+  );
+
+  test('control.rule_action updates relay and control state', () async {
+    final messages = StreamController<OrchestratorMessage>();
+    final controller = ChamberController(
+      repository: FakeChamberRepository(),
+      deviceRepository: FakeDeviceRepository(devices: _devices()),
+      messages: messages.stream,
+    );
+    await controller.loadDevices();
+
+    messages.add(
+      OrchestratorEventReceived(
+        event: 'control.rule_action',
+        payload: const {'command': 'on'},
+        receivedAt: DateTime.now(),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.state.controlState, 'cooling');
+    expect(controller.state.relay.lastCommandedOn, isTrue);
+
+    controller.dispose();
+    await messages.close();
+  });
+
+  test(
+    'attribute_report ignores same-device wrong-capability reports',
+    () async {
+      final messages = StreamController<OrchestratorMessage>();
+      final controller = ChamberController(
+        repository: FakeChamberRepository(),
+        deviceRepository: FakeDeviceRepository(devices: _devices()),
+        messages: messages.stream,
+      );
+      await controller.loadDevices();
+
+      messages
+        ..add(
+          OrchestratorEventReceived(
+            event: 'matter.attribute_report',
+            payload: {
+              'device_id': 'sensor-1',
+              'capability_id': 'other-temperature',
+              'semantic_type': 'temperature',
+              'temperature_celsius': 99.0,
+            },
+            receivedAt: DateTime.now(),
+          ),
+        )
+        ..add(
+          OrchestratorEventReceived(
+            event: 'matter.attribute_report',
+            payload: {
+              'device_id': 'sensor-1',
+              'capability_id': 'other-pressure',
+              'semantic_type': 'pressure',
+              'pressure_kpa': 99.0,
+            },
+            receivedAt: DateTime.now(),
+          ),
+        );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.state.temperature.value, isNull);
+      expect(controller.state.pressure.value, isNull);
+
+      controller.dispose();
+      await messages.close();
+    },
+  );
 }
 
 List<DeviceRecord> _devices() {
@@ -238,6 +497,10 @@ final class FakeDeviceRepository implements DeviceRepository {
 final class FakeChamberRepository implements ChamberRepository {
   final SensorReadResult temperatureResult;
   final SensorReadResult pressureResult;
+  final List<SensorReadCall> temperatureReads = [];
+  final List<SensorReadCall> pressureReads = [];
+  final List<SavedTemperatureRuleCall> savedRules = [];
+  final List<bool> enabledRequests = [];
 
   FakeChamberRepository({
     this.temperatureResult = const SensorReadResult(),
@@ -249,20 +512,29 @@ final class FakeChamberRepository implements ChamberRepository {
       const Success(ChamberStatus());
 
   @override
-  Future<Result<SensorReadResult>> readTemperature(String deviceId) async =>
-      Success(temperatureResult);
+  Future<Result<SensorReadResult>> readTemperature(
+    String deviceId,
+    String capabilityId,
+  ) async {
+    temperatureReads.add(SensorReadCall(deviceId, capabilityId));
+    return Success(temperatureResult);
+  }
 
   @override
-  Future<Result<SensorReadResult>> readPressure(String deviceId) async =>
-      Success(pressureResult);
+  Future<Result<SensorReadResult>> readPressure(
+    String deviceId,
+    String capabilityId,
+  ) async {
+    pressureReads.add(SensorReadCall(deviceId, capabilityId));
+    return Success(pressureResult);
+  }
 
   @override
   Future<Result<void>> setRelay(
     String deviceId,
     String capabilityId,
     bool on,
-  ) async =>
-      const Success(null);
+  ) async => const Success(null);
 
   @override
   Future<Result<ChamberControlRule>> saveTemperatureRule({
@@ -273,17 +545,69 @@ final class FakeChamberRepository implements ChamberRepository {
     required double minCelsius,
     required double maxCelsius,
     required bool enabled,
-  }) async => Success(
-    ChamberControlRule(
-      configured: true,
-      enabled: enabled,
-      minCelsius: minCelsius,
-      maxCelsius: maxCelsius,
-      state: enabled ? 'idle' : 'disabled',
-    ),
-  );
+  }) async {
+    savedRules.add(
+      SavedTemperatureRuleCall(
+        sensorDeviceId: sensorDeviceId,
+        sensorCapabilityId: sensorCapabilityId,
+        actuatorDeviceId: actuatorDeviceId,
+        actuatorCapabilityId: actuatorCapabilityId,
+        minCelsius: minCelsius,
+        maxCelsius: maxCelsius,
+        enabled: enabled,
+      ),
+    );
+    return Success(
+      ChamberControlRule(
+        configured: true,
+        enabled: enabled,
+        minCelsius: minCelsius,
+        maxCelsius: maxCelsius,
+        state: enabled ? 'idle' : 'disabled',
+      ),
+    );
+  }
 
   @override
-  Future<Result<void>> setTemperatureControlEnabled(bool enabled) async =>
-      const Success(null);
+  Future<Result<void>> setTemperatureControlEnabled(bool enabled) async {
+    enabledRequests.add(enabled);
+    return const Success(null);
+  }
+}
+
+final class SensorReadCall {
+  final String deviceId;
+  final String capabilityId;
+
+  const SensorReadCall(this.deviceId, this.capabilityId);
+
+  @override
+  bool operator ==(Object other) {
+    return other is SensorReadCall &&
+        other.deviceId == deviceId &&
+        other.capabilityId == capabilityId;
+  }
+
+  @override
+  int get hashCode => Object.hash(deviceId, capabilityId);
+}
+
+final class SavedTemperatureRuleCall {
+  final String sensorDeviceId;
+  final String sensorCapabilityId;
+  final String actuatorDeviceId;
+  final String actuatorCapabilityId;
+  final double minCelsius;
+  final double maxCelsius;
+  final bool enabled;
+
+  const SavedTemperatureRuleCall({
+    required this.sensorDeviceId,
+    required this.sensorCapabilityId,
+    required this.actuatorDeviceId,
+    required this.actuatorCapabilityId,
+    required this.minCelsius,
+    required this.maxCelsius,
+    required this.enabled,
+  });
 }

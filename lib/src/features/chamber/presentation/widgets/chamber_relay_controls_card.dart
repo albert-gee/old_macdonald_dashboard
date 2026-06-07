@@ -114,6 +114,7 @@ class ChamberRelayControlsCard extends ConsumerWidget {
               SizedBox(
                 width: 180,
                 child: TextFormField(
+                  key: ValueKey('min-${state.minCelsius}'),
                   initialValue: state.minCelsius.toStringAsFixed(1),
                   keyboardType: const TextInputType.numberWithOptions(
                     signed: true,
@@ -132,6 +133,7 @@ class ChamberRelayControlsCard extends ConsumerWidget {
               SizedBox(
                 width: 180,
                 child: TextFormField(
+                  key: ValueKey('max-${state.maxCelsius}'),
                   initialValue: state.maxCelsius.toStringAsFixed(1),
                   keyboardType: const TextInputType.numberWithOptions(
                     signed: true,
@@ -148,7 +150,8 @@ class ChamberRelayControlsCard extends ConsumerWidget {
                 ),
               ),
               FilledButton.icon(
-                onPressed: selected == null ||
+                onPressed:
+                    selected == null ||
                         state.selectedTemperature == null ||
                         state.controlPending
                     ? null
@@ -158,7 +161,8 @@ class ChamberRelayControlsCard extends ConsumerWidget {
               ),
               Switch(
                 value: state.controlEnabled,
-                onChanged: selected == null ||
+                onChanged:
+                    selected == null ||
                         state.selectedTemperature == null ||
                         state.controlPending
                     ? null

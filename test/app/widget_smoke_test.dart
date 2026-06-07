@@ -550,20 +550,23 @@ final class _ChamberRepo implements ChamberRepository {
       const Success(ChamberStatus());
 
   @override
-  Future<Result<SensorReadResult>> readPressure(String deviceId) async =>
-      const Success(SensorReadResult(value: 101.3));
+  Future<Result<SensorReadResult>> readPressure(
+    String deviceId,
+    String capabilityId,
+  ) async => const Success(SensorReadResult(value: 101.3));
 
   @override
-  Future<Result<SensorReadResult>> readTemperature(String deviceId) async =>
-      const Success(SensorReadResult(value: 23.4));
+  Future<Result<SensorReadResult>> readTemperature(
+    String deviceId,
+    String capabilityId,
+  ) async => const Success(SensorReadResult(value: 23.4));
 
   @override
   Future<Result<void>> setRelay(
     String deviceId,
     String capabilityId,
     bool on,
-  ) async =>
-      const Success(null);
+  ) async => const Success(null);
 
   @override
   Future<Result<ChamberControlRule>> saveTemperatureRule({
