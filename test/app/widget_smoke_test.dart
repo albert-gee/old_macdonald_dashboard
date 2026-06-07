@@ -13,6 +13,7 @@ import 'package:dashboard/src/features/chamber/domain/repositories/chamber_repos
 import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_state.dart';
 import 'package:dashboard/src/features/chamber/presentation/screens/chamber_screen.dart';
 import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
+import 'package:dashboard/src/features/diagnostics/presentation/screens/diagnostics_screen.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
 import 'package:dashboard/src/features/devices/domain/repositories/device_repository.dart';
 import 'package:dashboard/src/features/devices/presentation/screens/devices_screen.dart';
@@ -35,6 +36,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../fakes.dart';
 
 void main() {
   const config = AppConfig(
@@ -236,6 +239,64 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Setup default dataset uses CIDR mesh-local prefix', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final commandClient = RecordingCommandClient();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+          orchestratorCommandClientProvider.overrideWithValue(commandClient),
+          selectedDashboardDestinationProvider.overrideWith((_) {
+            return DashboardDestinationKey.setup;
+          }),
+          operatorRuntimeProvider.overrideWithValue(
+            _operatorRuntime(snapshot: OrchestratorSnapshot.fromPayload({})),
+          ),
+        ],
+        child: const DashboardApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Development default uses fixed Thread credentials'),
+      findsOneWidget,
+    );
+    final createDefaultDataset = find.text(
+      'Create development default dataset',
+    );
+    await tester.ensureVisible(createDefaultDataset);
+    await tester.pumpAndSettle();
+    await tester.tap(createDefaultDataset);
+    await tester.pumpAndSettle();
+
+    final command = commandClient.commands.single;
+    expect(command.action, 'thread.dataset.init');
+    expect(command.payload['mesh_local_prefix'], 'fd11:22::/64');
+  });
+
+  testWidgets('Diagnostics shows hardware validation copy commands', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: DiagnosticsScreen())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hardware validation commands'), findsOneWidget);
+    expect(
+      find.byTooltip('Copy hardware validation command sequence'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('wscat --ca assets/rootCA.pem'), findsOneWidget);
   });
 
   testWidgets('orchestrator page shows setup checklist before URL editor', (

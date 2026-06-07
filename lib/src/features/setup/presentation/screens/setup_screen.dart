@@ -117,9 +117,14 @@ class SetupScreen extends ConsumerWidget {
                               )
                               .submit(_defaultDataset()),
                     icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Create default dataset'),
+                    label: const Text('Create development default dataset'),
                   ),
                 ],
+              ),
+              const SizedBox(height: AppDimensions.spacingS),
+              const Text(
+                'Development default uses fixed Thread credentials for local MVP bring-up. Replace with a unique dataset before production use.',
+                style: AppTextStyles.mutedBody,
               ),
               if (datasetCommand.message != null) ...[
                 const SizedBox(height: AppDimensions.spacingS),
@@ -291,7 +296,7 @@ class SetupScreen extends ConsumerWidget {
       panId: 4660,
       networkName: 'OldMacdonald',
       extendedPanId: '1122334455667788',
-      meshLocalPrefix: 'fd11:22::',
+      meshLocalPrefix: 'fd11:22::/64',
       networkKey: '00112233445566778899AABBCCDDEEFF',
       pskc: '00112233445566778899AABBCCDDEEFF',
     );

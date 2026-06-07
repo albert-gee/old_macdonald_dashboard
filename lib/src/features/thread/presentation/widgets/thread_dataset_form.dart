@@ -93,7 +93,8 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
                 _field(
                   controller: _meshLocalPrefixController,
                   label: 'Mesh-local prefix',
-                  validator: _requiredValidator('Mesh-local prefix'),
+                  hint: 'fd11:22::/64',
+                  validator: _meshLocalPrefixValidator,
                 ),
                 _field(
                   controller: _networkKeyController,
@@ -129,12 +130,14 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
     required TextEditingController controller,
     required String label,
     required String? Function(String?) validator,
+    String? hint,
   }) {
     return SizedBox(
       width: 260,
       child: AppLabeledTextField(
         controller: controller,
         label: label,
+        hint: hint,
         keyboardType: label == 'Channel' || label == 'PAN ID'
             ? TextInputType.number
             : null,
@@ -167,6 +170,18 @@ class _ThreadDatasetFormState extends ConsumerState<ThreadDatasetForm> {
       }
       return null;
     };
+  }
+
+  String? _meshLocalPrefixValidator(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return 'Mesh-local prefix is required.';
+    if (!trimmed.contains('/')) {
+      return 'Use CIDR format, for example fd11:22::/64.';
+    }
+    if (!trimmed.endsWith('/64')) {
+      return 'Thread mesh-local prefix must use /64.';
+    }
+    return null;
   }
 
   String? Function(String?) _requiredIntValidator(String label) {
