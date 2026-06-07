@@ -68,7 +68,7 @@ void main() {
         payload: {'on': true},
       ),
     );
-    await repository.setRelay('actuator-1', true);
+    await repository.setRelay('actuator-1', 'actuator-1-onoff', true);
     expect(client.commands.map((command) => command.action), [
       'device.pressure.read',
       'device.relay.set',

@@ -22,7 +22,7 @@ class ThreadCommandsCard extends ConsumerWidget {
     final disabled = state.submitting;
 
     return AppPanel(
-      title: 'Thread command diagnostics',
+      title: 'Thread Commands',
       subtitle:
           'Sends raw Thread commands directly to the Orchestrator for diagnostics.',
       tone: AppPanelTone.neutral,

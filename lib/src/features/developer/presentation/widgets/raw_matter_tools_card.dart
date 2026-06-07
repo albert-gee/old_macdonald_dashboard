@@ -27,7 +27,7 @@ class RawMatterToolsCard extends ConsumerWidget {
               children: [
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: const Text('Invoke cluster command'),
+                  title: const Text('Cluster Command'),
                   subtitle: const Text('Invoke a raw Matter cluster command.'),
                   children: [
                     MatterClusterCommandForm(clusters: clusters),
@@ -36,7 +36,7 @@ class RawMatterToolsCard extends ConsumerWidget {
                 ),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: const Text('Read attribute'),
+                  title: const Text('Read Attribute'),
                   subtitle: const Text('Read a raw Matter attribute.'),
                   children: [
                     MatterAttributeReadForm(clusters: clusters),
@@ -45,7 +45,7 @@ class RawMatterToolsCard extends ConsumerWidget {
                 ),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
-                  title: const Text('Subscribe attribute'),
+                  title: const Text('Subscribe Attribute'),
                   subtitle: const Text(
                     'Subscribe to raw Matter attribute reports.',
                   ),

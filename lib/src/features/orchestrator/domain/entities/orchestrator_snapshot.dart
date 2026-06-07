@@ -3,12 +3,14 @@ final class OrchestratorSnapshot {
   final ThreadRuntimeSnapshot thread;
   final MatterRuntimeSnapshot matter;
   final WebSocketRuntimeSnapshot websocket;
+  final Map<String, Object?> rawPayload;
 
   const OrchestratorSnapshot({
     required this.wifi,
     required this.thread,
     required this.matter,
     required this.websocket,
+    this.rawPayload = const {},
   });
 
   factory OrchestratorSnapshot.empty() {
@@ -17,6 +19,7 @@ final class OrchestratorSnapshot {
       thread: ThreadRuntimeSnapshot(),
       matter: MatterRuntimeSnapshot(),
       websocket: WebSocketRuntimeSnapshot(),
+      rawPayload: {},
     );
   }
 
@@ -26,6 +29,7 @@ final class OrchestratorSnapshot {
       thread: ThreadRuntimeSnapshot.fromJson(_map(payload['thread'])),
       matter: MatterRuntimeSnapshot.fromJson(_map(payload['matter'])),
       websocket: WebSocketRuntimeSnapshot.fromJson(_map(payload['websocket'])),
+      rawPayload: payload,
     );
   }
 

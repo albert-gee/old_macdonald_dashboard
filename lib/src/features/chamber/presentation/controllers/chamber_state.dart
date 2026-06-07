@@ -9,6 +9,12 @@ final class ChamberState {
   final SensorReadingState<double> temperature;
   final SensorReadingState<double> pressure;
   final RelayControlState relay;
+  final double minCelsius;
+  final double maxCelsius;
+  final bool controlEnabled;
+  final bool controlPending;
+  final String controlState;
+  final String? controlError;
   final bool loadingDevices;
   final bool loadingStatus;
   final ChamberStatus? status;
@@ -24,6 +30,12 @@ final class ChamberState {
     this.temperature = const SensorReadingState<double>(),
     this.pressure = const SensorReadingState<double>(),
     this.relay = const RelayControlState(),
+    this.minCelsius = 24,
+    this.maxCelsius = 28,
+    this.controlEnabled = false,
+    this.controlPending = false,
+    this.controlState = 'disabled',
+    this.controlError,
     this.loadingDevices = false,
     this.loadingStatus = false,
     this.status,
@@ -54,6 +66,13 @@ final class ChamberState {
     SensorReadingState<double>? temperature,
     SensorReadingState<double>? pressure,
     RelayControlState? relay,
+    double? minCelsius,
+    double? maxCelsius,
+    bool? controlEnabled,
+    bool? controlPending,
+    String? controlState,
+    String? controlError,
+    bool clearControlError = false,
     bool? loadingDevices,
     bool? loadingStatus,
     ChamberStatus? status,
@@ -77,6 +96,12 @@ final class ChamberState {
       temperature: temperature ?? this.temperature,
       pressure: pressure ?? this.pressure,
       relay: relay ?? this.relay,
+      minCelsius: minCelsius ?? this.minCelsius,
+      maxCelsius: maxCelsius ?? this.maxCelsius,
+      controlEnabled: controlEnabled ?? this.controlEnabled,
+      controlPending: controlPending ?? this.controlPending,
+      controlState: controlState ?? this.controlState,
+      controlError: clearControlError ? null : controlError ?? this.controlError,
       loadingDevices: loadingDevices ?? this.loadingDevices,
       loadingStatus: loadingStatus ?? this.loadingStatus,
       status: status ?? this.status,

@@ -18,7 +18,7 @@ class DeveloperScreen extends StatelessWidget {
         AppPanel(
           title: 'Developer diagnostics',
           subtitle:
-              'Developer tools bypass normal operator workflows. Use them only for diagnostics, recovery, and protocol verification.',
+              'Developer tools bypass normal operator workflows. Use for diagnostics and recovery.',
           tone: AppPanelTone.warning,
           child: Text(
             'Raw commands and technical fields are intentionally kept separate from operator pages.',

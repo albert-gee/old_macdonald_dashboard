@@ -101,6 +101,84 @@ class ChamberRelayControlsCard extends ConsumerWidget {
                 style: const TextStyle(color: AppColors.warning),
               ),
             ),
+          const SizedBox(height: AppDimensions.spacingL),
+          const Divider(),
+          const SizedBox(height: AppDimensions.spacingM),
+          Text('Cooling automation', style: AppTextStyles.sectionTitle),
+          const SizedBox(height: AppDimensions.spacingM),
+          Wrap(
+            spacing: AppDimensions.spacingM,
+            runSpacing: AppDimensions.spacingM,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SizedBox(
+                width: 180,
+                child: TextFormField(
+                  initialValue: state.minCelsius.toStringAsFixed(1),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    signed: true,
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Min C',
+                    prefixIcon: Icon(Icons.arrow_downward),
+                  ),
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    if (parsed != null) controller.setMinCelsius(parsed);
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 180,
+                child: TextFormField(
+                  initialValue: state.maxCelsius.toStringAsFixed(1),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    signed: true,
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Max C',
+                    prefixIcon: Icon(Icons.arrow_upward),
+                  ),
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    if (parsed != null) controller.setMaxCelsius(parsed);
+                  },
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: selected == null ||
+                        state.selectedTemperature == null ||
+                        state.controlPending
+                    ? null
+                    : () => controller.saveTemperatureRule(),
+                icon: const Icon(Icons.save),
+                label: const Text('Save rule'),
+              ),
+              Switch(
+                value: state.controlEnabled,
+                onChanged: selected == null ||
+                        state.selectedTemperature == null ||
+                        state.controlPending
+                    ? null
+                    : controller.setControlEnabled,
+              ),
+              Text(
+                state.controlPending
+                    ? 'Saving'
+                    : 'State: ${state.controlState}',
+              ),
+            ],
+          ),
+          if (state.controlError != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+              child: Text(
+                state.controlError!,
+                style: const TextStyle(color: AppColors.warning),
+              ),
+            ),
         ],
       ),
     );

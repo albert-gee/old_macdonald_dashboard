@@ -45,10 +45,62 @@ final class ChamberRepositoryImpl implements ChamberRepository {
   }
 
   @override
-  Future<Result<void>> setRelay(String deviceId, bool on) async {
+  Future<Result<void>> setRelay(
+    String deviceId,
+    String capabilityId,
+    bool on,
+  ) async {
     final result = await _client.sendCommand(
       'device.relay.set',
-      payload: {'device_id': deviceId, 'on': on},
+      payload: {'device_id': deviceId, 'capability_id': capabilityId, 'on': on},
+    );
+    return result.when(
+      success: (_) => const Success(null),
+      failure: FailureResult.new,
+    );
+  }
+
+  @override
+  Future<Result<ChamberControlRule>> saveTemperatureRule({
+    required String sensorDeviceId,
+    required String sensorCapabilityId,
+    required String actuatorDeviceId,
+    required String actuatorCapabilityId,
+    required double minCelsius,
+    required double maxCelsius,
+    required bool enabled,
+  }) async {
+    final result = await _client.sendCommand(
+      'control.temperature.upsert',
+      payload: {
+        'rule_id': 'main-air-temperature-fan',
+        'chamber_id': 'main',
+        'enabled': enabled,
+        'mode': 'cooling',
+        'sensor': {
+          'device_id': sensorDeviceId,
+          'capability_id': sensorCapabilityId,
+        },
+        'actuator': {
+          'device_id': actuatorDeviceId,
+          'capability_id': actuatorCapabilityId,
+        },
+        'min_celsius': minCelsius,
+        'max_celsius': maxCelsius,
+      },
+    );
+    return result.when(
+      success: (value) =>
+          Success(ChamberControlRule.fromPayload(value.payload)),
+      failure: FailureResult.new,
+    );
+  }
+
+  @override
+  Future<Result<void>> setTemperatureControlEnabled(bool enabled) async {
+    final result = await _client.sendCommand(
+      'control.temperature.set_enabled',
+      payload: {'enabled': enabled},
     );
     return result.when(
       success: (_) => const Success(null),

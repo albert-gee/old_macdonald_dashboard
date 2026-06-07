@@ -107,6 +107,7 @@ enum DeviceCapabilitySemanticType {
       'temperature' => DeviceCapabilitySemanticType.temperature,
       'pressure' => DeviceCapabilitySemanticType.pressure,
       'relay' => DeviceCapabilitySemanticType.relay,
+      'on_off' => DeviceCapabilitySemanticType.relay,
       'raw_attribute' => DeviceCapabilitySemanticType.rawAttribute,
       'raw_command' => DeviceCapabilitySemanticType.rawCommand,
       _ => DeviceCapabilitySemanticType.unknown,

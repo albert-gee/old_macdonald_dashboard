@@ -558,7 +558,34 @@ final class _ChamberRepo implements ChamberRepository {
       const Success(SensorReadResult(value: 23.4));
 
   @override
-  Future<Result<void>> setRelay(String deviceId, bool on) async =>
+  Future<Result<void>> setRelay(
+    String deviceId,
+    String capabilityId,
+    bool on,
+  ) async =>
+      const Success(null);
+
+  @override
+  Future<Result<ChamberControlRule>> saveTemperatureRule({
+    required String sensorDeviceId,
+    required String sensorCapabilityId,
+    required String actuatorDeviceId,
+    required String actuatorCapabilityId,
+    required double minCelsius,
+    required double maxCelsius,
+    required bool enabled,
+  }) async => Success(
+    ChamberControlRule(
+      configured: true,
+      enabled: enabled,
+      minCelsius: minCelsius,
+      maxCelsius: maxCelsius,
+      state: enabled ? 'idle' : 'disabled',
+    ),
+  );
+
+  @override
+  Future<Result<void>> setTemperatureControlEnabled(bool enabled) async =>
       const Success(null);
 }
 
