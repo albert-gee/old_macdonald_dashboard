@@ -37,6 +37,17 @@ final class DeviceListController extends StateNotifier<DeviceListState> {
     }
   }
 
+  Future<void> refreshDevice(String deviceId) async {
+    state = state.copyWith(loading: true);
+    final result = await _repository.refreshDevice(deviceId);
+    switch (result) {
+      case Success():
+        await refresh();
+      case FailureResult(failure: final failure):
+        state = state.copyWith(loading: false, message: failure.message);
+    }
+  }
+
   Future<void> remove(String deviceId) async {
     state = state.copyWith(loading: true);
     final result = await _repository.removeDevice(deviceId);

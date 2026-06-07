@@ -288,10 +288,10 @@ class ThreadOperatorActionsCard extends ConsumerWidget {
                 : () {
                     selectDashboardDestination(
                       ref,
-                      DashboardDestinationKey.matter,
+                      DashboardDestinationKey.setup,
                     );
                   },
-            child: const Text('Continue to Matter pairing'),
+            child: const Text('Continue to Setup'),
           ),
         ],
       ),

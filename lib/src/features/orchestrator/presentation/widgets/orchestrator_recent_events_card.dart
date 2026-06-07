@@ -7,10 +7,7 @@ import 'package:dashboard/src/core/widgets/app_panel.dart';
 class OrchestratorRecentEventsCard extends ConsumerWidget {
   final bool showContainer;
 
-  const OrchestratorRecentEventsCard({
-    super.key,
-    this.showContainer = true,
-  });
+  const OrchestratorRecentEventsCard({super.key, this.showContainer = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

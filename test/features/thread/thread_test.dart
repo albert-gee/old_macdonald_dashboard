@@ -500,7 +500,7 @@ void main() {
     await _pumpThreadScreen(tester);
 
     final button = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, 'Continue to Matter pairing'),
+      find.widgetWithText(ElevatedButton, 'Continue to Setup'),
     );
     expect(button.onPressed, isNull);
   });
@@ -531,7 +531,7 @@ void main() {
     );
 
     final button = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, 'Continue to Matter pairing'),
+      find.widgetWithText(ElevatedButton, 'Continue to Setup'),
     );
     expect(button.onPressed, isNotNull);
   });

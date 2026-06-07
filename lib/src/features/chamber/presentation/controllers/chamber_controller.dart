@@ -217,6 +217,11 @@ final class ChamberController extends StateNotifier<ChamberState> {
       );
       return;
     }
+    final thresholdRangeError = _thresholdRangeError();
+    if (thresholdRangeError != null) {
+      state = state.copyWith(controlError: thresholdRangeError, success: false);
+      return;
+    }
     state = state.copyWith(controlPending: true, clearControlError: true);
     final result = await _repository.saveTemperatureRule(
       sensorDeviceId: sensor.deviceId,
@@ -603,6 +608,18 @@ final class ChamberController extends StateNotifier<ChamberState> {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  String? _thresholdRangeError() {
+    const minAllowed = -40.0;
+    const maxAllowed = 85.0;
+    if (state.minCelsius < minAllowed ||
+        state.minCelsius > maxAllowed ||
+        state.maxCelsius < minAllowed ||
+        state.maxCelsius > maxAllowed) {
+      return 'Cooling thresholds must be between -40 C and 85 C.';
+    }
     return null;
   }
 }

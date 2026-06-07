@@ -32,11 +32,6 @@ final class OrchestratorSnapshot {
       rawPayload: payload,
     );
   }
-
-  static Map<String, Object?> _map(Object? value) {
-    if (value is! Map) return const <String, Object?>{};
-    return value.map((key, value) => MapEntry(key.toString(), value));
-  }
 }
 
 final class WifiRuntimeSnapshot {
@@ -73,29 +68,59 @@ final class ThreadRuntimeSnapshot {
   final bool attached;
   final String role;
   final bool datasetPresent;
+  final String? networkName;
+  final int? channel;
+  final int? panId;
+  final String? extendedPanId;
+  final String? meshLocalPrefix;
+  final bool borderRouterInitialized;
 
   const ThreadRuntimeSnapshot({
     this.enabled = false,
     this.attached = false,
     this.role = 'unknown',
     this.datasetPresent = false,
+    this.networkName,
+    this.channel,
+    this.panId,
+    this.extendedPanId,
+    this.meshLocalPrefix,
+    this.borderRouterInitialized = false,
   });
 
   factory ThreadRuntimeSnapshot.fromJson(Map<String, Object?> json) {
+    final dataset = _map(json['dataset']);
     return ThreadRuntimeSnapshot(
       enabled: _bool(json['enabled']),
       attached: _bool(json['attached']),
       role: _string(json['role'], 'unknown'),
       datasetPresent: _bool(json['dataset_present']),
+      networkName:
+          json['network_name']?.toString() ??
+          dataset['network_name']?.toString(),
+      channel:
+          _nullableInt(json['channel']) ?? _nullableInt(dataset['channel']),
+      panId: _nullableInt(json['pan_id']) ?? _nullableInt(dataset['pan_id']),
+      extendedPanId:
+          json['extended_pan_id']?.toString() ??
+          dataset['extended_pan_id']?.toString(),
+      meshLocalPrefix:
+          json['mesh_local_prefix']?.toString() ??
+          dataset['mesh_local_prefix']?.toString(),
+      borderRouterInitialized: _bool(json['border_router_initialized']),
     );
   }
 }
 
 final class MatterRuntimeSnapshot {
+  final bool? platformInitialized;
+  final String? platformError;
   final bool controllerInitialized;
   final List<CommissionedMatterNodeSnapshot> commissionedNodes;
 
   const MatterRuntimeSnapshot({
+    this.platformInitialized,
+    this.platformError,
     this.controllerInitialized = false,
     this.commissionedNodes = const [],
   });
@@ -103,6 +128,10 @@ final class MatterRuntimeSnapshot {
   factory MatterRuntimeSnapshot.fromJson(Map<String, Object?> json) {
     final rawNodes = json['commissioned_nodes'];
     return MatterRuntimeSnapshot(
+      platformInitialized: json['platform_initialized'] is bool
+          ? json['platform_initialized'] as bool
+          : null,
+      platformError: json['platform_error']?.toString(),
       controllerInitialized: _bool(json['controller_initialized']),
       commissionedNodes: rawNodes is List
           ? rawNodes
@@ -161,3 +190,8 @@ int? _nullableInt(Object? value) {
 
 String _string(Object? value, String fallback) =>
     value == null ? fallback : value.toString();
+
+Map<String, Object?> _map(Object? value) {
+  if (value is! Map) return const <String, Object?>{};
+  return value.map((key, value) => MapEntry(key.toString(), value));
+}

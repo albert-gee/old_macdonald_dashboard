@@ -7,10 +7,7 @@ import 'package:dashboard/src/core/widgets/app_panel.dart';
 class OrchestratorRuntimeSnapshotCard extends ConsumerWidget {
   final bool showContainer;
 
-  const OrchestratorRuntimeSnapshotCard({
-    super.key,
-    this.showContainer = true,
-  });
+  const OrchestratorRuntimeSnapshotCard({super.key, this.showContainer = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

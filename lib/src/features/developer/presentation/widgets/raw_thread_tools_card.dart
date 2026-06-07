@@ -12,8 +12,7 @@ class RawThreadToolsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return const AppPanel(
       title: 'Raw Thread diagnostics',
-      subtitle:
-          'Low-level Thread commands and manual dataset recovery tools.',
+      subtitle: 'Low-level Thread commands and manual dataset recovery tools.',
       tone: AppPanelTone.neutral,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

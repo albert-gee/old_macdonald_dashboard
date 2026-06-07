@@ -1,10 +1,13 @@
-# Old MacDonald Dashboard
+# Old Macdonald Dashboard
 
-Flutter dashboard for the Old MacDonald Orchestrator.
+Flutter operator app for the Old Macdonald Orchestrator.
 
-The Dashboard is structured as an operator console, not a raw protocol panel.
-Primary pages explain operational state first, with low-level diagnostics kept
-in Developer or collapsed Advanced diagnostics sections.
+Old Macdonald Dashboard is a professional local operator app for the
+Orchestrator. It provides a connection-first workflow, guided Thread/Matter
+infrastructure setup, Matter device commissioning and discovery, chamber device
+assignment, live environmental monitoring, relay/fan manual control,
+cooling-rule configuration, and actionable diagnostics. Raw protocol tools are
+kept out of the normal operator path and remain available under Developer Tools.
 
 ## Run
 
@@ -21,20 +24,32 @@ wss://192.168.4.1/ws
 
 ## Product Structure
 
-- **Orchestrator**: system connection, certificate trust, runtime state, and
-  setup checklist.
-- **Chamber**: day-to-day readings and actuator controls built from registered
-  device capabilities.
-- **Devices**: device registry status, reachability, and capability readiness.
-- **Wi-Fi Network**: local Dashboard access and optional uplink Wi-Fi.
-- **Thread Network**: Thread mesh readiness for chamber sensors and actuators.
-- **Matter Network**: commissioned devices and chamber device onboarding.
-- **Developer**: raw Matter, Thread, command, and event diagnostics.
+- **Overview**: connection, Orchestrator health, Thread/Matter status, chamber
+  state, and the next recommended action.
+- **Setup**: guided connection, Thread dataset, Thread runtime, Matter
+  controller, and device commissioning workflow.
+- **Devices**: commissioned device registry, reachability, capability readiness,
+  rename/remove actions, and collapsed raw Matter path details.
+- **Chamber**: live readings, source/actuator assignments, manual relay/fan
+  controls, min/max cooling thresholds, and automation state.
+- **Diagnostics**: platform errors, Thread/Matter state, latest snapshot,
+  protocol log, and copyable hardware validation commands.
+- **Developer Tools**: raw Matter, Thread, command, and JSON diagnostics for
+  debugging and recovery.
 
-Operator workflow: connect to the Orchestrator, trust the certificate, receive a
-`state_snapshot`, onboard or verify devices, then use Chamber controls.
-Installer/maintainer workflow: use Wi-Fi, Thread, Matter, and Devices pages to
-verify setup. Developer workflow: use Developer for raw protocol diagnostics.
+Operator workflow:
+
+1. Connect the host computer or tablet to the Orchestrator Wi-Fi AP.
+2. Open the Dashboard and use the global Connect button for
+   `wss://192.168.4.1/ws`.
+3. Confirm a `state_snapshot` arrives and follow the Overview next action.
+4. Use Setup to create or verify the Thread dataset, enable Thread, initialize
+   Matter, and commission devices.
+5. Use Devices to refresh discovery and verify semantic capabilities.
+6. Use Chamber to assign temperature and On/Off capabilities, manually control
+   the fan/relay, save cooling thresholds, and enable automation.
+7. Use Diagnostics when the Orchestrator reports degraded state, such as
+   `MATTER_PLATFORM_INIT_FAILED:ESP_FAIL`.
 
 Chamber controls are built from registered device labels and capabilities, not
 raw Matter node, endpoint, cluster, or attribute IDs.
@@ -63,10 +78,13 @@ The dashboard handles these inbound message types:
   carries asynchronous semantic sensor values.
 - `error`: shown as a protocol error event.
 
-Operator commands include `device.list`, `device.get`, `device.rename`,
-`device.remove`, `chamber.status_get`, `device.temperature.read`,
-`device.pressure.read`, and `device.relay.set`. Raw Matter commands remain in
-Developer.
+Operator commands include `device.list`, `device.get`, `device.refresh`,
+`device.rename`, `device.remove`, `chamber.status_get`, `device.temperature.read`,
+`device.pressure.read`, `device.relay.set`, Thread setup commands,
+`matter.controller_init`, `matter.pair_ble_thread`, and
+`control.temperature.upsert`. Device read, relay, and cooling-rule commands
+include both `device_id` and `capability_id`. Raw Matter commands remain in
+Developer Tools.
 
 ## Device Registry And Chamber Controls
 
@@ -101,6 +119,7 @@ shows a waiting state until the value arrives in an event:
   "event": "matter.attribute_report",
   "payload": {
     "device_id": "sensor-1",
+    "capability_id": "sensor-1-ep1-temperature",
     "semantic_type": "temperature",
     "temperature_celsius": 23.41,
     "raw_measured_value": 2341

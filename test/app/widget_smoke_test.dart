@@ -10,6 +10,7 @@ import 'package:dashboard/src/core/widgets/app_metric_tile.dart';
 import 'package:dashboard/src/core/widgets/app_status_card.dart';
 import 'package:dashboard/src/features/chamber/domain/entities/chamber_status.dart';
 import 'package:dashboard/src/features/chamber/domain/repositories/chamber_repository.dart';
+import 'package:dashboard/src/features/chamber/presentation/controllers/chamber_state.dart';
 import 'package:dashboard/src/features/chamber/presentation/screens/chamber_screen.dart';
 import 'package:dashboard/src/features/developer/presentation/screens/developer_screen.dart';
 import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
@@ -20,11 +21,16 @@ import 'package:dashboard/src/features/matter/domain/entities/matter_cluster.dar
 import 'package:dashboard/src/features/matter/domain/repositories/matter_cluster_repository.dart';
 import 'package:dashboard/src/features/orchestrator/presentation/screens/orchestrator_screen.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
+import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_snapshot.dart';
 import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_message_repository.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/controllers/orchestrator_connection_state.dart';
+import 'package:dashboard/src/features/orchestrator/presentation/controllers/orchestrator_runtime_state.dart';
+import 'package:dashboard/src/features/overview/domain/operator_runtime.dart';
 import 'package:dashboard/src/features/matter/presentation/widgets/matter_controller_init_form.dart';
 import 'package:dashboard/src/features/thread/presentation/widgets/thread_dataset_form.dart';
 import 'package:dashboard/src/features/thread/presentation/screens/thread_screen.dart';
 import 'package:dashboard/src/features/wifi/presentation/screens/wifi_network_screen.dart';
+import 'package:dashboard/src/core/websocket/websocket_connection_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,7 +107,40 @@ void main() {
     );
   });
 
-  testWidgets('matter screen and dashboard navigation smoke test', (
+  testWidgets('operator shell navigation smoke test', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+        ],
+        child: const DashboardApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Old Macdonald'), findsWidgets);
+    expect(find.text('Overview'), findsWidgets);
+    expect(find.text('Connect'), findsOneWidget);
+    expect(find.text('Next action'), findsOneWidget);
+
+    await tester.tap(find.text('Setup').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Step 1: Connect to Orchestrator'), findsOneWidget);
+    expect(find.text('Step 2: Prepare Thread dataset'), findsOneWidget);
+
+    await tester.tap(find.text('Devices').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Registry overview'), findsOneWidget);
+
+    await tester.tap(find.text('Diagnostics').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Known hardware state'), findsOneWidget);
+    expect(find.text('Protocol log'), findsOneWidget);
+  });
+
+  testWidgets('navigation uses destination keys and shows global connect', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -116,26 +155,19 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Orchestrator'), findsWidgets);
-    await tester.tap(find.text('Wi-Fi Network').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Wi-Fi Network readiness'), findsOneWidget);
-    expect(find.text('Wi-Fi STA'), findsNothing);
-    expect(find.text('Wi-Fi AP'), findsNothing);
+    expect(find.text('Connect'), findsOneWidget);
+    expect(find.text('Connect to Orchestrator'), findsWidgets);
 
-    await tester.tap(find.text('Thread Network').first);
+    await tester.tap(find.text('Setup').first);
     await tester.pumpAndSettle();
-    expect(find.text('Thread Mesh Network readiness'), findsOneWidget);
-
-    await tester.tap(find.text('Matter Network').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Matter Network'), findsWidgets);
-    expect(find.text('Matter Device Network readiness'), findsOneWidget);
-    expect(find.text('Pair chamber device'), findsWidgets);
-    expect(find.text('Pair BLE Thread'), findsNothing);
+    final scope = tester.element(find.byType(DashboardApp));
+    final selected = ProviderScope.containerOf(
+      scope,
+    ).read(selectedDashboardDestinationProvider);
+    expect(selected, DashboardDestinationKey.setup);
   });
 
-  testWidgets('navigation uses destination keys and shows disconnected banner', (
+  testWidgets('Overview shows Matter platform failure as next action', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -144,6 +176,50 @@ void main() {
         overrides: [
           appConfigProvider.overrideWithValue(config),
           matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+          operatorRuntimeProvider.overrideWithValue(
+            _operatorRuntime(
+              snapshot: OrchestratorSnapshot.fromPayload({
+                'thread': {'dataset_present': true, 'enabled': true},
+                'matter': {
+                  'platform_initialized': false,
+                  'platform_error': 'MATTER_PLATFORM_INIT_FAILED:ESP_FAIL',
+                },
+              }),
+            ),
+          ),
+        ],
+        child: const DashboardApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Matter platform failed'), findsWidgets);
+    expect(find.text('MATTER_PLATFORM_INIT_FAILED:ESP_FAIL'), findsWidgets);
+  });
+
+  testWidgets('Setup blocks commissioning when Matter platform failed', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          matterClusterRepositoryProvider.overrideWithValue(_ClusterRepo()),
+          selectedDashboardDestinationProvider.overrideWith((_) {
+            return DashboardDestinationKey.setup;
+          }),
+          operatorRuntimeProvider.overrideWithValue(
+            _operatorRuntime(
+              snapshot: OrchestratorSnapshot.fromPayload({
+                'thread': {'dataset_present': true, 'enabled': true},
+                'matter': {
+                  'platform_initialized': false,
+                  'platform_error': 'MATTER_PLATFORM_INIT_FAILED:ESP_FAIL',
+                },
+              }),
+            ),
+          ),
         ],
         child: const DashboardApp(),
       ),
@@ -151,19 +227,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
+      find.text('Matter platform did not initialize on the Orchestrator.'),
+      findsOneWidget,
+    );
+    expect(
       find.text(
-        'Dashboard is not connected to the Orchestrator. Connect before using live controls.',
+        'Commissioning is unavailable until Matter platform and controller prerequisites are healthy.',
       ),
       findsOneWidget,
     );
-
-    await tester.tap(find.text('Matter Network').first);
-    await tester.pumpAndSettle();
-    final scope = tester.element(find.byType(DashboardApp));
-    final selected = ProviderScope.containerOf(
-      scope,
-    ).read(selectedDashboardDestinationProvider);
-    expect(selected, DashboardDestinationKey.matter);
   });
 
   testWidgets('orchestrator page shows setup checklist before URL editor', (
@@ -196,7 +268,7 @@ void main() {
 
       expect(find.text('Registry overview'), findsOneWidget);
       expect(find.text('No chamber devices are registered.'), findsWidgets);
-      expect(find.text('Go to Matter Network'), findsOneWidget);
+      expect(find.text('Go to Setup'), findsOneWidget);
     },
   );
 
@@ -368,12 +440,12 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final label in [
-      'Orchestrator',
+      'Overview',
+      'Setup',
       'Chamber',
       'Devices',
-      'Wi-Fi Network',
-      'Thread Network',
-      'Matter Network',
+      'Diagnostics',
+      'Developer Tools',
     ]) {
       await tester.tap(find.text(label).first);
       await tester.pumpAndSettle();
@@ -521,6 +593,10 @@ final class _DeviceRepo implements DeviceRepository {
       const Success(null);
 
   @override
+  Future<Result<void>> refreshDevice(String deviceId) async =>
+      const Success(null);
+
+  @override
   Future<Result<void>> removeDevice(String deviceId) async {
     removeCount += 1;
     return Future.value(const Success(null));
@@ -537,6 +613,10 @@ final class _EmptyDeviceRepo implements DeviceRepository {
 
   @override
   Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void>> refreshDevice(String deviceId) async =>
       const Success(null);
 
   @override
@@ -595,4 +675,19 @@ final class _ChamberRepo implements ChamberRepository {
 final class _MessageRepo implements OrchestratorMessageRepository {
   @override
   Stream<OrchestratorMessage> watchMessages() => const Stream.empty();
+}
+
+OperatorRuntime _operatorRuntime({required OrchestratorSnapshot snapshot}) {
+  return OperatorRuntime(
+    connection: const OrchestratorConnectionState(
+      url: 'wss://192.168.4.1/ws',
+      status: WebSocketConnectionStatus.connected,
+    ),
+    runtime: OrchestratorRuntimeState(
+      snapshot: snapshot,
+      lastSnapshotAt: DateTime(2026),
+    ),
+    devices: const [],
+    chamber: const ChamberState(),
+  );
 }

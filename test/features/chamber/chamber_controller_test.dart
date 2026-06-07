@@ -233,6 +233,33 @@ void main() {
   });
 
   test(
+    'saveTemperatureRule rejects thresholds outside supported range',
+    () async {
+      final messages = StreamController<OrchestratorMessage>();
+      final repository = FakeChamberRepository();
+      final controller = ChamberController(
+        repository: repository,
+        deviceRepository: FakeDeviceRepository(devices: _devices()),
+        messages: messages.stream,
+      );
+      await controller.loadDevices();
+
+      controller.setMinCelsius(-41);
+      controller.setMaxCelsius(24);
+      await controller.saveTemperatureRule();
+
+      expect(
+        controller.state.controlError,
+        'Cooling thresholds must be between -40 C and 85 C.',
+      );
+      expect(repository.savedRules, isEmpty);
+
+      controller.dispose();
+      await messages.close();
+    },
+  );
+
+  test(
     'state_snapshot restores devices, selected capabilities, and control state',
     () async {
       final messages = StreamController<OrchestratorMessage>();
@@ -487,6 +514,10 @@ final class FakeDeviceRepository implements DeviceRepository {
 
   @override
   Future<Result<void>> renameDevice(String deviceId, String label) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void>> refreshDevice(String deviceId) async =>
       const Success(null);
 
   @override

@@ -87,17 +87,16 @@ class _ChamberScreenState extends ConsumerState<ChamberScreen> {
             title: 'No chamber devices are registered yet.',
             explanation:
                 'Devices appear here after commissioning and registry setup. Chamber controls need registered device capabilities.',
-            recommendedAction:
-                'Start with Matter Network, then verify Devices.',
+            recommendedAction: 'Start with Setup, then verify Devices.',
             action: Wrap(
               spacing: AppDimensions.spacingM,
               children: [
                 OutlinedButton(
                   onPressed: () => selectDashboardDestination(
                     ref,
-                    DashboardDestinationKey.matter,
+                    DashboardDestinationKey.setup,
                   ),
-                  child: const Text('Go to Matter Network'),
+                  child: const Text('Go to Setup'),
                 ),
                 OutlinedButton(
                   onPressed: () => selectDashboardDestination(

@@ -23,6 +23,7 @@ import 'package:dashboard/src/features/matter/presentation/controllers/matter_co
 import 'package:dashboard/src/features/matter/presentation/controllers/matter_command_state.dart';
 import 'package:dashboard/src/features/matter/presentation/controllers/matter_event_controller.dart';
 import 'package:dashboard/src/features/matter/presentation/controllers/matter_event_state.dart';
+import 'package:dashboard/src/features/overview/domain/operator_runtime.dart';
 import 'package:dashboard/src/features/orchestrator/domain/entities/orchestrator_message.dart';
 import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_command_client.dart';
 import 'package:dashboard/src/features/orchestrator/domain/repositories/orchestrator_connection_repository.dart';
@@ -274,7 +275,7 @@ final matterEventControllerProvider =
 
 final selectedDashboardDestinationProvider =
     StateProvider<DashboardDestinationKey>(
-      (ref) => DashboardDestinationKey.orchestrator,
+      (ref) => DashboardDestinationKey.overview,
     );
 
 void selectDashboardDestination(
@@ -285,3 +286,12 @@ void selectDashboardDestination(
 }
 
 final sidebarCollapsedProvider = StateProvider<bool>((ref) => false);
+
+final operatorRuntimeProvider = Provider<OperatorRuntime>((ref) {
+  return OperatorRuntime(
+    connection: ref.watch(orchestratorConnectionControllerProvider),
+    runtime: ref.watch(orchestratorRuntimeControllerProvider),
+    devices: ref.watch(deviceListControllerProvider).devices,
+    chamber: ref.watch(chamberControllerProvider),
+  );
+});

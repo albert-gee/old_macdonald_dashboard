@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 enum DashboardDestinationKey {
-  orchestrator,
+  overview,
+  setup,
   chamber,
   devices,
-  wifi,
-  thread,
-  matter,
+  diagnostics,
   developer,
 }
 

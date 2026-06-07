@@ -73,4 +73,23 @@ void main() {
       'label': 'Switchable actuator',
     });
   });
+
+  test('device.refresh sends device_id payload', () async {
+    final client = RecordingCommandClient()
+      ..nextResult = const Success(
+        OrchestratorCommandResult(
+          requestId: 'req-1',
+          action: 'device.refresh',
+          ok: true,
+          payload: {'accepted': true},
+        ),
+      );
+    final repository = DeviceRepositoryImpl(client: client);
+
+    final result = await repository.refreshDevice('node-1001');
+
+    expect(result, isA<Success<void>>());
+    expect(client.commands.single.action, 'device.refresh');
+    expect(client.commands.single.payload, {'device_id': 'node-1001'});
+  });
 }

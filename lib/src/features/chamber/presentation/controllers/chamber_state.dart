@@ -101,7 +101,9 @@ final class ChamberState {
       controlEnabled: controlEnabled ?? this.controlEnabled,
       controlPending: controlPending ?? this.controlPending,
       controlState: controlState ?? this.controlState,
-      controlError: clearControlError ? null : controlError ?? this.controlError,
+      controlError: clearControlError
+          ? null
+          : controlError ?? this.controlError,
       loadingDevices: loadingDevices ?? this.loadingDevices,
       loadingStatus: loadingStatus ?? this.loadingStatus,
       status: status ?? this.status,

@@ -602,6 +602,10 @@ final class _DeviceRepo implements DeviceRepository {
       const Success(null);
 
   @override
+  Future<Result<void>> refreshDevice(String deviceId) async =>
+      const Success(null);
+
+  @override
   Future<Result<void>> removeDevice(String deviceId) async =>
       const Success(null);
 }

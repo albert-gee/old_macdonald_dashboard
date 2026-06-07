@@ -7,10 +7,7 @@ import 'package:dashboard/src/core/widgets/app_panel.dart';
 class OrchestratorPendingCommandsCard extends ConsumerWidget {
   final bool showContainer;
 
-  const OrchestratorPendingCommandsCard({
-    super.key,
-    this.showContainer = true,
-  });
+  const OrchestratorPendingCommandsCard({super.key, this.showContainer = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

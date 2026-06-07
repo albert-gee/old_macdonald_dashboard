@@ -43,19 +43,26 @@ final class OrchestratorRuntimeController
   }
 
   void _onMessage(OrchestratorMessage message) {
+    final receivedAt = DateTime.now();
+    _recordMessage(message, receivedAt);
     switch (message) {
       case StateSnapshotReceived(snapshot: final snapshot):
-        state = state.copyWith(snapshot: snapshot, clearLastError: true);
+        state = state.copyWith(
+          snapshot: snapshot,
+          lastMessageAt: receivedAt,
+          lastSnapshotAt: receivedAt,
+          clearLastError: true,
+        );
       case OrchestratorEventReceived(
         event: final event,
         payload: final payload,
-        receivedAt: final receivedAt,
+        receivedAt: final eventReceivedAt,
       ):
         _appendEvent(
           OrchestratorEventLogEntry(
             type: event,
             payload: payload,
-            receivedAt: receivedAt,
+            receivedAt: eventReceivedAt,
           ),
         );
       case OrchestratorProtocolErrorReceived(
@@ -66,7 +73,7 @@ final class OrchestratorRuntimeController
           OrchestratorEventLogEntry(
             type: 'error.$code',
             payload: {'message': errorMessage},
-            receivedAt: DateTime.now(),
+            receivedAt: receivedAt,
           ),
           lastError: errorMessage,
         );
@@ -78,13 +85,119 @@ final class OrchestratorRuntimeController
               'request_id': result.requestId,
               'message': result.error?.message ?? 'Command failed.',
             },
-            receivedAt: DateTime.now(),
+            receivedAt: receivedAt,
           ),
           lastError: result.error?.message ?? 'Command failed.',
         );
       default:
-        break;
+        state = state.copyWith(lastMessageAt: receivedAt);
     }
+  }
+
+  void _recordMessage(OrchestratorMessage message, DateTime receivedAt) {
+    final entry = switch (message) {
+      StateSnapshotReceived(snapshot: final snapshot) =>
+        OrchestratorProtocolLogEntry(
+          title: 'state_snapshot',
+          direction: 'in',
+          payload: snapshot.rawPayload,
+          receivedAt: receivedAt,
+        ),
+      CommandResultReceived(result: final result) =>
+        OrchestratorProtocolLogEntry(
+          title: 'command_result.${result.action}',
+          direction: 'in',
+          payload: {
+            'request_id': result.requestId,
+            'action': result.action,
+            'ok': result.ok,
+            'payload': result.payload,
+            if (result.error != null)
+              'error': {
+                'code': result.error!.code,
+                'message': result.error!.message,
+              },
+          },
+          receivedAt: receivedAt,
+          error: !result.ok,
+        ),
+      OrchestratorEventReceived(event: final event, payload: final payload) =>
+        OrchestratorProtocolLogEntry(
+          title: 'event.$event',
+          direction: 'in',
+          payload: payload,
+          receivedAt: receivedAt,
+        ),
+      OrchestratorProtocolErrorReceived(
+        code: final code,
+        message: final errorMessage,
+      ) =>
+        OrchestratorProtocolLogEntry(
+          title: 'protocol_error.$code',
+          direction: 'in',
+          payload: {'code': code, 'message': errorMessage},
+          receivedAt: receivedAt,
+          error: true,
+        ),
+      ThreadStackStatusReceived(:final running) => OrchestratorProtocolLogEntry(
+        title: 'info.thread.stack_status',
+        direction: 'in',
+        payload: {'running': running},
+        receivedAt: receivedAt,
+      ),
+      ThreadInterfaceStatusReceived(:final interfaceUp) =>
+        OrchestratorProtocolLogEntry(
+          title: 'info.thread.interface_status',
+          direction: 'in',
+          payload: {'interface_up': interfaceUp},
+          receivedAt: receivedAt,
+        ),
+      ThreadAttachmentStatusReceived(:final attached) =>
+        OrchestratorProtocolLogEntry(
+          title: 'info.thread.attachment_status',
+          direction: 'in',
+          payload: {'attached': attached},
+          receivedAt: receivedAt,
+        ),
+      ThreadRoleReceived(:final role) => OrchestratorProtocolLogEntry(
+        title: 'info.thread.role',
+        direction: 'in',
+        payload: {'role': role},
+        receivedAt: receivedAt,
+      ),
+      ThreadActiveDatasetReceived(dataset: final dataset) =>
+        OrchestratorProtocolLogEntry(
+          title: 'info.thread.active_dataset',
+          direction: 'in',
+          payload: {
+            'network_name': dataset.networkName,
+            'channel': dataset.channel,
+            'pan_id': dataset.panId,
+            'extended_pan_id': dataset.extendedPanId,
+            'mesh_local_prefix': dataset.meshLocalPrefix,
+          },
+          receivedAt: receivedAt,
+        ),
+      UnknownOrchestratorMessageReceived(
+        type: final type,
+        action: final action,
+        payload: final payload,
+      ) =>
+        OrchestratorProtocolLogEntry(
+          title: action == null ? type : '$type.$action',
+          direction: 'in',
+          payload: payload,
+          receivedAt: receivedAt,
+        ),
+      _ => OrchestratorProtocolLogEntry(
+        title: message.runtimeType.toString(),
+        direction: 'in',
+        payload: const {},
+        receivedAt: receivedAt,
+      ),
+    };
+    final messages = [entry, ...state.recentMessages].take(100).toList();
+    state = state.copyWith(recentMessages: messages, lastMessageAt: receivedAt);
   }
 
   void _appendEvent(OrchestratorEventLogEntry entry, {String? lastError}) {

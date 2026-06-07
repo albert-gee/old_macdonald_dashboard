@@ -84,13 +84,13 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
             title: 'No chamber devices are registered.',
             explanation:
                 'Devices appear after commissioning and registration. Pair a chamber device, then verify its device capabilities here.',
-            recommendedAction: 'Go to Matter Network to start onboarding.',
+            recommendedAction: 'Go to Setup to start onboarding.',
             action: OutlinedButton(
               onPressed: () => selectDashboardDestination(
                 ref,
-                DashboardDestinationKey.matter,
+                DashboardDestinationKey.setup,
               ),
-              child: const Text('Go to Matter Network'),
+              child: const Text('Go to Setup'),
             ),
           ),
         const DeviceListCard(),

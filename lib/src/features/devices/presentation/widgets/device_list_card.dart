@@ -112,6 +112,13 @@ class _DeviceTile extends ConsumerWidget {
                     spacing: 4,
                     children: [
                       IconButton(
+                        tooltip: 'Refresh discovery',
+                        icon: const Icon(Icons.manage_search),
+                        onPressed: () async {
+                          await controller.refreshDevice(device.deviceId);
+                        },
+                      ),
+                      IconButton(
                         tooltip: 'Rename',
                         icon: const Icon(Icons.edit),
                         onPressed: () async {
