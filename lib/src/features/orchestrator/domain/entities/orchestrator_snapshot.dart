@@ -1,8 +1,11 @@
+import 'package:dashboard/src/features/devices/domain/entities/device_record.dart';
+
 final class OrchestratorSnapshot {
   final WifiRuntimeSnapshot wifi;
   final ThreadRuntimeSnapshot thread;
   final MatterRuntimeSnapshot matter;
   final WebSocketRuntimeSnapshot websocket;
+  final List<DeviceRecord> devices;
   final Map<String, Object?> rawPayload;
 
   const OrchestratorSnapshot({
@@ -10,6 +13,7 @@ final class OrchestratorSnapshot {
     required this.thread,
     required this.matter,
     required this.websocket,
+    this.devices = const [],
     this.rawPayload = const {},
   });
 
@@ -19,6 +23,7 @@ final class OrchestratorSnapshot {
       thread: ThreadRuntimeSnapshot(),
       matter: MatterRuntimeSnapshot(),
       websocket: WebSocketRuntimeSnapshot(),
+      devices: [],
       rawPayload: {},
     );
   }
@@ -29,6 +34,7 @@ final class OrchestratorSnapshot {
       thread: ThreadRuntimeSnapshot.fromJson(_map(payload['thread'])),
       matter: MatterRuntimeSnapshot.fromJson(_map(payload['matter'])),
       websocket: WebSocketRuntimeSnapshot.fromJson(_map(payload['websocket'])),
+      devices: _devices(payload['devices']),
       rawPayload: payload,
     );
   }
@@ -194,4 +200,16 @@ String _string(Object? value, String fallback) =>
 Map<String, Object?> _map(Object? value) {
   if (value is! Map) return const <String, Object?>{};
   return value.map((key, value) => MapEntry(key.toString(), value));
+}
+
+List<DeviceRecord> _devices(Object? value) {
+  if (value is! List) return const [];
+  return value
+      .whereType<Map>()
+      .map(
+        (item) => DeviceRecord.fromJson(
+          item.map((key, value) => MapEntry(key.toString(), value)),
+        ),
+      )
+      .toList();
 }

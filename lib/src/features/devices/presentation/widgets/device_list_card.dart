@@ -40,6 +40,25 @@ class DeviceListCard extends ConsumerWidget {
               style: const TextStyle(color: AppColors.warning),
             ),
           ],
+          if (state.discoveryPending) ...[
+            const SizedBox(height: AppDimensions.spacingM),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Text(
+                    'Discovery pending for ${state.pendingDiscoveryDeviceIds.length} device(s). Registry data updates from state_snapshot and discovery events.',
+                    style: AppTextStyles.mutedBody,
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppDimensions.spacingL),
           if (state.devices.isEmpty && !state.loading)
             const Text(
@@ -59,7 +78,11 @@ class _DeviceTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(deviceListControllerProvider);
     final controller = ref.read(deviceListControllerProvider.notifier);
+    final discoveryPending = state.pendingDiscoveryDeviceIds.contains(
+      device.deviceId,
+    );
     final validCapabilities = device.capabilities
         .where((capability) => capability.isValid)
         .length;
@@ -112,11 +135,23 @@ class _DeviceTile extends ConsumerWidget {
                     spacing: 4,
                     children: [
                       IconButton(
-                        tooltip: 'Refresh discovery',
-                        icon: const Icon(Icons.manage_search),
-                        onPressed: () async {
-                          await controller.refreshDevice(device.deviceId);
-                        },
+                        tooltip: discoveryPending
+                            ? 'Discovery pending'
+                            : 'Refresh discovery',
+                        icon: discoveryPending
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.manage_search),
+                        onPressed: discoveryPending
+                            ? null
+                            : () async {
+                                await controller.refreshDevice(device.deviceId);
+                              },
                       ),
                       IconButton(
                         tooltip: 'Rename',

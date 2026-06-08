@@ -34,6 +34,24 @@ void main() {
           {'node_id': 123, 'label': 'Sensor', 'reachable': true},
         ],
       },
+      'devices': [
+        {
+          'device_id': 'node-1001',
+          'node_id': '1001',
+          'label': 'Environmental sensor',
+          'reachable': true,
+          'capabilities': [
+            {
+              'capability_id': 'node-1001-ep1-temperature',
+              'semantic_type': 'temperature',
+              'endpoint_id': 1,
+              'cluster_id': 1026,
+              'attribute_id': 0,
+              'label': 'Temperature',
+            },
+          ],
+        },
+      ],
       'websocket': {'clients': 2},
     });
 
@@ -52,6 +70,11 @@ void main() {
       'MATTER_PLATFORM_INIT_FAILED:ESP_FAIL',
     );
     expect(snapshot.matter.commissionedNodes.single.nodeId, '123');
+    expect(snapshot.devices.single.deviceId, 'node-1001');
+    expect(
+      snapshot.devices.single.capabilities.single.capabilityId,
+      'node-1001-ep1-temperature',
+    );
     expect(snapshot.websocket.clients, 2);
   });
 
@@ -63,6 +86,7 @@ void main() {
     expect(snapshot.matter.platformInitialized, isNull);
     expect(snapshot.matter.platformError, isNull);
     expect(snapshot.matter.commissionedNodes, isEmpty);
+    expect(snapshot.devices, isEmpty);
     expect(snapshot.websocket.clients, 0);
   });
 }

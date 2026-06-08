@@ -220,8 +220,13 @@ final deviceRepositoryProvider = Provider<DeviceRepository>((ref) {
 
 final deviceListControllerProvider =
     StateNotifierProvider<DeviceListController, DeviceListState>((ref) {
+      final runtime = ref.read(orchestratorRuntimeControllerProvider);
       return DeviceListController(
         repository: ref.watch(deviceRepositoryProvider),
+        messages: ref
+            .watch(orchestratorMessageRepositoryProvider)
+            .watchMessages(),
+        initialDevices: runtime.snapshot?.devices ?? const [],
       );
     });
 
@@ -288,10 +293,12 @@ void selectDashboardDestination(
 final sidebarCollapsedProvider = StateProvider<bool>((ref) => false);
 
 final operatorRuntimeProvider = Provider<OperatorRuntime>((ref) {
+  final runtime = ref.watch(orchestratorRuntimeControllerProvider);
+  final snapshotDevices = runtime.snapshot?.devices;
   return OperatorRuntime(
     connection: ref.watch(orchestratorConnectionControllerProvider),
-    runtime: ref.watch(orchestratorRuntimeControllerProvider),
-    devices: ref.watch(deviceListControllerProvider).devices,
+    runtime: runtime,
+    devices: snapshotDevices ?? ref.watch(deviceListControllerProvider).devices,
     chamber: ref.watch(chamberControllerProvider),
   );
 });
